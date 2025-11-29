@@ -1,0 +1,15 @@
+C:/Users/win10/Downloads/AXI4/axi4_lite_fifo_async.v {1 {vlog -work work -vopt -stats=none {C:\Users\win10\Downloads\AXI4\axi4_lite_fifo_async.v}
+QuestaSim-64 vlog 10.7c Compiler 2018.08 Aug 18 2018
+-- Compiling module axi4_lite_fifo_async
+
+Top level modules:
+	axi4_lite_fifo_async
+
+} {} {}} C:/Users/win10/Downloads/AXI4/axi4_lite_fifo_async_full_coverage_tb.v {1 {vlog -work work -vopt -stats=none {C:\Users\win10\Downloads\AXI4\axi4_lite_fifo_async_full_coverage_tb.v}
+QuestaSim-64 vlog 10.7c Compiler 2018.08 Aug 18 2018
+-- Compiling module axi4_lite_fifo_async_full_coverage_tb
+
+Top level modules:
+	axi4_lite_fifo_async_full_coverage_tb
+
+} {} {}}

@@ -1,0 +1,61 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+dC:/questasim64_10.7c/examples
+T_opt
+!s110 1764395729
+V`[a?NUD9PF]Pag2Jjn8H_0
+04 37 4 work axi4_lite_fifo_async_full_coverage_tb fast 0
+=1-ccd9acff2198-692a8ad1-cf-3900
+o-quiet -auto_acc_if_foreign -work work +acc
+Z0 tCvgOpt 0
+n@_opt
+OL;O;10.7c;67
+vaxi4_lite_fifo_async
+!s110 1764395615
+!i10b 1
+!s100 VofB2R[?TdLCcV_?gEWJo3
+IUgNDM5RzG7aELS33gG9[d2
+Z1 VDg1SIo80bB@j0V0VzS_@n1
+Z2 dC:/Users/win10/Downloads/AXI4
+w1764395540
+8C:\Users\win10\Downloads\AXI4\axi4_lite_fifo_async.v
+FC:\Users\win10\Downloads\AXI4\axi4_lite_fifo_async.v
+L0 3
+Z3 OL;L;10.7c;67
+r1
+!s85 0
+31
+!s108 1764395615.000000
+!s107 C:\Users\win10\Downloads\AXI4\axi4_lite_fifo_async.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:\Users\win10\Downloads\AXI4\axi4_lite_fifo_async.v|
+!i113 0
+o-work work -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+R0
+vaxi4_lite_fifo_async_full_coverage_tb
+!s110 1764395682
+!i10b 1
+!s100 2iC1<iWg781JLJ42UZG5m2
+I8aW5lNS`9YKZLoO63h_8E0
+R1
+R2
+w1764395566
+8axi4_lite_fifo_async_full_coverage_tb.v
+Faxi4_lite_fifo_async_full_coverage_tb.v
+L0 3
+R3
+r1
+!s85 0
+31
+!s108 1764395682.000000
+!s107 axi4_lite_fifo_async_full_coverage_tb.v|
+!s90 -reportprogress|300|axi4_lite_fifo_async_full_coverage_tb.v|
+!i113 0
+o-L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+R0
