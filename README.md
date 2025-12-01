@@ -65,7 +65,7 @@ vlog axi4_lite_fifo_async_full_coverage_tb.v
 vsim -gui work.axi4_lite_fifo_async_full_coverage_tb -voptargs=+acc -wlf fifo_waveform.wlf
 add wave -position insertpoint sim:/axi4_lite_fifo_async_full_coverage_tb/dut/*
 run 1000ns
-
+```
 This will:
 
 - Compile the DUT and testbench  
