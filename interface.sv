@@ -1,4 +1,7 @@
-interface intf ();
+interface intf #(
+    parameter int DATA_WIDTH = 32,
+    parameter int FIFO_DEPTH = 8  // kept for potential reuse/coverage alignment
+)();
     timeunit 1ns; timeprecision 1ps;
     // Clocks and reset
     logic clk_axi;
@@ -11,7 +14,7 @@ interface intf ();
     logic        awready;
 
     // AXI write data channel
-    logic [31:0] wdata;
+    logic [DATA_WIDTH-1:0] wdata;
     logic [3:0]  wstrb;
     logic        wvalid;
     logic        wready;
@@ -27,14 +30,14 @@ interface intf ();
     logic        arready;
 
     // AXI read data channel
-    logic [31:0] rdata;
+    logic [DATA_WIDTH-1:0] rdata;
     logic [1:0]  rresp;
     logic        rvalid;
     logic        rready;
 
     // Peripheral read side
     logic        rd_en;
-    logic [31:0] rd_data;
+    logic [DATA_WIDTH-1:0] rd_data;
     logic        rd_valid;
     logic        rd_empty;
     logic        rd_full;

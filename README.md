@@ -68,9 +68,48 @@ add wave -position insertpoint sim:/tb/dut/*
 run 1000ns
 ```
 
+Batch, default params, with logs:
+
+```tcl
+vlib work
+vmap work work
+
+vlog -sv +acc -l compile.log \
+    interrupt_controller.sv \
+    axi4_lite_fifo_async.v \
+    axi4_lite_fifo_async_full_coverage_tb.v
+
+vsim -c -onfinish stop \
+     -gDATA_WIDTH=8 \
+     -gFIFO_DEPTH=16 \
+     -l sim_cov.log \
+     work.axi4_lite_fifo_async_tb
+
+run -all
+```
+Batch, custom params (example DATA_WIDTH=8, FIFO_DEPTH=16), with logs:
+vlib work
+vmap work work
+
+vlog -sv +acc -l compile.log \
+    interrupt_controller.sv \
+    axi4_lite_fifo_async.v \
+    interface.sv \
+    axi4_uvm_pkg.sv \
+    testbench.sv
+
+vsim -c -onfinish stop \
+     -l sim.log \
+     work.tb
+
+run -all
+
+
 ### Batch run with persistent logs (QuestaSim)
 - `vsim -c -do questa_run_with_logs.do`
   - Produces `compile.log` (vlog messages) and `sim.log` (full transcript with UVM INFO/WARN/ERROR/FATAL and final summary).
+- To explore other configurations without recompiling UVM code, override parameters on vsim:
+  - Example: `vsim -c -gDATA_WIDTH=8 -gFIFO_DEPTH=16 -l sim.log work.tb -do "run -all; quit -f"`
 This will:
 
 - Compile the DUT and testbench  

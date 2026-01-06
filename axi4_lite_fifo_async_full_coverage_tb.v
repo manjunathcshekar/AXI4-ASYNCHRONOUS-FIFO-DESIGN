@@ -1,11 +1,10 @@
 `timescale 1ns / 1ps
 
-module axi4_lite_fifo_async_tb;
-
-    // Parameters
-    localparam ADDR_WIDTH = 4;
-    localparam DATA_WIDTH = 32;
-    localparam FIFO_DEPTH = 8;
+module axi4_lite_fifo_async_tb #(
+    parameter int ADDR_WIDTH = 4,
+    parameter int DATA_WIDTH = 32,
+    parameter int FIFO_DEPTH = 8
+);
 
     // Clocks & reset
     reg wr_clk;

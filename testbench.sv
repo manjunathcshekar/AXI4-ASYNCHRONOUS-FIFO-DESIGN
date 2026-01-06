@@ -1,7 +1,11 @@
 import uvm_pkg::*;
 import axi4_uvm_pkg::*;
 
-module tb ();
+module tb #(
+    parameter int ADDR_WIDTH = 4,
+    parameter int DATA_WIDTH = 32,
+    parameter int FIFO_DEPTH = 8
+)();
     timeunit 1ns; timeprecision 1ps;
 
     logic clk_axi;
@@ -24,7 +28,7 @@ module tb ();
         axi_resetn = 1;
     end
 
-    intf vif ();
+    intf #(.DATA_WIDTH(DATA_WIDTH), .FIFO_DEPTH(FIFO_DEPTH)) vif ();
 
     // connect clocks/reset into the interface
     assign vif.clk_axi    = clk_axi;
@@ -35,9 +39,9 @@ module tb ();
 
     // DUT
     axi_lite_async_fifo #(
-        .ADDR_WIDTH(4),
-        .DATA_WIDTH(32),
-        .FIFO_DEPTH(8)
+        .ADDR_WIDTH(ADDR_WIDTH),
+        .DATA_WIDTH(DATA_WIDTH),
+        .FIFO_DEPTH(FIFO_DEPTH)
     ) dut (
         .clk_axi        (clk_axi),
         .clk_periph     (clk_periph),
