@@ -30,6 +30,8 @@ module tb ();
     assign vif.clk_axi    = clk_axi;
     assign vif.clk_periph = clk_periph;
     assign vif.axi_resetn = axi_resetn;
+    assign vif.irq_clear_full  = 1'b0;
+    assign vif.irq_clear_empty = 1'b0;
 
     // DUT
     axi_lite_async_fifo #(
@@ -61,7 +63,11 @@ module tb ();
         .periph_rdata_o (vif.rd_data),
         .periph_rvalid_o(vif.rd_valid),
         .periph_empty_o (vif.rd_empty),
-        .periph_full_o  (vif.rd_full)
+        .periph_full_o  (vif.rd_full),
+        .irq_clear_full_i  (vif.irq_clear_full),
+        .irq_clear_empty_i (vif.irq_clear_empty),
+        .irq_full_o        (vif.irq_full),
+        .irq_empty_o       (vif.irq_empty)
     );
 
     initial begin

@@ -45,6 +45,11 @@ module axi4_lite_fifo_async_tb;
     wire                  rd_valid;
     wire                  rd_empty;
     wire                  rd_full;
+    // Interrupts
+    reg                   irq_clear_full;
+    reg                   irq_clear_empty;
+    wire                  irq_full;
+    wire                  irq_empty;
 
     // ----------------------------------------------------------------
     // DUT instantiation
@@ -92,7 +97,13 @@ module axi4_lite_fifo_async_tb;
         .periph_rdata_o (rd_data),
         .periph_rvalid_o(rd_valid),
         .periph_empty_o (rd_empty),
-        .periph_full_o  (rd_full)
+        .periph_full_o  (rd_full),
+
+        // Interrupts
+        .irq_clear_full_i  (irq_clear_full),
+        .irq_clear_empty_i (irq_clear_empty),
+        .irq_full_o        (irq_full),
+        .irq_empty_o       (irq_empty)
     );
 
     // ----------------------------------------------------------------
@@ -278,6 +289,8 @@ module axi4_lite_fifo_async_tb;
         S_AXI_ARVALID = 0;
         S_AXI_RREADY  = 0;
         rd_en         = 0;
+        irq_clear_full  = 1'b0;
+        irq_clear_empty = 1'b0;
 
         // Wait for reset deassert
         wait (S_AXI_ARESETN == 1);

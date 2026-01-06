@@ -38,6 +38,11 @@ interface intf ();
     logic        rd_valid;
     logic        rd_empty;
     logic        rd_full;
+    // Interrupt signals (passive observation + optional clears)
+    logic        irq_full;
+    logic        irq_empty;
+    logic        irq_clear_full;
+    logic        irq_clear_empty;
 
     // Driver modport: drives requests, receives handshakes
     modport drv_mp (
@@ -45,9 +50,11 @@ interface intf ();
         input  awready, wready, bresp, bvalid,
         input  arready, rdata, rresp, rvalid,
         input  rd_valid, rd_data, rd_empty, rd_full,
+        input  irq_full, irq_empty,
         output awaddr, awvalid, wdata, wstrb, wvalid, bready,
         output araddr, arvalid, rready,
-        output rd_en
+        output rd_en,
+        output irq_clear_full, irq_clear_empty
     );
 
     // Monitor modport: observe everything
@@ -58,6 +65,7 @@ interface intf ();
         input bresp, bvalid, bready,
         input araddr, arvalid, arready,
         input rdata, rresp, rvalid, rready,
-        input rd_en, rd_data, rd_valid, rd_empty, rd_full
+        input rd_en, rd_data, rd_valid, rd_empty, rd_full,
+        input irq_full, irq_empty, irq_clear_full, irq_clear_empty
     );
 endinterface : intf

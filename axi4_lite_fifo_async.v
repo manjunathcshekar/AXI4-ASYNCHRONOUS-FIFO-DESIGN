@@ -68,7 +68,13 @@ module axi_lite_async_fifo #(
     output reg [DATA_WIDTH-1:0] periph_rdata_o,
     output reg                  periph_rvalid_o,
     output                      periph_empty_o,
-    output                      periph_full_o
+    output                      periph_full_o,
+
+    // Interrupt outputs (optional/passive)
+    input                       irq_clear_full_i,
+    input                       irq_clear_empty_i,
+    output                      irq_full_o,
+    output                      irq_empty_o
 );
 
     // -------------------------------------------------------------------------
@@ -146,10 +152,26 @@ module axi_lite_async_fifo #(
 
     // fifo_empty asserted in periph domain when read == write (synced)
     wire fifo_empty_periph_w = (fifo_rd_ptr_bin_r == fifo_wr_bin_sync_periph);
+    // fifo_empty as seen in AXI domain (used for interrupt generation)
+    wire fifo_empty_axi_w = (fifo_wr_ptr_bin_r == fifo_rd_bin_sync_axi);
 
     // expose status outputs
     assign periph_full_o  = fifo_full_axi_w;     // note: sampled in AXI domain semantics
     assign periph_empty_o = fifo_empty_periph_w; // periph domain logic uses this wire locally
+
+    // -------------------------------------------------------------------------
+    // Interrupt controller (clk_axi domain)
+    // -------------------------------------------------------------------------
+    fifo_interrupt_controller u_fifo_interrupt_controller (
+        .clk             (clk_axi),
+        .rst_n           (axi_resetn_i),
+        .fifo_full       (fifo_full_axi_w),
+        .fifo_empty      (fifo_empty_axi_w),
+        .irq_clear_full  (irq_clear_full_i),
+        .irq_clear_empty (irq_clear_empty_i),
+        .irq_full        (irq_full_o),
+        .irq_empty       (irq_empty_o)
+    );
 
     // -------------------------------------------------------------------------
     // Pointer synchronizers (cross-domain)

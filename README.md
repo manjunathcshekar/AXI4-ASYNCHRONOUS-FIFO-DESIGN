@@ -62,11 +62,15 @@ Use the following commands inside the **QuestaSim Transcript window**:
 ```tcl
 vlib work
 vmap work work
-vlog -sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
+vlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
 vsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf
 add wave -position insertpoint sim:/tb/dut/*
 run 1000ns
 ```
+
+### Batch run with persistent logs (QuestaSim)
+- `vsim -c -do questa_run_with_logs.do`
+  - Produces `compile.log` (vlog messages) and `sim.log` (full transcript with UVM INFO/WARN/ERROR/FATAL and final summary).
 This will:
 
 - Compile the DUT and testbench  

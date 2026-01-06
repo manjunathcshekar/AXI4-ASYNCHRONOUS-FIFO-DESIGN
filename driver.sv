@@ -65,6 +65,8 @@ class drv extends uvm_driver #(transaction);
         vif.arvalid <= 1'b0;
         vif.rready  <= 1'b0;
         vif.rd_en   <= 1'b0;
+        vif.irq_clear_full  <= 1'b0;
+        vif.irq_clear_empty <= 1'b0;
     endtask
 
     task drive_write(bit [3:0] addr, bit [31:0] data);
