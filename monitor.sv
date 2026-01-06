@@ -26,24 +26,25 @@ class mon extends uvm_monitor;
 
         super.run_phase(phase);
         `uvm_info("Monitor", "Run phase monitor", UVM_HIGH)
-        tr = transaction::type_id::create("item");
 
         forever begin
             sample ();
-            `uvm_info("Monitor", "Sampled a sequence", UVM_NONE)
-
-            // ? change the analysis port name here as well
-            monitor_port.write(tr);
         end
 
     endtask
 
     task sample ();
+        // Wait for a valid read handshake: rd_en and rd_valid both asserted
+        // This ensures we capture each read operation exactly once
         @(posedge vif.clk_periph);
-        if (vif.rd_valid) begin
+        if (vif.rd_en && vif.rd_valid) begin
             tr = transaction::type_id::create("mon_tr", this);
             tr.kind = PERIPH_READ;
+            tr.addr = 4'h0;  // Peripheral reads don't have explicit address, use default
+            tr.data = 32'h0; // Original write data not available, use default
             tr.observed_data = vif.rd_data;
+            
+            `uvm_info("Monitor", $sformatf("Sampled a peripheral read transaction: observed_data=0x%0h", tr.observed_data), UVM_NONE)
             monitor_port.write(tr);
         end
     endtask
