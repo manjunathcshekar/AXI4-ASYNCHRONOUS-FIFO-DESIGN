@@ -60,10 +60,11 @@ Waveforms were recorded and analyzed for timing and functional validation.
 Use the following commands inside the **QuestaSim Transcript window**:
 
 ```tcl
-vlog axi4_lite_fifo_async.v
-vlog axi4_lite_fifo_async_full_coverage_tb.v
-vsim -gui work.axi4_lite_fifo_async_full_coverage_tb -voptargs=+acc -wlf fifo_waveform.wlf
-add wave -position insertpoint sim:/axi4_lite_fifo_async_full_coverage_tb/dut/*
+vlib work
+vmap work work
+vlog -sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
+vsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf
+add wave -position insertpoint sim:/tb/dut/*
 run 1000ns
 ```
 This will:
