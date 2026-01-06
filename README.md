@@ -88,6 +88,7 @@ vsim -c -onfinish stop \
 run -all
 ```
 Batch, custom params (example DATA_WIDTH=8, FIFO_DEPTH=16), with logs:
+```tcl
 vlib work
 vmap work work
 
@@ -103,7 +104,7 @@ vsim -c -onfinish stop \
      work.tb
 
 run -all
-
+```
 
 ### Batch run with persistent logs (QuestaSim)
 - `vsim -c -do questa_run_with_logs.do`
