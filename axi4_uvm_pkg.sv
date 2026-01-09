@@ -12,7 +12,19 @@ package axi4_uvm_pkg;
     `include "agent.sv"
     `include "scoreboard.sv"
     `include "env.sv"
+    
+    // Sequences
+    `include "basic_rw_seq.sv"
+    `include "fifo_full_seq.sv"
+    `include "fifo_empty_seq.sv"
+    `include "reset_seq.sv"
+    
+    // Tests
     `include "rand_test.sv"
+    `include "basic_rw_test.sv"
+    `include "fifo_full_test.sv"
+    `include "fifo_empty_test.sv"
+    `include "reset_test.sv"
 
 endpackage : axi4_uvm_pkg
 

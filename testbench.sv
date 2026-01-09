@@ -73,7 +73,7 @@ module tb ();
     initial begin
         uvm_config_db#(virtual intf.drv_mp)::set(null, "*", "vif", vif);
         uvm_config_db#(virtual intf.mon_mp)::set(null, "*", "vif", vif);
-        run_test("rand_test");
+        run_test();
     end
 
     initial begin
