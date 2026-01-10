@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UVM Test Log - FIFO Empty Test</title>
+    <style>
+        body {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #252526;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #4ec9b0;
+            border-bottom: 2px solid #4ec9b0;
+            padding-bottom: 10px;
+        }
+        .test-header {
+            background-color: #2d2d30;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-pass {
+            background-color: #4caf50;
+            color: white;
+        }
+        .status-fail {
+            background-color: #f44336;
+            color: white;
+        }
+        .status-hang {
+            background-color: #ff9800;
+            color: white;
+        }
+        .status-unknown {
+            background-color: #9e9e9e;
+            color: white;
+        }
+        .log-content {
+            background-color: #1e1e1e;
+            border: 1px solid #3e3e42;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-x: auto;
+            max-height: 800px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+        .log-line {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 2px 0;
+        }
+        .uvm-info {
+            color: #4ec9b0;
+        }
+        .uvm-warning {
+            color: #dcdcaa;
+        }
+        .uvm-error {
+            color: #f48771;
+            font-weight: bold;
+        }
+        .uvm-fatal {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .driver {
+            color: #569cd6;
+        }
+        .transaction {
+            color: #ce9178;
+        }
+        .test-done {
+            color: #4ec9b0;
+            font-weight: bold;
+        }
+        .uvm-summary-header {
+            color: #4ec9b0;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .success {
+            color: #4caf50;
+            font-weight: bold;
+        }
+        .error-line {
+            color: #f48771;
+        }
+        .warning-line {
+            color: #dcdcaa;
+        }
+        .comment {
+            color: #6a9955;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #4ec9b0;
+            text-decoration: none;
+            padding: 8px 15px;
+            border: 1px solid #4ec9b0;
+            border-radius: 5px;
+        }
+        .back-link:hover {
+            background-color: #4ec9b0;
+            color: #1e1e1e;
+        }
+        .metadata {
+            color: #858585;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Test Summary</a>
+        <h1>UVM Test Log: FIFO Empty Test</h1>
+        <div class="test-header">
+            <strong>Status:</strong> <span class="status-badge status-hang">HANG</span>
+            <span style="margin-left: 20px;"><strong>Errors:</strong> 0</span>
+            <span style="margin-left: 20px;"><strong>Warnings:</strong> 0</span>
+            <div class="metadata">
+                Generated: 2026-01-10 08:49:54
+            </div>
+        </div>
+        <div class="log-content">
+            <div class="log-line">vlib work</div>
+            <div class="log-line"><span class="warning-line"># ** Warning: (vlib-34) Library already exists at &quot;work&quot;.</span></div>
+            <div class="log-line">vmap work work</div>
+            <div class="log-line"><span class="comment"># QuestaSim-64 vmap 10.7c Lib Mapping Utility 2018.08 Aug 18 2018</span></div>
+            <div class="log-line"><span class="comment"># vmap work work</span></div>
+            <div class="log-line"><span class="comment"># Modifying modelsim.ini</span></div>
+            <div class="log-line">vlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv</div>
+            <div class="log-line"><span class="comment"># QuestaSim-64 vlog 10.7c Compiler 2018.08 Aug 18 2018</span></div>
+            <div class="log-line"><span class="comment"># Start time: 21:53:38 on Jan 09,2026</span></div>
+            <div class="log-line"><span class="comment"># vlog -reportprogress 300 -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv</span></div>
+            <div class="log-line"><span class="comment"># -- Compiling module fifo_interrupt_controller</span></div>
+            <div class="log-line"><span class="comment"># -- Compiling module axi_lite_async_fifo</span></div>
+            <div class="log-line"><span class="comment"># -- Compiling interface intf</span></div>
+            <div class="log-line"><span class="comment"># -- Compiling package axi4_uvm_pkg</span></div>
+            <div class="log-line"><span class="comment"># -- Importing package mtiUvm.uvm_pkg (uvm-1.1d Built-in)</span></div>
+            <div class="log-line"><span class="comment"># ** Note: (vlog-2286) axi4_uvm_pkg.sv(4): Using implicit +incdir+C:/questasim64_10.7c/uvm-1.1d/../verilog_src/uvm-1.1d/src from import uvm_pkg</span></div>
+            <div class="log-line"><span class="comment"># -- Compiling package testbench_sv_unit</span></div>
+            <div class="log-line"><span class="comment"># -- Importing package mtiUvm.uvm_pkg (uvm-1.1d Built-in)</span></div>
+            <div class="log-line"><span class="comment"># -- Importing package axi4_uvm_pkg</span></div>
+            <div class="log-line"><span class="comment"># -- Compiling module tb</span></div>
+            <div class="log-line"><span class="comment">#</span></div>
+            <div class="log-line"><span class="comment"># Top level modules:</span></div>
+            <div class="log-line"><span class="comment"># 	tb</span></div>
+            <div class="log-line"><span class="comment"># End time: 21:53:39 on Jan 09,2026, Elapsed time: 0:00:01</span></div>
+            <div class="log-line"><span class="success"># Errors: 0, Warnings: 0</span></div>
+            <div class="log-line">vsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=fifo_empty_test</div>
+            <div class="log-line"><span class="comment"># vsim -gui work.tb -voptargs=&quot;+acc&quot; -wlf fifo_waveform.wlf &quot;+UVM_TESTNAME=fifo_empty_test&quot;</span></div>
+            <div class="log-line"><span class="comment"># Start time: 21:53:39 on Jan 09,2026</span></div>
+            <div class="log-line"><span class="comment"># ** Note: (vsim-8009) Loading existing optimized design _opt</span></div>
+            <div class="log-line"><span class="comment"># Loading sv_std.std</span></div>
+            <div class="log-line"><span class="comment"># Loading work.intf(fast)</span></div>
+            <div class="log-line"><span class="comment"># Loading mtiUvm.uvm_pkg</span></div>
+            <div class="log-line"><span class="comment"># Loading work.axi4_uvm_pkg(fast)</span></div>
+            <div class="log-line"><span class="comment"># Loading work.testbench_sv_unit(fast)</span></div>
+            <div class="log-line"><span class="comment"># Loading work.tb(fast)</span></div>
+            <div class="log-line"><span class="comment"># Loading work.intf(fast)</span></div>
+            <div class="log-line"><span class="comment"># Loading work.axi_lite_async_fifo(fast)</span></div>
+            <div class="log-line"><span class="comment"># Loading work.fifo_interrupt_controller(fast)</span></div>
+            <div class="log-line"><span class="comment"># Loading mtiUvm.questa_uvm_pkg(fast)</span></div>
+            <div class="log-line"><span class="comment"># Loading C:/questasim64_10.7c/uvm-1.1d\win64\uvm_dpi.dll</span></div>
+            <div class="log-line">add wave -position insertpoint sim:/tb/dut/*</div>
+            <div class="log-line">run -all</div>
+            <div class="log-line"><span class="comment"># ----------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="comment"># UVM-1.1d</span></div>
+            <div class="log-line"><span class="comment"># (C) 2007-2013 Mentor Graphics Corporation</span></div>
+            <div class="log-line"><span class="comment"># (C) 2007-2013 Cadence Design Systems, Inc.</span></div>
+            <div class="log-line"><span class="comment"># (C) 2006-2013 Synopsys, Inc.</span></div>
+            <div class="log-line"><span class="comment"># (C) 2011-2013 Cypress Semiconductor Corp.</span></div>
+            <div class="log-line"><span class="comment"># ----------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="comment">#</span></div>
+            <div class="log-line"><span class="comment">#   ***********       IMPORTANT RELEASE NOTES         ************</span></div>
+            <div class="log-line"><span class="comment">#</span></div>
+            <div class="log-line"><span class="comment">#   You are using a version of the UVM library that has been compiled</span></div>
+            <div class="log-line"><span class="comment">#   with `UVM_NO_DEPRECATED undefined.</span></div>
+            <div class="log-line"><span class="comment">#   See http://www.eda.org/svdb/view.php?id=3313 for more details.</span></div>
+            <div class="log-line"><span class="comment">#</span></div>
+            <div class="log-line"><span class="comment">#   You are using a version of the UVM library that has been compiled</span></div>
+            <div class="log-line"><span class="comment">#   with `UVM_OBJECT_MUST_HAVE_CONSTRUCTOR undefined.</span></div>
+            <div class="log-line"><span class="comment">#   See http://www.eda.org/svdb/view.php?id=3770 for more details.</span></div>
+            <div class="log-line"><span class="comment">#</span></div>
+            <div class="log-line"><span class="comment">#       (Specify +UVM_NO_RELNOTES to turn off this notice)</span></div>
+            <div class="log-line"><span class="comment">#</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(215) @ 0: reporter [Questa UVM] QUESTA_UVM-1.2.3</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(216) @ 0: reporter [Questa UVM]  questa_uvm::init(+struct)</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO @ 0: reporter [RNTST] Running test fifo_empty_test...</span></div>
+            <div class="log-line"></div>
+            <div class="log-line"></div>
+            <div class="log-line"></div>
+            <div class="log-line">----- Stuck After here ------</div>
+        </div>
+    </div>
+</body>
+</html>
