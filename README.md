@@ -67,6 +67,31 @@ vsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf
 add wave -position insertpoint sim:/tb/dut/*
 run 1000ns
 ```
+Commands for each test
+
+Test 1: Basic Read-Write Test
+```tcl
+vlib workvmap work workvlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.svvsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=basic_rw_testadd wave -position insertpoint sim:/tb/dut/*run -all
+```
+Test 2: FIFO Full Test
+```tcl
+vlib workvmap work workvlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.svvsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=fifo_full_testadd wave -position insertpoint sim:/tb/dut/*run -all
+```
+Test 3: FIFO Empty Test
+```tcl
+vlib workvmap work workvlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.svvsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=fifo_empty_testadd wave -position insertpoint sim:/tb/dut/*run -all
+```
+Test 4: Reset Test
+```tcl
+vlib workvmap work workvlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.svvsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=reset_testadd wave -position insertpoint sim:/tb/dut/*run -all
+```
+Test 5: Original Random Test
+```tcl
+vlib workvmap work workvlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.svvsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=rand_testadd wave -position insertpoint sim:/tb/dut/*run -all
+```
+
+
+
 
 ### Batch run with persistent logs (QuestaSim)
 - `vsim -c -do questa_run_with_logs.do`
