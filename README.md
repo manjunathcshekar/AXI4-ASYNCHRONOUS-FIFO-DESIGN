@@ -90,7 +90,34 @@ Test 5: Original Random Test
 vlib workvmap work workvlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.svvsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=rand_testadd wave -position insertpoint sim:/tb/dut/*run -all
 ```
 
+---
 
+## 📊 Generating HTML Test Reports
+
+After running the UVM tests, you can generate formatted HTML reports from the test logs.
+
+### Quick Reference: Complete Workflow
+
+**Compile once (if files changed)**
+```tcl
+vlib work
+vmap work work
+vlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
+```
+
+***Run all tests (save logs):**
+```tcl
+vsim -c -l uvm_test_logs/basic_rw_test.log work.tb +UVM_TESTNAME=basic_rw_test -do "run -all; quit -f"
+vsim -c -l uvm_test_logs/fifo_full_test.log work.tb +UVM_TESTNAME=fifo_full_test -do "run -all; quit -f"
+vsim -c -l uvm_test_logs/fifo_empty_test.log work.tb +UVM_TESTNAME=fifo_empty_test -do "run -all; quit -f"
+vsim -c -l uvm_test_logs/reset_test.log work.tb +UVM_TESTNAME=reset_test -do "run -all; quit -f"
+vsim -c -l uvm_test_logs/rand_test.log work.tb +UVM_TESTNAME=rand_test -do "run -all; quit -f"
+```
+
+***3. Generate Reports:**
+```tcl
+python generate_html_report.py
+```
 
 
 ### Batch run with persistent logs (QuestaSim)
