@@ -62,7 +62,7 @@ Use the following commands inside the **QuestaSim Transcript window**:
 ```tcl
 vlib work
 vmap work work
-vlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
+vlog -sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
 vsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf
 add wave -position insertpoint sim:/tb/dut/*
 run 1000ns
@@ -73,7 +73,7 @@ Test 1: Basic Read-Write Test
 ```tcl
 vlib work
 vmap work work
-vlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
+vlog -sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
 vsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=basic_rw_test
 add wave -position insertpoint sim:/tb/dut/*
 run -all
@@ -82,7 +82,7 @@ Test 2: FIFO Full Test
 ```tcl
 vlib work
 vmap work work
-vlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
+vlog -sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
 vsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=fifo_full_test
 add wave -position insertpoint sim:/tb/dut/*
 run -all
@@ -91,16 +91,17 @@ Test 3: FIFO Empty Test
 ```tcl
 vlib work
 vmap work work
-vlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
+vlog -sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
 vsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=fifo_empty_test
 add wave -position insertpoint sim:/tb/dut/*
 run -all
 ```
+Note: `fifo_empty_test` is a **status/negative** test — it attempts a read while the FIFO is empty and expects the read to be **blocked** (no deadlock).
 Test 4: Reset Test
 ```tcl
 vlib work
 vmap work work
-vlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
+vlog -sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
 vsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=reset_test
 add wave -position insertpoint sim:/tb/dut/*
 run -all
@@ -109,7 +110,7 @@ Test 5: Original Random Test
 ```tcl
 vlib work
 vmap work work
-vlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
+vlog -sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
 vsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=rand_test
 add wave -position insertpoint sim:/tb/dut/*
 run -all
@@ -127,7 +128,7 @@ After running the UVM tests, you can generate formatted HTML reports from the te
 ```tcl
 vlib work
 vmap work work
-vlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
+vlog -sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
 ```
 
 ***Run all tests (save logs):**

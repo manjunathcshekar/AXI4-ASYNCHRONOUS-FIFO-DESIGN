@@ -160,18 +160,11 @@ module axi_lite_async_fifo #(
     assign periph_empty_o = fifo_empty_periph_w; // periph domain logic uses this wire locally
 
     // -------------------------------------------------------------------------
-    // Interrupt controller (clk_axi domain)
+    // Interrupt outputs removed (status signals are not interrupts).
+    // Keep ports for compatibility; tie off outputs.
     // -------------------------------------------------------------------------
-    fifo_interrupt_controller u_fifo_interrupt_controller (
-        .clk             (clk_axi),
-        .rst_n           (axi_resetn_i),
-        .fifo_full       (fifo_full_axi_w),
-        .fifo_empty      (fifo_empty_axi_w),
-        .irq_clear_full  (irq_clear_full_i),
-        .irq_clear_empty (irq_clear_empty_i),
-        .irq_full        (irq_full_o),
-        .irq_empty       (irq_empty_o)
-    );
+    assign irq_full_o  = 1'b0;
+    assign irq_empty_o = 1'b0;
 
     // -------------------------------------------------------------------------
     // Pointer synchronizers (cross-domain)

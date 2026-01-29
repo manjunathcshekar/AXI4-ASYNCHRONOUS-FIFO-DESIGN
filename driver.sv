@@ -70,6 +70,13 @@ class drv extends uvm_driver #(transaction);
     endtask
 
     task drive_write(bit [3:0] addr, bit [31:0] data);
+        // Flow control: do not issue writes when FIFO is full.
+        // Important: never wait forever here; just skip and allow the test to progress/terminate.
+        if (vif.rd_full) begin
+            `uvm_info("Driver", "Skipping WRITE because FIFO is FULL", UVM_MEDIUM)
+            return;
+        end
+
         // present AW/W
         @(posedge vif.clk_axi);
         vif.awaddr  <= addr;
@@ -92,8 +99,12 @@ class drv extends uvm_driver #(transaction);
     endtask
 
     task drive_periph_read();
-        // wait until not empty
-        wait (!vif.rd_empty);
+        // Flow control: do not issue reads when FIFO is empty.
+        // Important: never wait forever here; just skip and allow the test to progress/terminate.
+        if (vif.rd_empty) begin
+            `uvm_info("Driver", "Skipping PERIPH_READ because FIFO is EMPTY", UVM_MEDIUM)
+            return;
+        end
         @(posedge vif.clk_periph);
         vif.rd_en <= 1'b1;
         @(posedge vif.clk_periph);

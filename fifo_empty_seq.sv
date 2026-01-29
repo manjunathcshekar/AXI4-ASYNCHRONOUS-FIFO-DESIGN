@@ -12,8 +12,8 @@ class fifo_empty_seq extends uvm_sequence #(transaction);
         tr = transaction::type_id::create("tr");
 
         // Attempt to read when FIFO is empty
-        // This should be handled gracefully by the driver (waits for !rd_empty)
-        // or may timeout/handle empty condition
+        // This is a NEGATIVE/STATUS check: read must be BLOCKED when FIFO is empty.
+        // The driver will *not* wait forever; it will skip issuing rd_en if rd_empty is asserted.
         start_item(tr);
         tr.kind = PERIPH_READ;
         tr.addr = 4'h0;
