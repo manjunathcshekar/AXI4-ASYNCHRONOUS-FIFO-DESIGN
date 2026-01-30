@@ -1,11 +1,12 @@
 # Run all UVM tests and write .log files to uvm_test_logs/
 # No manual copying or renaming required; Python HTML generator reads these directly.
+# Run from project root (AXI4-ASYNCHRONOUS-FIFO-DESIGN)
 
 vlib work
 vmap work work
 
 # Compile once
-vlog -sv +acc axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
+vlog -sv +acc +incdir+uvm rtl/axi4_lite_fifo_async.v uvm/interface.sv uvm/axi4_uvm_pkg.sv tb/testbench.sv
 
 # Ensure log directory exists (Tcl)
 if {![file isdirectory uvm_test_logs]} {
@@ -30,5 +31,5 @@ vsim -l uvm_test_logs/rand_test.log work.tb +UVM_TESTNAME=rand_test
 run -all
 
 echo "All UVM tests finished. Logs in uvm_test_logs/*.log"
-echo "Run: python generate_html_report.py"
+echo "Run: python scripts/generate_html_report.py  OR  scripts\\generate_report.bat"
 quit -f
