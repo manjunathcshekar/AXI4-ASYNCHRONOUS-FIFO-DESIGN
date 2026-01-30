@@ -137,43 +137,31 @@
         <a href="index.html" class="back-link">← Back to Test Summary</a>
         <h1>UVM Test Log: FIFO Empty Test</h1>
         <div class="test-header">
-            <strong>Status:</strong> <span class="status-badge status-hang">HANG</span>
+            <strong>Status:</strong> <span class="status-badge status-pass">PASS</span>
             <span style="margin-left: 20px;"><strong>Errors:</strong> 0</span>
             <span style="margin-left: 20px;"><strong>Warnings:</strong> 0</span>
             <div class="metadata">
-                Generated: 2026-01-29 13:31:55
+                Generated: 2026-01-30 23:36:22
             </div>
         </div>
         <div class="log-content">
-            <div class="log-line">vlib work</div>
-            <div class="log-line"><span class="warning-line"># ** Warning: (vlib-34) Library already exists at &quot;work&quot;.</span></div>
-            <div class="log-line">vmap work work</div>
-            <div class="log-line"><span class="comment"># QuestaSim-64 vmap 10.7c Lib Mapping Utility 2018.08 Aug 18 2018</span></div>
-            <div class="log-line"><span class="comment"># vmap work work</span></div>
-            <div class="log-line"><span class="comment"># Modifying modelsim.ini</span></div>
-            <div class="log-line">vlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv</div>
-            <div class="log-line"><span class="comment"># QuestaSim-64 vlog 10.7c Compiler 2018.08 Aug 18 2018</span></div>
-            <div class="log-line"><span class="comment"># Start time: 21:53:38 on Jan 09,2026</span></div>
-            <div class="log-line"><span class="comment"># vlog -reportprogress 300 -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv</span></div>
-            <div class="log-line"><span class="comment"># -- Compiling module fifo_interrupt_controller</span></div>
-            <div class="log-line"><span class="comment"># -- Compiling module axi_lite_async_fifo</span></div>
-            <div class="log-line"><span class="comment"># -- Compiling interface intf</span></div>
-            <div class="log-line"><span class="comment"># -- Compiling package axi4_uvm_pkg</span></div>
-            <div class="log-line"><span class="comment"># -- Importing package mtiUvm.uvm_pkg (uvm-1.1d Built-in)</span></div>
-            <div class="log-line"><span class="comment"># ** Note: (vlog-2286) axi4_uvm_pkg.sv(4): Using implicit +incdir+C:/questasim64_10.7c/uvm-1.1d/../verilog_src/uvm-1.1d/src from import uvm_pkg</span></div>
-            <div class="log-line"><span class="comment"># -- Compiling package testbench_sv_unit</span></div>
-            <div class="log-line"><span class="comment"># -- Importing package mtiUvm.uvm_pkg (uvm-1.1d Built-in)</span></div>
-            <div class="log-line"><span class="comment"># -- Importing package axi4_uvm_pkg</span></div>
-            <div class="log-line"><span class="comment"># -- Compiling module tb</span></div>
-            <div class="log-line"><span class="comment">#</span></div>
-            <div class="log-line"><span class="comment"># Top level modules:</span></div>
-            <div class="log-line"><span class="comment"># 	tb</span></div>
-            <div class="log-line"><span class="comment"># End time: 21:53:39 on Jan 09,2026, Elapsed time: 0:00:01</span></div>
-            <div class="log-line"><span class="success"># Errors: 0, Warnings: 0</span></div>
-            <div class="log-line">vsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=fifo_empty_test</div>
-            <div class="log-line"><span class="comment"># vsim -gui work.tb -voptargs=&quot;+acc&quot; -wlf fifo_waveform.wlf &quot;+UVM_TESTNAME=fifo_empty_test&quot;</span></div>
-            <div class="log-line"><span class="comment"># Start time: 21:53:39 on Jan 09,2026</span></div>
-            <div class="log-line"><span class="comment"># ** Note: (vsim-8009) Loading existing optimized design _opt</span></div>
+            <div class="log-line"><span class="comment"># vsim -c -l uvm_test_logs/fifo_empty_test.log work.tb &quot;+UVM_TESTNAME=fifo_empty_test&quot; -do &quot;run -all; quit -f&quot;</span></div>
+            <div class="log-line"><span class="comment"># Start time: 23:36:10 on Jan 30,2026</span></div>
+            <div class="log-line"><span class="comment"># ** Note: (vsim-8009) Loading existing optimized design _opt1</span></div>
+            <div class="log-line"><span class="comment"># //  Questa Sim-64</span></div>
+            <div class="log-line"><span class="comment"># //  Version 10.7c win64 Aug 18 2018</span></div>
+            <div class="log-line"><span class="comment"># //</span></div>
+            <div class="log-line"><span class="comment"># //  Copyright 1991-2018 Mentor Graphics Corporation</span></div>
+            <div class="log-line"><span class="comment"># //  All Rights Reserved.</span></div>
+            <div class="log-line"><span class="comment"># //</span></div>
+            <div class="log-line"><span class="comment"># //  QuestaSim and its associated documentation contain trade</span></div>
+            <div class="log-line"><span class="comment"># //  secrets and commercial or financial information that are the property of</span></div>
+            <div class="log-line"><span class="comment"># //  Mentor Graphics Corporation and are privileged, confidential,</span></div>
+            <div class="log-line"><span class="comment"># //  and exempt from disclosure under the Freedom of Information Act,</span></div>
+            <div class="log-line"><span class="comment"># //  5 U.S.C. Section 552. Furthermore, this information</span></div>
+            <div class="log-line"><span class="comment"># //  is prohibited from disclosure under the Trade Secrets Act,</span></div>
+            <div class="log-line"><span class="comment"># //  18 U.S.C. Section 1905.</span></div>
+            <div class="log-line"><span class="comment"># //</span></div>
             <div class="log-line"><span class="comment"># Loading sv_std.std</span></div>
             <div class="log-line"><span class="comment"># Loading work.intf(fast)</span></div>
             <div class="log-line"><span class="comment"># Loading mtiUvm.uvm_pkg</span></div>
@@ -182,11 +170,9 @@
             <div class="log-line"><span class="comment"># Loading work.tb(fast)</span></div>
             <div class="log-line"><span class="comment"># Loading work.intf(fast)</span></div>
             <div class="log-line"><span class="comment"># Loading work.axi_lite_async_fifo(fast)</span></div>
-            <div class="log-line"><span class="comment"># Loading work.fifo_interrupt_controller(fast)</span></div>
             <div class="log-line"><span class="comment"># Loading mtiUvm.questa_uvm_pkg(fast)</span></div>
             <div class="log-line"><span class="comment"># Loading C:/questasim64_10.7c/uvm-1.1d\win64\uvm_dpi.dll</span></div>
-            <div class="log-line">add wave -position insertpoint sim:/tb/dut/*</div>
-            <div class="log-line">run -all</div>
+            <div class="log-line"><span class="comment"># run -all</span></div>
             <div class="log-line"><span class="comment"># ----------------------------------------------------------------</span></div>
             <div class="log-line"><span class="comment"># UVM-1.1d</span></div>
             <div class="log-line"><span class="comment"># (C) 2007-2013 Mentor Graphics Corporation</span></div>
@@ -210,10 +196,67 @@
             <div class="log-line"><span class="uvm-info"># UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(215) @ 0: reporter [Questa UVM] QUESTA_UVM-1.2.3</span></div>
             <div class="log-line"><span class="uvm-info"># UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(216) @ 0: reporter [Questa UVM]  questa_uvm::init(+struct)</span></div>
             <div class="log-line"><span class="uvm-info"># UVM_INFO @ 0: reporter [RNTST] Running test fifo_empty_test...</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO driver.sv(105) @ 50000: uvm_test_top.env.agent.driver [Driver] Skipping PERIPH_READ because FIFO is EMPTY</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO driver.sv(37) @ 50000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO seq_item.sv(49) @ 50000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=PERIPH_READ addr=0x0 data=0x0 observed=0x0</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="comment"># Name                           Type         Size  Value</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="comment"># tr                             transaction  -     @681</span></div>
+            <div class="log-line"><span class="comment">#   begin_time                   time         64    50000</span></div>
+            <div class="log-line"><span class="comment">#   depth                        int          32    &#x27;d2</span></div>
+            <div class="log-line"><span class="comment">#   parent sequence (name)       string       3     seq</span></div>
+            <div class="log-line"><span class="comment">#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq</span></div>
+            <div class="log-line"><span class="comment">#   sequencer                    string       32    uvm_test_top.env.agent.sequencer</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO driver.sv(37) @ 75000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO seq_item.sv(49) @ 75000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0xbeefcafe observed=0x0</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="comment"># Name                           Type         Size  Value</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="comment"># tr                             transaction  -     @681</span></div>
+            <div class="log-line"><span class="comment">#   begin_time                   time         64    50000</span></div>
+            <div class="log-line"><span class="comment">#   end_time                     time         64    50000</span></div>
+            <div class="log-line"><span class="comment">#   depth                        int          32    &#x27;d2</span></div>
+            <div class="log-line"><span class="comment">#   parent sequence (name)       string       3     seq</span></div>
+            <div class="log-line"><span class="comment">#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq</span></div>
+            <div class="log-line"><span class="comment">#   sequencer                    string       32    uvm_test_top.env.agent.sequencer</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO driver.sv(37) @ 203000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO seq_item.sv(49) @ 203000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=PERIPH_READ addr=0x0 data=0x0 observed=0x0</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="comment"># Name                           Type         Size  Value</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="comment"># tr                             transaction  -     @681</span></div>
+            <div class="log-line"><span class="comment">#   begin_time                   time         64    175000</span></div>
+            <div class="log-line"><span class="comment">#   end_time                     time         64    75000</span></div>
+            <div class="log-line"><span class="comment">#   depth                        int          32    &#x27;d2</span></div>
+            <div class="log-line"><span class="comment">#   parent sequence (name)       string       3     seq</span></div>
+            <div class="log-line"><span class="comment">#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq</span></div>
+            <div class="log-line"><span class="comment">#   sequencer                    string       32    uvm_test_top.env.agent.sequencer</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO fifo_empty_seq.sv(39) @ 203000: uvm_test_top.env.agent.sequencer@@seq [FIFO Empty Sequence] FIFO empty sequence completed</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO verilog_src/uvm-1.1d/src/base/uvm_objection.svh(1267) @ 703000: reporter [TEST_DONE] &#x27;run&#x27; phase is ready to proceed to the &#x27;extract&#x27; phase</span></div>
+            <div class="log-line"><span class="comment">#</span></div>
+            <div class="log-line"><span class="uvm-summary-header"># --- UVM Report Summary ---</span></div>
+            <div class="log-line"><span class="comment">#</span></div>
+            <div class="log-line"><span class="comment"># ** Report counts by severity</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO :   12</span></div>
+            <div class="log-line"><span class="uvm-warning"># UVM_WARNING :    0</span></div>
+            <div class="log-line"><span class="uvm-error"># UVM_ERROR :    0</span></div>
+            <div class="log-line"><span class="uvm-fatal"># UVM_FATAL :    0</span></div>
+            <div class="log-line"><span class="comment"># ** Report counts by id</span></div>
+            <div class="log-line"><span class="comment"># [Driver]     4</span></div>
+            <div class="log-line"><span class="comment"># [FIFO Empty Sequence]     1</span></div>
+            <div class="log-line"><span class="comment"># [Questa UVM]     2</span></div>
+            <div class="log-line"><span class="comment"># [RNTST]     1</span></div>
+            <div class="log-line"><span class="comment"># [TEST_DONE]     1</span></div>
+            <div class="log-line"><span class="comment"># [TRANSACTION]     3</span></div>
+            <div class="log-line"><span class="comment"># ** Note: $finish    : C:/questasim64_10.7c/win64/../verilog_src/uvm-1.1d/src/base/uvm_root.svh(430)</span></div>
+            <div class="log-line"><span class="comment">#    Time: 703 ns  Iteration: 54  Instance: /tb</span></div>
+            <div class="log-line"><span class="comment"># End time: 23:36:12 on Jan 30,2026, Elapsed time: 0:00:02</span></div>
+            <div class="log-line"><span class="success"># Errors: 0, Warnings: 0</span></div>
             <div class="log-line"></div>
-            <div class="log-line"></div>
-            <div class="log-line"></div>
-            <div class="log-line">----- Stuck After here ------</div>
         </div>
     </div>
 </body>

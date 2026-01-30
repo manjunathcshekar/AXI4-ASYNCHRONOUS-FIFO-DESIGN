@@ -264,38 +264,70 @@ def convert_log_to_html(log_file_path, output_html_path, test_name):
     
     return status, errors, warnings
 
+def _discover_log_files(log_dir):
+    """
+    Discover all .log and .txt files in log_dir and map them to test_id + display name.
+    Accepts both extensions; for a given test, .log is preferred over .txt (simulator output).
+    Returns list of (log_path, test_id, test_name).
+    """
+    # Stem (filename without extension) -> (test_id, display_name)
+    # Supports both simulator names (basic_rw_test.log, rand_test.log) and legacy .txt names
+    STEM_TO_TEST = {
+        'basic_rw_test': ('basic_rw_test', 'Basic Read-Write Test'),
+        'basic_read_write_test': ('basic_rw_test', 'Basic Read-Write Test'),
+        'fifo_full_test': ('fifo_full_test', 'FIFO Full Test'),
+        'fifo_empty_test': ('fifo_empty_test', 'FIFO Empty Test'),
+        'reset_test': ('reset_test', 'Reset Test'),
+        'rand_test': ('rand_test', 'Original Random Test'),
+        'original_random_test': ('rand_test', 'Original Random Test'),
+    }
+    ACCEPTED_EXTENSIONS = ('.log', '.txt')
+
+    found = {}  # test_id -> (log_path, test_name)
+    try:
+        names = os.listdir(log_dir)
+    except OSError:
+        return []
+
+    for name in names:
+        base, ext = os.path.splitext(name)
+        if ext.lower() not in ACCEPTED_EXTENSIONS:
+            continue
+        if base not in STEM_TO_TEST:
+            continue
+        test_id, test_name = STEM_TO_TEST[base]
+        path = os.path.join(log_dir, name)
+        if not os.path.isfile(path):
+            continue
+        # Prefer .log over .txt when both exist (simulator output)
+        if test_id not in found or ext.lower() == '.log':
+            found[test_id] = (path, test_name)
+
+    return [(path, tid, tname) for tid, (path, tname) in found.items()]
+
+
 def generate_master_report(log_dir='uvm_test_logs', output_dir='html_reports'):
-    """Generate master HTML report linking all test logs"""
+    """Generate master HTML report linking all test logs. Reads .log and .txt from log_dir."""
     
     # Create output directory
     os.makedirs(output_dir, exist_ok=True)
     
-    # Test mappings
-    test_mappings = {
-        'basic_read_write_test.txt': ('basic_rw_test', 'Basic Read-Write Test'),
-        'fifo_full_test.txt': ('fifo_full_test', 'FIFO Full Test'),
-        'fifo_empty_test.txt': ('fifo_empty_test', 'FIFO Empty Test'),
-        'reset_test.txt': ('reset_test', 'Reset Test'),
-        'original_random_test.txt': ('rand_test', 'Original Random Test')
-    }
-    
+    # Discover all .log and .txt files in uvm_test_logs (no manual copy/rename required)
+    log_entries = _discover_log_files(log_dir)
     test_results = []
     
-    # Convert each log file
-    for log_file, (test_id, test_name) in test_mappings.items():
-        log_path = os.path.join(log_dir, log_file)
-        if os.path.exists(log_path):
-            html_file = f'{test_id}.html'
-            html_path = os.path.join(output_dir, html_file)
-            status, errors, warnings = convert_log_to_html(log_path, html_path, test_name)
-            test_results.append({
-                'id': test_id,
-                'name': test_name,
-                'html_file': html_file,
-                'status': status,
-                'errors': errors,
-                'warnings': warnings
-            })
+    for log_path, test_id, test_name in log_entries:
+        html_file = f'{test_id}.html'
+        html_path = os.path.join(output_dir, html_file)
+        status, errors, warnings = convert_log_to_html(log_path, html_path, test_name)
+        test_results.append({
+            'id': test_id,
+            'name': test_name,
+            'html_file': html_file,
+            'status': status,
+            'errors': errors,
+            'warnings': warnings
+        })
     
     # Generate master index.html
     index_html = f"""<!DOCTYPE html>
@@ -515,7 +547,7 @@ def generate_master_report(log_dir='uvm_test_logs', output_dir='html_reports'):
             <ul>
                 <li>Coverage Report: <a href="cov_html/index.html" style="color: #667eea;">View Coverage Analysis</a></li>
                 <li>Waveform Images: Available in uvm_test_logs/ directory</li>
-                <li>Source Logs: Original .txt files in uvm_test_logs/ directory</li>
+                <li>Source Logs: Original .log / .txt files in uvm_test_logs/ directory</li>
             </ul>
         </div>
         
@@ -532,7 +564,9 @@ def generate_master_report(log_dir='uvm_test_logs', output_dir='html_reports'):
     with open(index_path, 'w', encoding='utf-8') as f:
         f.write(index_html)
     
-    print(f"✅ HTML reports generated successfully in '{output_dir}' directory")
+    if not test_results:
+        print(f"[WARN] No .log or .txt files found in '{log_dir}'. Run simulation to produce logs there.")
+    print(f"[OK] HTML reports generated successfully in '{output_dir}' directory")
     print(f"   - Master report: {index_path}")
     print(f"   - Individual test logs: {len(test_results)} HTML files")
     
@@ -544,5 +578,5 @@ if __name__ == '__main__':
     log_dir = sys.argv[1] if len(sys.argv) > 1 else 'uvm_test_logs'
     output_dir = sys.argv[2] if len(sys.argv) > 2 else 'html_reports'
     
-    print("🔧 Generating HTML reports from UVM logs...")
+    print("Generating HTML reports from UVM logs...")
     generate_master_report(log_dir, output_dir)
