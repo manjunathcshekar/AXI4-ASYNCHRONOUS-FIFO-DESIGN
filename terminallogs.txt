@@ -1,0 +1,94 @@
+# ----------------------------------------------------------------
+# UVM-1.1d
+# (C) 2007-2013 Mentor Graphics Corporation
+# (C) 2007-2013 Cadence Design Systems, Inc.
+# (C) 2006-2013 Synopsys, Inc.
+# (C) 2011-2013 Cypress Semiconductor Corp.
+# ----------------------------------------------------------------
+# 
+#   ***********       IMPORTANT RELEASE NOTES         ************
+# 
+#   You are using a version of the UVM library that has been compiled
+#   with `UVM_NO_DEPRECATED undefined.
+#   See http://www.eda.org/svdb/view.php?id=3313 for more details.
+# 
+#   You are using a version of the UVM library that has been compiled
+#   with `UVM_OBJECT_MUST_HAVE_CONSTRUCTOR undefined.
+#   See http://www.eda.org/svdb/view.php?id=3770 for more details.
+# 
+#       (Specify +UVM_NO_RELNOTES to turn off this notice)
+# 
+# UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(215) @ 0: reporter [Questa UVM] QUESTA_UVM-1.2.3
+# UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(216) @ 0: reporter [Questa UVM]  questa_uvm::init(+struct)
+# UVM_INFO @ 0: reporter [RNTST] Running test rand_test...
+# UVM_INFO driver.sv(37) @ 75000: uvm_test_top.env.agent.driver [Driver] Drove a transaction
+# UVM_INFO seq_item.sv(49) @ 75000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0xdeadbeef observed=0x0
+# --------------------------------------------------------------------------------------
+# Name                           Type         Size  Value                               
+# --------------------------------------------------------------------------------------
+# tr                             transaction  -     @681                                
+#   begin_time                   time         64    50000                               
+#   depth                        int          32    'd2                                 
+#   parent sequence (name)       string       3     seq                                 
+#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq
+#   sequencer                    string       32    uvm_test_top.env.agent.sequencer    
+# --------------------------------------------------------------------------------------
+# UVM_INFO driver.sv(37) @ 105000: uvm_test_top.env.agent.driver [Driver] Drove a transaction
+# UVM_INFO seq_item.sv(49) @ 105000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0xfeedcafe observed=0x0
+# --------------------------------------------------------------------------------------
+# Name                           Type         Size  Value                               
+# --------------------------------------------------------------------------------------
+# tr                             transaction  -     @681                                
+#   begin_time                   time         64    75000                               
+#   end_time                     time         64    75000                               
+#   depth                        int          32    'd2                                 
+#   parent sequence (name)       string       3     seq                                 
+#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq
+#   sequencer                    string       32    uvm_test_top.env.agent.sequencer    
+# --------------------------------------------------------------------------------------
+# UVM_INFO driver.sv(37) @ 133000: uvm_test_top.env.agent.driver [Driver] Drove a transaction
+# UVM_INFO seq_item.sv(49) @ 133000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=PERIPH_READ addr=0x0 data=0x0 observed=0x0
+# --------------------------------------------------------------------------------------
+# Name                           Type         Size  Value                               
+# --------------------------------------------------------------------------------------
+# tr                             transaction  -     @681                                
+#   begin_time                   time         64    105000                              
+#   end_time                     time         64    105000                              
+#   depth                        int          32    'd2                                 
+#   parent sequence (name)       string       3     seq                                 
+#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq
+#   sequencer                    string       32    uvm_test_top.env.agent.sequencer    
+# --------------------------------------------------------------------------------------
+# UVM_INFO driver.sv(37) @ 161000: uvm_test_top.env.agent.driver [Driver] Drove a transaction
+# UVM_INFO seq_item.sv(49) @ 161000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=PERIPH_READ addr=0x0 data=0x0 observed=0x0
+# --------------------------------------------------------------------------------------
+# Name                           Type         Size  Value                               
+# --------------------------------------------------------------------------------------
+# tr                             transaction  -     @681                                
+#   begin_time                   time         64    133000                              
+#   end_time                     time         64    133000                              
+#   depth                        int          32    'd2                                 
+#   parent sequence (name)       string       3     seq                                 
+#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq
+#   sequencer                    string       32    uvm_test_top.env.agent.sequencer    
+# --------------------------------------------------------------------------------------
+# UVM_INFO verilog_src/uvm-1.1d/src/base/uvm_objection.svh(1267) @ 661000: reporter [TEST_DONE] 'run' phase is ready to proceed to the 'extract' phase
+# 
+# --- UVM Report Summary ---
+# 
+# ** Report counts by severity
+# UVM_INFO :   12
+# UVM_WARNING :    0
+# UVM_ERROR :    0
+# UVM_FATAL :    0
+# ** Report counts by id
+# [Driver]     4
+# [Questa UVM]     2
+# [RNTST]     1
+# [TEST_DONE]     1
+# [TRANSACTION]     4
+# ** Note: $finish    : C:/questasim64_10.7c/win64/../verilog_src/uvm-1.1d/src/base/uvm_root.svh(430)
+#    Time: 661 ns  Iteration: 54  Instance: /tb
+# 1
+# Break in Task uvm_pkg/uvm_root::run_test at C:/questasim64_10.7c/win64/../verilog_src/uvm-1.1d/src/base/uvm_root.svh line 430
+

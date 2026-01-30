@@ -1,0 +1,125 @@
+vlib work
+# ** Warning: (vlib-34) Library already exists at "work".
+vmap work work
+# QuestaSim-64 vmap 10.7c Lib Mapping Utility 2018.08 Aug 18 2018
+# vmap work work 
+# Modifying modelsim.ini
+vlog -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv
+# QuestaSim-64 vlog 10.7c Compiler 2018.08 Aug 18 2018
+# Start time: 21:57:00 on Jan 09,2026
+# vlog -reportprogress 300 -sv interrupt_controller.sv axi4_lite_fifo_async.v interface.sv axi4_uvm_pkg.sv testbench.sv 
+# -- Compiling module fifo_interrupt_controller
+# -- Compiling module axi_lite_async_fifo
+# -- Compiling interface intf
+# -- Compiling package axi4_uvm_pkg
+# -- Importing package mtiUvm.uvm_pkg (uvm-1.1d Built-in)
+# ** Note: (vlog-2286) axi4_uvm_pkg.sv(4): Using implicit +incdir+C:/questasim64_10.7c/uvm-1.1d/../verilog_src/uvm-1.1d/src from import uvm_pkg
+# -- Compiling package testbench_sv_unit
+# -- Importing package mtiUvm.uvm_pkg (uvm-1.1d Built-in)
+# -- Importing package axi4_uvm_pkg
+# -- Compiling module tb
+# 
+# Top level modules:
+# 	tb
+# End time: 21:57:01 on Jan 09,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+vsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=reset_test
+# vsim -gui work.tb -voptargs="+acc" -wlf fifo_waveform.wlf "+UVM_TESTNAME=reset_test" 
+# Start time: 21:57:01 on Jan 09,2026
+# ** Note: (vsim-8009) Loading existing optimized design _opt
+# Loading sv_std.std
+# Loading work.intf(fast)
+# Loading mtiUvm.uvm_pkg
+# Loading work.axi4_uvm_pkg(fast)
+# Loading work.testbench_sv_unit(fast)
+# Loading work.tb(fast)
+# Loading work.intf(fast)
+# Loading work.axi_lite_async_fifo(fast)
+# Loading work.fifo_interrupt_controller(fast)
+# Loading mtiUvm.questa_uvm_pkg(fast)
+# Loading C:/questasim64_10.7c/uvm-1.1d\win64\uvm_dpi.dll
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+# ----------------------------------------------------------------
+# UVM-1.1d
+# (C) 2007-2013 Mentor Graphics Corporation
+# (C) 2007-2013 Cadence Design Systems, Inc.
+# (C) 2006-2013 Synopsys, Inc.
+# (C) 2011-2013 Cypress Semiconductor Corp.
+# ----------------------------------------------------------------
+# 
+#   ***********       IMPORTANT RELEASE NOTES         ************
+# 
+#   You are using a version of the UVM library that has been compiled
+#   with `UVM_NO_DEPRECATED undefined.
+#   See http://www.eda.org/svdb/view.php?id=3313 for more details.
+# 
+#   You are using a version of the UVM library that has been compiled
+#   with `UVM_OBJECT_MUST_HAVE_CONSTRUCTOR undefined.
+#   See http://www.eda.org/svdb/view.php?id=3770 for more details.
+# 
+#       (Specify +UVM_NO_RELNOTES to turn off this notice)
+# 
+# UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(215) @ 0: reporter [Questa UVM] QUESTA_UVM-1.2.3
+# UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(216) @ 0: reporter [Questa UVM]  questa_uvm::init(+struct)
+# UVM_INFO @ 0: reporter [RNTST] Running test reset_test...
+# UVM_INFO driver.sv(37) @ 75000: uvm_test_top.env.agent.driver [Driver] Drove a transaction
+# UVM_INFO seq_item.sv(49) @ 75000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0x11111111 observed=0x0
+# --------------------------------------------------------------------------------------
+# Name                           Type         Size  Value                               
+# --------------------------------------------------------------------------------------
+# tr                             transaction  -     @681                                
+#   begin_time                   time         64    50000                               
+#   depth                        int          32    'd2                                 
+#   parent sequence (name)       string       3     seq                                 
+#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq
+#   sequencer                    string       32    uvm_test_top.env.agent.sequencer    
+# --------------------------------------------------------------------------------------
+# UVM_INFO driver.sv(37) @ 155000: uvm_test_top.env.agent.driver [Driver] Drove a transaction
+# UVM_INFO seq_item.sv(49) @ 155000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0x11111112 observed=0x0
+# --------------------------------------------------------------------------------------
+# Name                           Type         Size  Value                               
+# --------------------------------------------------------------------------------------
+# tr                             transaction  -     @681                                
+#   begin_time                   time         64    125000                              
+#   end_time                     time         64    75000                               
+#   depth                        int          32    'd2                                 
+#   parent sequence (name)       string       3     seq                                 
+#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq
+#   sequencer                    string       32    uvm_test_top.env.agent.sequencer    
+# --------------------------------------------------------------------------------------
+# UVM_INFO driver.sv(37) @ 235000: uvm_test_top.env.agent.driver [Driver] Drove a transaction
+# UVM_INFO seq_item.sv(49) @ 235000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0x11111113 observed=0x0
+# --------------------------------------------------------------------------------------
+# Name                           Type         Size  Value                               
+# --------------------------------------------------------------------------------------
+# tr                             transaction  -     @681                                
+#   begin_time                   time         64    205000                              
+#   end_time                     time         64    155000                              
+#   depth                        int          32    'd2                                 
+#   parent sequence (name)       string       3     seq                                 
+#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq
+#   sequencer                    string       32    uvm_test_top.env.agent.sequencer    
+# --------------------------------------------------------------------------------------
+# UVM_INFO reset_seq.sv(28) @ 285000: uvm_test_top.env.agent.sequencer@@seq [Reset Sequence] Reset sequence completed (traffic generated)
+# UVM_INFO verilog_src/uvm-1.1d/src/base/uvm_objection.svh(1267) @ 1285000: reporter [TEST_DONE] 'run' phase is ready to proceed to the 'extract' phase
+# 
+# --- UVM Report Summary ---
+# 
+# ** Report counts by severity
+# UVM_INFO :   11
+# UVM_WARNING :    0
+# UVM_ERROR :    0
+# UVM_FATAL :    0
+# ** Report counts by id
+# [Driver]     3
+# [Questa UVM]     2
+# [RNTST]     1
+# [Reset Sequence]     1
+# [TEST_DONE]     1
+# [TRANSACTION]     3
+# ** Note: $finish    : C:/questasim64_10.7c/win64/../verilog_src/uvm-1.1d/src/base/uvm_root.svh(430)
+#    Time: 1285 ns  Iteration: 54  Instance: /tb
+# 1
+# Break in Task uvm_pkg/uvm_root::run_test at C:/questasim64_10.7c/win64/../verilog_src/uvm-1.1d/src/base/uvm_root.svh line 430
+

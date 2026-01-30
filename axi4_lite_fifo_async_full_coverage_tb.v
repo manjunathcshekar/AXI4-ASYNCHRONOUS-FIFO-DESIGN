@@ -1,277 +1,344 @@
 `timescale 1ns / 1ps
 
-module axi4_lite_fifo_async_full_coverage_tb;
+module axi4_lite_fifo_async_tb;
 
-    parameter ADDR_WIDTH = 4;
-    parameter DATA_WIDTH = 32;
-    parameter FIFO_DEPTH = 8;
+    // Parameters
+    localparam ADDR_WIDTH = 4;
+    localparam DATA_WIDTH = 32;
+    localparam FIFO_DEPTH = 8;
 
-    reg wr_clk, rd_clk;
+    // Clocks & reset
+    reg wr_clk;
+    reg rd_clk;
     reg S_AXI_ARESETN;
 
-    // AXI Signals
+    // AXI write address channel
     reg  [ADDR_WIDTH-1:0] S_AXI_AWADDR;
-    reg  S_AXI_AWVALID;
-    wire S_AXI_AWREADY;
+    reg                   S_AXI_AWVALID;
+    wire                  S_AXI_AWREADY;
 
+    // AXI write data channel
     reg  [DATA_WIDTH-1:0] S_AXI_WDATA;
-    reg  [3:0] S_AXI_WSTRB;
-    reg  S_AXI_WVALID;
-    wire S_AXI_WREADY;
+    reg  [3:0]            S_AXI_WSTRB;
+    reg                   S_AXI_WVALID;
+    wire                  S_AXI_WREADY;
 
-    wire [1:0] S_AXI_BRESP;
-    wire S_AXI_BVALID;
-    reg  S_AXI_BREADY;
+    // AXI write response channel
+    wire [1:0]            S_AXI_BRESP;
+    wire                  S_AXI_BVALID;
+    reg                   S_AXI_BREADY;
 
+    // AXI read address channel
     reg  [ADDR_WIDTH-1:0] S_AXI_ARADDR;
-    reg  S_AXI_ARVALID;
-    wire S_AXI_ARREADY;
+    reg                   S_AXI_ARVALID;
+    wire                  S_AXI_ARREADY;
 
+    // AXI read data channel
     wire [DATA_WIDTH-1:0] S_AXI_RDATA;
-    wire [1:0] S_AXI_RRESP;
-    wire S_AXI_RVALID;
-    reg  S_AXI_RREADY;
+    wire [1:0]            S_AXI_RRESP;
+    wire                  S_AXI_RVALID;
+    reg                   S_AXI_RREADY;
 
-    // Internal signals for monitoring FIFO status (if exposed by DUT)
-    wire fifo_full_status;
-    wire fifo_empty_status;
+    // Peripheral read interface
+    reg                   rd_en;
+    wire [DATA_WIDTH-1:0] rd_data;
+    wire                  rd_valid;
+    wire                  rd_empty;
+    wire                  rd_full;
+    // Interrupts
+    reg                   irq_clear_full;
+    reg                   irq_clear_empty;
+    wire                  irq_full;
+    wire                  irq_empty;
 
+    // ----------------------------------------------------------------
     // DUT instantiation
-    axi4_lite_fifo_async #(
+    // ----------------------------------------------------------------
+    // Note: DUT module name is axi_lite_async_fifo (without the "4" after axi)
+    axi_lite_async_fifo #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH),
         .FIFO_DEPTH(FIFO_DEPTH)
     ) dut (
-        .wr_clk(wr_clk),
-        .rd_clk(rd_clk),
-        .S_AXI_ARESETN(S_AXI_ARESETN),
-        .S_AXI_AWADDR(S_AXI_AWADDR),
-        .S_AXI_AWVALID(S_AXI_AWVALID),
-        .S_AXI_AWREADY(S_AXI_AWREADY),
-        .S_AXI_WDATA(S_AXI_WDATA),
-        .S_AXI_WSTRB(S_AXI_WSTRB),
-        .S_AXI_WVALID(S_AXI_WVALID),
-        .S_AXI_WREADY(S_AXI_WREADY),
-        .S_AXI_BRESP(S_AXI_BRESP),
-        .S_AXI_BVALID(S_AXI_BVALID),
-        .S_AXI_BREADY(S_AXI_BREADY),
-        .S_AXI_ARADDR(S_AXI_ARADDR),
-        .S_AXI_ARVALID(S_AXI_ARVALID),
-        .S_AXI_ARREADY(S_AXI_ARREADY),
-        .S_AXI_RDATA(S_AXI_RDATA),
-        .S_AXI_RRESP(S_AXI_RRESP),
-        .S_AXI_RVALID(S_AXI_RVALID),
-        .S_AXI_RREADY(S_AXI_RREADY)
-        // You would need to add these signals to your DUT's port list
-        // .,fifo_full(fifo_full_status),
-        // .fifo_empty(fifo_empty_status)
+        // Clock & reset
+        .clk_axi        (wr_clk),
+        .clk_periph     (rd_clk),
+        .axi_resetn_i   (S_AXI_ARESETN),
+
+        // AXI write address
+        .axi_awaddr_i   (S_AXI_AWADDR),
+        .axi_awvalid_i  (S_AXI_AWVALID),
+        .axi_awready_o  (S_AXI_AWREADY),
+
+        // AXI write data
+        .axi_wdata_i    (S_AXI_WDATA),
+        .axi_wstrb_i    (S_AXI_WSTRB),
+        .axi_wvalid_i   (S_AXI_WVALID),
+        .axi_wready_o   (S_AXI_WREADY),
+
+        // AXI write response
+        .axi_bresp_o    (S_AXI_BRESP),
+        .axi_bvalid_o   (S_AXI_BVALID),
+        .axi_bready_i   (S_AXI_BREADY),
+
+        // AXI read address
+        .axi_araddr_i   (S_AXI_ARADDR),
+        .axi_arvalid_i  (S_AXI_ARVALID),
+        .axi_arready_o  (S_AXI_ARREADY),
+
+        // AXI read data/resp
+        .axi_rdata_o    (S_AXI_RDATA),
+        .axi_rresp_o    (S_AXI_RRESP),
+        .axi_rvalid_o   (S_AXI_RVALID),
+        .axi_rready_i   (S_AXI_RREADY),
+
+        // Peripheral read side
+        .periph_rd_en_i (rd_en),
+        .periph_rdata_o (rd_data),
+        .periph_rvalid_o(rd_valid),
+        .periph_empty_o (rd_empty),
+        .periph_full_o  (rd_full),
+
+        // Interrupts
+        .irq_clear_full_i  (irq_clear_full),
+        .irq_clear_empty_i (irq_clear_empty),
+        .irq_full_o        (irq_full),
+        .irq_empty_o       (irq_empty)
     );
 
-    // ------------------------------
+    // ----------------------------------------------------------------
     // Clock generation
-    // ------------------------------
+    // ----------------------------------------------------------------
     initial begin
         wr_clk = 0;
-        forever #5 wr_clk = ~wr_clk; // 100 MHz
+        forever #5 wr_clk = ~wr_clk;   // 100 MHz
     end
+
     initial begin
         rd_clk = 0;
-        forever #7 rd_clk = ~rd_clk; // ~71 MHz
+        forever #7 rd_clk = ~rd_clk;   // ~71 MHz
     end
 
+    // ----------------------------------------------------------------
     // Reset
+    // ----------------------------------------------------------------
     initial begin
         S_AXI_ARESETN = 0;
-        #20 S_AXI_ARESETN = 1;
+        #50;
+        S_AXI_ARESETN = 1;
     end
 
-    // AXI Write task with correct handshakes
-    task automatic axi_write(input [ADDR_WIDTH-1:0] addr, input [DATA_WIDTH-1:0] data);
+    // ----------------------------------------------------------------
+    // AXI Write Task (single-beat write)
+    // ----------------------------------------------------------------
+    task automatic axi_write(
+        input [ADDR_WIDTH-1:0] addr,
+        input [DATA_WIDTH-1:0] data
+    );
+        integer timeout;
     begin
         @(posedge wr_clk);
-        S_AXI_AWADDR <= addr;
-        S_AXI_AWVALID <= 1;
-        S_AXI_WDATA <= data;
-        S_AXI_WSTRB <= 4'hF;
-        S_AXI_WVALID <= 1;
-        
-        @(posedge wr_clk) wait(S_AXI_AWREADY && S_AXI_WREADY);
-        S_AXI_AWVALID <= 0;
-        S_AXI_WVALID <= 0;
-        S_AXI_BREADY <= 1;
+        S_AXI_AWADDR  <= addr;
+        S_AXI_AWVALID <= 1'b1;
+        S_AXI_WDATA   <= data;
+        S_AXI_WSTRB   <= 4'hF;
+        S_AXI_WVALID  <= 1'b1;
 
-        @(posedge wr_clk) wait(S_AXI_BVALID);
-        S_AXI_BREADY <= 0;
-        $display("Time %0t: AXI WRITE: Addr=0x%h Data=0x%h, BRESP=0x%h", $time, addr, data, S_AXI_BRESP);
+        // Wait until both AWREADY and WREADY are asserted
+        timeout = 0;
+        while (!(S_AXI_AWREADY && S_AXI_WREADY)) begin
+            @(posedge wr_clk);
+            timeout = timeout + 1;
+            if (timeout > 1000) begin
+                $error("TIMEOUT: AWREADY/WREADY handshake did not complete");
+                disable axi_write;
+            end
+        end
+
+        // Deassert AWVALID/WVALID
+        S_AXI_AWVALID <= 1'b0;
+        S_AXI_WVALID  <= 1'b0;
+
+        // Accept B response
+        S_AXI_BREADY <= 1'b1;
+        timeout = 0;
+        while (!S_AXI_BVALID) begin
+            @(posedge wr_clk);
+            timeout = timeout + 1;
+            if (timeout > 1000) begin
+                $error("TIMEOUT: BVALID not asserted");
+                disable axi_write;
+            end
+        end
+
+        $display("[%0t] AXI WRITE: addr=0x%0h data=0x%0h BRESP=0x%0h",
+                 $time, addr, data, S_AXI_BRESP);
+
+        S_AXI_BREADY <= 1'b0;
+        @(posedge wr_clk);
     end
     endtask
 
-    // AXI Read task with correct handshakes
-    task automatic axi_read(input [ADDR_WIDTH-1:0] addr, output [DATA_WIDTH-1:0] data);
+    // ----------------------------------------------------------------
+    // AXI Read Task (status / peek)
+    // ----------------------------------------------------------------
+    task automatic axi_read(
+        input  [ADDR_WIDTH-1:0] addr,
+        output [DATA_WIDTH-1:0] data,
+        output [1:0]            resp
+    );
+        integer timeout;
     begin
-        @(posedge rd_clk);
-        S_AXI_ARADDR <= addr;
-        S_AXI_ARVALID <= 1;
-        S_AXI_RREADY <= 1;
+        @(posedge wr_clk);
+        S_AXI_ARADDR  <= addr;
+        S_AXI_ARVALID <= 1'b1;
 
-        @(posedge rd_clk) wait(S_AXI_ARREADY);
-        S_AXI_ARVALID <= 0;
+        // Wait for ARREADY
+        timeout = 0;
+        while (!S_AXI_ARREADY) begin
+            @(posedge wr_clk);
+            timeout = timeout + 1;
+            if (timeout > 1000) begin
+                $error("TIMEOUT: ARREADY not asserted");
+                disable axi_read;
+            end
+        end
 
-        @(posedge rd_clk) wait(S_AXI_RVALID);
+        S_AXI_ARVALID <= 1'b0;
+
+        // Wait for RVALID
+        S_AXI_RREADY <= 1'b1;
+        timeout = 0;
+        while (!S_AXI_RVALID) begin
+            @(posedge wr_clk);
+            timeout = timeout + 1;
+            if (timeout > 1000) begin
+                $error("TIMEOUT: RVALID not asserted");
+                disable axi_read;
+            end
+        end
+
         data = S_AXI_RDATA;
-        S_AXI_RREADY <= 0;
-        $display("Time %0t: AXI READ : Addr=0x%h Data=0x%h", $time, addr, data);
+        resp = S_AXI_RRESP;
+
+        $display("[%0t] AXI READ : addr=0x%0h data=0x%0h RRESP=0x%0h",
+                 $time, addr, data, resp);
+
+        S_AXI_RREADY <= 1'b0;
+        @(posedge wr_clk);
     end
     endtask
 
-    // ------------------------------
-    // Test sequences
-    // ------------------------------
-    integer i;
-    reg [DATA_WIDTH-1:0] read_data;
+    // ----------------------------------------------------------------
+    // Peripheral Read Task
+    // ----------------------------------------------------------------
+    task automatic periph_read(
+        output [DATA_WIDTH-1:0] data
+    );
+        integer timeout;
+    begin
+        // Wait until FIFO not empty
+        timeout = 0;
+        while (rd_empty) begin
+            @(posedge rd_clk);
+            timeout = timeout + 1;
+            if (timeout > 1000) begin
+                $error("TIMEOUT: FIFO stayed empty before peripheral read");
+                disable periph_read;
+            end
+        end
 
-    localparam WRITE_DATA_ADDR = 4'h0;
-    localparam READ_DATA_ADDR  = 4'h0; // Read/write from same address
-    localparam STATUS_ADDR     = 4'h4; // Assuming this address exists
+        // Pulse rd_en for one rd_clk cycle
+        @(posedge rd_clk);
+        rd_en <= 1'b1;
+        @(posedge rd_clk);
+        rd_en <= 1'b0;
+
+        // Wait for rd_valid
+        timeout = 0;
+        while (!rd_valid) begin
+            @(posedge rd_clk);
+            timeout = timeout + 1;
+            if (timeout > 1000) begin
+                $error("TIMEOUT: rd_valid not asserted after rd_en");
+                disable periph_read;
+            end
+        end
+
+        data = rd_data;
+        $display("[%0t] PERIPH READ: data=0x%0h", $time, data);
+    end
+    endtask
+
+    // ----------------------------------------------------------------
+    // Test sequence
+    // ----------------------------------------------------------------
+    reg [DATA_WIDTH-1:0] axi_rdata;
+    reg [1:0]            axi_rresp;
+    reg [DATA_WIDTH-1:0] periph_data;
 
     initial begin
-        // Init AXI signals
-        S_AXI_AWADDR = 0; S_AXI_AWVALID = 0; S_AXI_WDATA = 0;
-        S_AXI_WSTRB = 0; S_AXI_WVALID = 0; S_AXI_BREADY = 0;
-        S_AXI_ARADDR = 0; S_AXI_ARVALID = 0; S_AXI_RREADY = 0;
+        // Initial values
+        S_AXI_AWADDR  = 0;
+        S_AXI_AWVALID = 0;
+        S_AXI_WDATA   = 0;
+        S_AXI_WSTRB   = 0;
+        S_AXI_WVALID  = 0;
+        S_AXI_BREADY  = 0;
+        S_AXI_ARADDR  = 0;
+        S_AXI_ARVALID = 0;
+        S_AXI_RREADY  = 0;
+        rd_en         = 0;
+        irq_clear_full  = 1'b0;
+        irq_clear_empty = 1'b0;
 
-        wait(S_AXI_ARESETN == 1);
+        // Wait for reset deassert
+        wait (S_AXI_ARESETN == 1);
         @(posedge wr_clk);
+        $display("\n=== Starting AXI4-Lite Async FIFO Testbench ===");
 
-        $display("\n--- Starting Test Sequence ---");
+        // ------------------------------------------------------------
+        // 1. Write two words via AXI
+        // ------------------------------------------------------------
+        axi_write(4'h0, 32'hDEAD_BEEF);
+        axi_write(4'h0, 32'hFEED_CAFE);
 
-        // New Test: Read Operation Verification
-        $display("\n--- Custom Test: Verify Read Operation and AXI_RDATA ---");
-        // Write some known data to the FIFO
-        axi_write(WRITE_DATA_ADDR, 32'hFEED_BEEF);
-        axi_write(WRITE_DATA_ADDR, 32'hDEAD_BEEF);
-
-        // Read the data back and check AXI_RDATA
-        axi_read(READ_DATA_ADDR, read_data);
-        if (read_data == 32'hFEED_BEEF) begin
-            $display("--- SUCCESS: AXI_RDATA read first data correctly.");
-        end else begin
-            $error("--- FAILURE: AXI_RDATA read incorrect data. Expected: 0xFEED_BEEF, Got: 0x%h", read_data);
-        end
-        
-        axi_read(READ_DATA_ADDR, read_data);
-        if (read_data == 32'hDEAD_BEEF) begin
-            $display("--- SUCCESS: AXI_RDATA read second data correctly.");
-        end else begin
-            $error("--- FAILURE: AXI_RDATA read incorrect data. Expected: 0xDEAD_BEEF, Got: 0x%h", read_data);
+        // ------------------------------------------------------------
+        // 2. AXI peek (0x4) before peripheral reads
+        // ------------------------------------------------------------
+        axi_read(4'h4, axi_rdata, axi_rresp); // peek head
+        if (axi_rresp == 2'b00 && axi_rdata !== 32'hDEAD_BEEF) begin
+            $error("PEEK MISMATCH: expected 0xDEAD_BEEF, got 0x%0h", axi_rdata);
         end
 
-        // 20: FIFO Full
-        $display("\n--- Test 20: FIFO Full ---");
-        for (i = 0; i < FIFO_DEPTH; i=i+1)
-            axi_write(WRITE_DATA_ADDR, 32'h1000+i);
+        // ------------------------------------------------------------
+        // 3. Peripheral reads out the two entries
+        // ------------------------------------------------------------
+        periph_read(periph_data);
+        if (periph_data !== 32'hDEAD_BEEF)
+            $error("PERIPH READ #1 mismatch: expected 0xDEAD_BEEF, got 0x%0h", periph_data);
 
-        // 21: Write when full (This is now a proper check with assertions)
-        $display("\n--- Test 21: Write when Full ---");
-        axi_write(WRITE_DATA_ADDR, 32'hDEAD_BEEF);
+        periph_read(periph_data);
+        if (periph_data !== 32'hFEED_CAFE)
+            $error("PERIPH READ #2 mismatch: expected 0xFEED_CAFE, got 0x%0h", periph_data);
 
-        // 22: Drain FIFO
-        $display("\n--- Test 22: Drain FIFO ---");
-        for (i = 0; i < FIFO_DEPTH; i=i+1)
-            axi_read(READ_DATA_ADDR, read_data);
+        // ------------------------------------------------------------
+        // 4. AXI status read at 0x0 (should show empty)
+        // ------------------------------------------------------------
+        axi_read(4'h0, axi_rdata, axi_rresp); // status
+        $display("Status word after draining FIFO = 0x%0h (LSB=empty flag)", axi_rdata);
 
-        // 23: Read when empty (This is now a proper check with assertions)
-        $display("\n--- Test 23: Read when Empty ---");
-        axi_read(READ_DATA_ADDR, read_data);
+        // ------------------------------------------------------------
+        // 5. AXI peek on empty FIFO (expect SLVERR)
+        // ------------------------------------------------------------
+        axi_read(4'h4, axi_rdata, axi_rresp);
+        if (axi_rresp != 2'b10)
+            $error("Expected SLVERR on peek when empty, got RRESP=0x%0h", axi_rresp);
 
-        // 24: Back-to-back writes
-        $display("\n--- Test 24: Back-to-back writes ---");
-        for (i=0; i<4; i=i+1) begin
-            axi_write(WRITE_DATA_ADDR, 32'hAAAA0000+i);
-            axi_write(WRITE_DATA_ADDR, 32'hBBBB0000+i);
-        end
+        $display("\n=== BASIC TEST COMPLETED ===\n");
 
-        // 25: Back-to-back reads
-        $display("\n--- Test 25: Back-to-back reads ---");
-        for (i=0; i<8; i=i+1)
-            axi_read(READ_DATA_ADDR, read_data);
-
-        // 26: Concurrent R/W
-        $display("\n--- Test 26: Concurrent R/W ---");
-        fork
-            begin
-                for (i = 0; i < FIFO_DEPTH; i=i+1) begin
-                    axi_write(WRITE_DATA_ADDR, 32'hFACE0000 + i);
-                    @(posedge wr_clk);
-                end
-            end
-            begin
-                for (i = 0; i < FIFO_DEPTH; i=i+1) begin
-                    axi_read(READ_DATA_ADDR, read_data);
-                    @(posedge rd_clk);
-                end
-            end
-        join
-
-        // 27: Randomized stress
-        $display("\n--- Test 27: Randomized stress ---");
-        repeat(50) begin
-            if ($random % 2)
-                axi_write(WRITE_DATA_ADDR, $random);
-            else
-                axi_read(READ_DATA_ADDR, read_data);
-        end
-
-        // 28: Reset mid-write
-        $display("\n--- Test 28: Reset mid-write ---");
-        fork
-            axi_write(WRITE_DATA_ADDR, 32'h12345678);
-            begin
-                #2; // Short delay
-                S_AXI_ARESETN = 0;
-                #10;
-                S_AXI_ARESETN = 1;
-            end
-        join
-
-        // 29: Reset mid-read
-        $display("\n--- Test 29: Reset mid-read ---");
-        fork
-            axi_read(READ_DATA_ADDR, read_data);
-            begin
-                #2; // Short delay
-                S_AXI_ARESETN = 0;
-                #10;
-                S_AXI_ARESETN = 1;
-            end
-        join
-
-        // 30: Reset when full
-        $display("\n--- Test 30: Reset when full ---");
-        for (i = 0; i < FIFO_DEPTH; i=i+1)
-            axi_write(WRITE_DATA_ADDR, 32'h2000 + i);
-        #2 S_AXI_ARESETN = 0;
-        #10 S_AXI_ARESETN = 1;
-
-        $display("\n--- ALL 30 TESTCASES COMPLETED ---");
-        #100 $finish;
+        #200;
+        $finish;
     end
 
-    // =======================================================
-    // Assertions for FIFO Protocol Violations
-    // =======================================================
-
-    // Assertion for FIFO Overflow (write when full)
-    // Assumes fifo_full signal is exposed by the DUT
-    // `ifndef SIM_WITH_PROPERTIES
-    // assert property (@(posedge wr_clk) disable iff (!S_AXI_ARESETN) !(S_AXI_AWVALID && S_AXI_WVALID && fifo_full_status))
-    //     else $error("FIFO Overflow Error! Write attempted when FIFO was full at time %0t", $time);
-    // `endif
-
-    // Assertion for FIFO Underflow (read when empty)
-    // Assumes fifo_empty signal is exposed by the DUT
-    // `ifndef SIM_WITH_PROPERTIES
-    // assert property (@(posedge rd_clk) disable iff (!S_AXI_ARESETN) !(S_AXI_ARVALID && fifo_empty_status))
-    //     else $error("FIFO Underflow Error! Read attempted when FIFO was empty at time %0t", $time);
-    // `endif
 endmodule
