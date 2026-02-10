@@ -147,8 +147,10 @@ module axi_lite_async_fifo #(
     wire [PTR:0] fifo_wr_bin_next_w = fifo_wr_ptr_bin_r + 1'b1;
 
     // empty (in periph domain) and full (in axi domain) detection
-    // fifo_full asserted in AXI domain when next write == read (synced)
-    wire fifo_full_axi_w  = (fifo_wr_bin_next_w == fifo_rd_bin_sync_axi);
+    // fifo_full asserted in AXI domain when occupancy equals DEPTH
+    // occupancy = (wr_ptr - rd_ptr) mod (2*DEPTH), which naturally wraps with unsigned arithmetic
+    wire [PTR:0] occupancy_axi_w = fifo_wr_ptr_bin_r - fifo_rd_bin_sync_axi;
+    wire fifo_full_axi_w = (occupancy_axi_w == FIFO_DEPTH);
 
     // fifo_empty asserted in periph domain when read == write (synced)
     wire fifo_empty_periph_w = (fifo_rd_ptr_bin_r == fifo_wr_bin_sync_periph);
@@ -282,8 +284,7 @@ module axi_lite_async_fifo #(
     //  - 0x0 : status      (RDATA[0] = empty flag)
     //  - 0x4 : peek_head   (non-destructive peek; returns 0 + SLVERR if empty)
     // -------------------------------------------------------------------------
-    // occupancy calculation (modulo arithmetic due to fixed-width binary)
-    wire [PTR:0] occupancy_axi_w = fifo_wr_ptr_bin_r - fifo_rd_bin_sync_axi;
+    // occupancy_axi_w is already defined above for full detection
 
     always @(posedge clk_axi or negedge axi_resetn_i) begin
         if (!axi_resetn_i) begin

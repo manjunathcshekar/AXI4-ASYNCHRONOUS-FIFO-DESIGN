@@ -1,5 +1,5 @@
 $date
-	Sat Jan 31 00:26:50 2026
+	Tue Feb 10 23:04:22 2026
 $end
 $version
 	QuestaSim Version 10.7c
@@ -120,13 +120,13 @@ $var wire 1 )! fifo_wr_bin_next_w [3] $end
 $var wire 1 *! fifo_wr_bin_next_w [2] $end
 $var wire 1 +! fifo_wr_bin_next_w [1] $end
 $var wire 1 ,! fifo_wr_bin_next_w [0] $end
-$var wire 1 -! fifo_full_axi_w $end
-$var wire 1 .! fifo_empty_periph_w $end
-$var wire 1 /! fifo_empty_axi_w $end
-$var wire 1 0! occupancy_axi_w [3] $end
-$var wire 1 1! occupancy_axi_w [2] $end
-$var wire 1 2! occupancy_axi_w [1] $end
-$var wire 1 3! occupancy_axi_w [0] $end
+$var wire 1 -! occupancy_axi_w [3] $end
+$var wire 1 .! occupancy_axi_w [2] $end
+$var wire 1 /! occupancy_axi_w [1] $end
+$var wire 1 0! occupancy_axi_w [0] $end
+$var wire 1 1! fifo_full_axi_w $end
+$var wire 1 2! fifo_empty_periph_w $end
+$var wire 1 3! fifo_empty_axi_w $end
 
 $scope function bin2gray $end
 $var reg 4 4! bin2gray [3:0] $end
@@ -633,13 +633,13 @@ bx +"
 0+!
 0*!
 0)!
-0-!
-1.!
-1/!
-03!
-02!
-01!
 00!
+0/!
+0.!
+0-!
+01!
+12!
+13!
 $end
 #5000
 1!
@@ -753,11 +753,11 @@ b1 o
 1X
 0u
 0w
-0/!
+03!
 1{
 0,!
 1+!
-13!
+10!
 0/
 0U
 1Y
@@ -911,7 +911,7 @@ b0 8!
 b1 6!
 b11111111111111111111111111111111 8!
 1(!
-0.!
+02!
 0g
 #95000
 1!
@@ -929,8 +929,8 @@ b11 o
 0{
 1z
 1,!
-03!
-12!
+00!
+1/!
 0/
 0U
 1Y
@@ -1239,8 +1239,8 @@ b0 8!
 b1 6!
 b11111111111111111111111111111111 8!
 1$!
-13!
-02!
+10!
+0/!
 #147000
 1"
 1)
@@ -1376,7 +1376,7 @@ b11111110111011011100101011111110 e
 b10 n
 b11 p
 b101000 A"
-1.!
+12!
 0~
 1}
 0d
@@ -1407,8 +1407,8 @@ b10 6!
 b11111111111111111111111111111111 8!
 0$!
 1#!
-03!
-1/!
+13!
+00!
 #180000
 0!
 0(

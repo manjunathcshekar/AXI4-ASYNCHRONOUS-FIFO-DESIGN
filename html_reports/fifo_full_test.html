@@ -141,13 +141,13 @@
             <span style="margin-left: 20px;"><strong>Errors:</strong> 0</span>
             <span style="margin-left: 20px;"><strong>Warnings:</strong> 0</span>
             <div class="metadata">
-                Generated: 2026-01-31 00:27:01
+                Generated: 2026-02-10 23:04:25
             </div>
         </div>
         <div class="log-content">
             <div class="log-line"><span class="comment"># vsim -c -l uvm_test_logs\fifo_full_test.log work.tb &quot;+UVM_TESTNAME=fifo_full_test&quot; -do &quot;run -all; quit -f&quot;</span></div>
-            <div class="log-line"><span class="comment"># Start time: 00:26:39 on Jan 31,2026</span></div>
-            <div class="log-line"><span class="comment"># ** Note: (vsim-8009) Loading existing optimized design _opt1</span></div>
+            <div class="log-line"><span class="comment"># Start time: 23:04:10 on Feb 10,2026</span></div>
+            <div class="log-line"><span class="comment"># ** Note: (vsim-8009) Loading existing optimized design _opt</span></div>
             <div class="log-line"><span class="comment"># //  Questa Sim-64</span></div>
             <div class="log-line"><span class="comment"># //  Version 10.7c win64 Aug 18 2018</span></div>
             <div class="log-line"><span class="comment"># //</span></div>
@@ -299,8 +299,9 @@
             <div class="log-line"><span class="comment">#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq</span></div>
             <div class="log-line"><span class="comment">#   sequencer                    string       32    uvm_test_top.env.agent.sequencer</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/components/driver.sv(37) @ 715000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/seq_item.sv(49) @ 715000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0xdeadbeef observed=0x0</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/components/driver.sv(76) @ 685000: uvm_test_top.env.agent.driver [Driver] Skipping WRITE because FIFO is FULL</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/components/driver.sv(37) @ 685000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/seq_item.sv(49) @ 685000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0xdeadbeef observed=0x0</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
             <div class="log-line"><span class="comment"># Name                           Type         Size  Value</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
@@ -312,26 +313,26 @@
             <div class="log-line"><span class="comment">#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq</span></div>
             <div class="log-line"><span class="comment">#   sequencer                    string       32    uvm_test_top.env.agent.sequencer</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/fifo_full_seq.sv(33) @ 715000: uvm_test_top.env.agent.sequencer@@seq [FIFO Full Sequence] FIFO full sequence completed: 8 writes + 1 overflow</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO verilog_src/uvm-1.1d/src/base/uvm_objection.svh(1267) @ 1715000: reporter [TEST_DONE] &#x27;run&#x27; phase is ready to proceed to the &#x27;extract&#x27; phase</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/fifo_full_seq.sv(33) @ 685000: uvm_test_top.env.agent.sequencer@@seq [FIFO Full Sequence] FIFO full sequence completed: 8 writes + 1 overflow</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO verilog_src/uvm-1.1d/src/base/uvm_objection.svh(1267) @ 1685000: reporter [TEST_DONE] &#x27;run&#x27; phase is ready to proceed to the &#x27;extract&#x27; phase</span></div>
             <div class="log-line"><span class="comment">#</span></div>
             <div class="log-line"><span class="uvm-summary-header"># --- UVM Report Summary ---</span></div>
             <div class="log-line"><span class="comment">#</span></div>
             <div class="log-line"><span class="comment"># ** Report counts by severity</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO :   23</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO :   24</span></div>
             <div class="log-line"><span class="uvm-warning"># UVM_WARNING :    0</span></div>
             <div class="log-line"><span class="uvm-error"># UVM_ERROR :    0</span></div>
             <div class="log-line"><span class="uvm-fatal"># UVM_FATAL :    0</span></div>
             <div class="log-line"><span class="comment"># ** Report counts by id</span></div>
-            <div class="log-line"><span class="comment"># [Driver]     9</span></div>
+            <div class="log-line"><span class="comment"># [Driver]    10</span></div>
             <div class="log-line"><span class="comment"># [FIFO Full Sequence]     1</span></div>
             <div class="log-line"><span class="comment"># [Questa UVM]     2</span></div>
             <div class="log-line"><span class="comment"># [RNTST]     1</span></div>
             <div class="log-line"><span class="comment"># [TEST_DONE]     1</span></div>
             <div class="log-line"><span class="comment"># [TRANSACTION]     9</span></div>
             <div class="log-line"><span class="comment"># ** Note: $finish    : C:/questasim64_10.7c/win64/../verilog_src/uvm-1.1d/src/base/uvm_root.svh(430)</span></div>
-            <div class="log-line"><span class="comment">#    Time: 1715 ns  Iteration: 54  Instance: /tb</span></div>
-            <div class="log-line"><span class="comment"># End time: 00:26:41 on Jan 31,2026, Elapsed time: 0:00:02</span></div>
+            <div class="log-line"><span class="comment">#    Time: 1685 ns  Iteration: 54  Instance: /tb</span></div>
+            <div class="log-line"><span class="comment"># End time: 23:04:12 on Feb 10,2026, Elapsed time: 0:00:02</span></div>
             <div class="log-line"><span class="success"># Errors: 0, Warnings: 0</span></div>
             <div class="log-line"></div>
         </div>
