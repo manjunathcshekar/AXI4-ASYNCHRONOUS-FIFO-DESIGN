@@ -271,7 +271,7 @@ def _discover_log_files(log_dir):
     Returns list of (log_path, test_id, test_name).
     """
     # Stem (filename without extension) -> (test_id, display_name)
-    # Supports both simulator names (basic_rw_test.log, rand_test.log) and legacy .txt names
+    # Supports known tests (basic_rw_test.log, rand_test.log, etc.) and falls back generically
     STEM_TO_TEST = {
         'basic_rw_test': ('basic_rw_test', 'Basic Read-Write Test'),
         'basic_read_write_test': ('basic_rw_test', 'Basic Read-Write Test'),
@@ -280,6 +280,8 @@ def _discover_log_files(log_dir):
         'reset_test': ('reset_test', 'Reset Test'),
         'rand_test': ('rand_test', 'Original Random Test'),
         'original_random_test': ('rand_test', 'Original Random Test'),
+        'full_write_full_read_test': ('full_write_full_read_test', 'Full Write to Full Read Test'),
+        'continuous_rw_test': ('continuous_rw_test', 'Continuous Read & Write Test'),
     }
     ACCEPTED_EXTENSIONS = ('.log', '.txt')
 
@@ -293,9 +295,12 @@ def _discover_log_files(log_dir):
         base, ext = os.path.splitext(name)
         if ext.lower() not in ACCEPTED_EXTENSIONS:
             continue
-        if base not in STEM_TO_TEST:
-            continue
-        test_id, test_name = STEM_TO_TEST[base]
+        if base in STEM_TO_TEST:
+            test_id, test_name = STEM_TO_TEST[base]
+        else:
+            # Generic fallback: use stem as ID and a title-cased display name
+            test_id = base
+            test_name = base.replace('_', ' ').title()
         path = os.path.join(log_dir, name)
         if not os.path.isfile(path):
             continue

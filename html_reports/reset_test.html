@@ -137,16 +137,16 @@
         <a href="index.html" class="back-link">← Back to Test Summary</a>
         <h1>UVM Test Log: Reset Test</h1>
         <div class="test-header">
-            <strong>Status:</strong> <span class="status-badge status-pass">PASS</span>
-            <span style="margin-left: 20px;"><strong>Errors:</strong> 0</span>
+            <strong>Status:</strong> <span class="status-badge status-fail">FAIL</span>
+            <span style="margin-left: 20px;"><strong>Errors:</strong> 1</span>
             <span style="margin-left: 20px;"><strong>Warnings:</strong> 1</span>
             <div class="metadata">
-                Generated: 2026-03-03 10:55:01
+                Generated: 2026-03-03 13:25:52
             </div>
         </div>
         <div class="log-content">
             <div class="log-line"><span class="comment"># vsim -c -coverage -l uvm_test_logs\reset_test.log work.tb &quot;+UVM_TESTNAME=reset_test&quot; -do &quot;run -all; coverage save -onexit uvm_test_logs/reset_test.ucdb; quit -f&quot;</span></div>
-            <div class="log-line"><span class="comment"># Start time: 10:54:51 on Mar 03,2026</span></div>
+            <div class="log-line"><span class="comment"># Start time: 13:25:33 on Mar 03,2026</span></div>
             <div class="log-line"><span class="comment"># ** Note: (vsim-8009) Loading existing optimized design _opt</span></div>
             <div class="log-line"><span class="comment"># //  Questa Sim-64</span></div>
             <div class="log-line"><span class="comment"># //  Version 10.7c win64 Aug 18 2018</span></div>
@@ -197,64 +197,104 @@
             <div class="log-line"><span class="uvm-info"># UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(215) @ 0: reporter [Questa UVM] QUESTA_UVM-1.2.3</span></div>
             <div class="log-line"><span class="uvm-info"># UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(216) @ 0: reporter [Questa UVM]  questa_uvm::init(+struct)</span></div>
             <div class="log-line"><span class="uvm-info"># UVM_INFO @ 0: reporter [RNTST] Running test reset_test...</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/components/driver.sv(37) @ 75000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/seq_item.sv(49) @ 75000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0x11111111 observed=0x0</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/components/driver.sv(42) @ 105000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/seq_item.sv(49) @ 105000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0x11111111 observed=0x0</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
             <div class="log-line"><span class="comment"># Name                           Type         Size  Value</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
-            <div class="log-line"><span class="comment"># tr                             transaction  -     @681</span></div>
-            <div class="log-line"><span class="comment">#   begin_time                   time         64    50000</span></div>
+            <div class="log-line"><span class="comment"># tr                             transaction  -     @692</span></div>
+            <div class="log-line"><span class="comment">#   begin_time                   time         64    75000</span></div>
             <div class="log-line"><span class="comment">#   depth                        int          32    &#x27;d2</span></div>
             <div class="log-line"><span class="comment">#   parent sequence (name)       string       3     seq</span></div>
             <div class="log-line"><span class="comment">#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq</span></div>
             <div class="log-line"><span class="comment">#   sequencer                    string       32    uvm_test_top.env.agent.sequencer</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/components/driver.sv(37) @ 155000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/seq_item.sv(49) @ 155000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0x11111112 observed=0x0</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/components/driver.sv(42) @ 185000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/seq_item.sv(49) @ 185000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0x11111112 observed=0x0</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
             <div class="log-line"><span class="comment"># Name                           Type         Size  Value</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
-            <div class="log-line"><span class="comment"># tr                             transaction  -     @681</span></div>
-            <div class="log-line"><span class="comment">#   begin_time                   time         64    125000</span></div>
-            <div class="log-line"><span class="comment">#   end_time                     time         64    75000</span></div>
+            <div class="log-line"><span class="comment"># tr                             transaction  -     @692</span></div>
+            <div class="log-line"><span class="comment">#   begin_time                   time         64    155000</span></div>
+            <div class="log-line"><span class="comment">#   end_time                     time         64    105000</span></div>
             <div class="log-line"><span class="comment">#   depth                        int          32    &#x27;d2</span></div>
             <div class="log-line"><span class="comment">#   parent sequence (name)       string       3     seq</span></div>
             <div class="log-line"><span class="comment">#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq</span></div>
             <div class="log-line"><span class="comment">#   sequencer                    string       32    uvm_test_top.env.agent.sequencer</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/components/driver.sv(37) @ 235000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/seq_item.sv(49) @ 235000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0x11111113 observed=0x0</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/components/driver.sv(42) @ 265000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/seq_item.sv(49) @ 265000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0x11111113 observed=0x0</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
             <div class="log-line"><span class="comment"># Name                           Type         Size  Value</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
-            <div class="log-line"><span class="comment"># tr                             transaction  -     @681</span></div>
-            <div class="log-line"><span class="comment">#   begin_time                   time         64    205000</span></div>
-            <div class="log-line"><span class="comment">#   end_time                     time         64    155000</span></div>
+            <div class="log-line"><span class="comment"># tr                             transaction  -     @692</span></div>
+            <div class="log-line"><span class="comment">#   begin_time                   time         64    235000</span></div>
+            <div class="log-line"><span class="comment">#   end_time                     time         64    185000</span></div>
             <div class="log-line"><span class="comment">#   depth                        int          32    &#x27;d2</span></div>
             <div class="log-line"><span class="comment">#   parent sequence (name)       string       3     seq</span></div>
             <div class="log-line"><span class="comment">#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq</span></div>
             <div class="log-line"><span class="comment">#   sequencer                    string       32    uvm_test_top.env.agent.sequencer</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/reset_seq.sv(28) @ 285000: uvm_test_top.env.agent.sequencer@@seq [Reset Sequence] Reset sequence completed (traffic generated)</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO verilog_src/uvm-1.1d/src/base/uvm_objection.svh(1267) @ 1285000: reporter [TEST_DONE] &#x27;run&#x27; phase is ready to proceed to the &#x27;extract&#x27; phase</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/reset_seq.sv(28) @ 315000: uvm_test_top.env.agent.sequencer@@seq [Reset Sequence] Reset sequence completed (traffic generated)</span></div>
+            <div class="log-line"><span class="uvm-error"># UVM_ERROR uvm/tests/reset_test.sv(49) @ 371000: uvm_test_top [Reset Test] Expected FIFO EMPTY=1 after reset, got 0</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/components/driver.sv(42) @ 399000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/seq_item.sv(49) @ 399000: uvm_test_top.env.agent.sequencer@@check_seq.tr [TRANSACTION] kind=PERIPH_READ addr=0x0 data=0x0 observed=0x0</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="comment"># Name                           Type         Size  Value</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="comment"># tr                             transaction  -     @721</span></div>
+            <div class="log-line"><span class="comment">#   begin_time                   time         64    371000</span></div>
+            <div class="log-line"><span class="comment">#   depth                        int          32    &#x27;d2</span></div>
+            <div class="log-line"><span class="comment">#   parent sequence (name)       string       9     check_seq</span></div>
+            <div class="log-line"><span class="comment">#   parent sequence (full name)  string       42    uvm_test_top.env.agent.sequencer.check_seq</span></div>
+            <div class="log-line"><span class="comment">#   sequencer                    string       32    uvm_test_top.env.agent.sequencer</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/components/driver.sv(42) @ 425000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/seq_item.sv(49) @ 425000: uvm_test_top.env.agent.sequencer@@check_seq.tr [TRANSACTION] kind=WRITE addr=0x0 data=0xcafebabe observed=0x0</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="comment"># Name                           Type         Size  Value</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="comment"># tr                             transaction  -     @721</span></div>
+            <div class="log-line"><span class="comment">#   begin_time                   time         64    399000</span></div>
+            <div class="log-line"><span class="comment">#   end_time                     time         64    399000</span></div>
+            <div class="log-line"><span class="comment">#   depth                        int          32    &#x27;d2</span></div>
+            <div class="log-line"><span class="comment">#   parent sequence (name)       string       9     check_seq</span></div>
+            <div class="log-line"><span class="comment">#   parent sequence (full name)  string       42    uvm_test_top.env.agent.sequencer.check_seq</span></div>
+            <div class="log-line"><span class="comment">#   sequencer                    string       32    uvm_test_top.env.agent.sequencer</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/components/driver.sv(42) @ 553000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/seq_item.sv(49) @ 553000: uvm_test_top.env.agent.sequencer@@check_seq.tr [TRANSACTION] kind=PERIPH_READ addr=0x0 data=0x0 observed=0x0</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="comment"># Name                           Type         Size  Value</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="comment"># tr                             transaction  -     @721</span></div>
+            <div class="log-line"><span class="comment">#   begin_time                   time         64    525000</span></div>
+            <div class="log-line"><span class="comment">#   end_time                     time         64    425000</span></div>
+            <div class="log-line"><span class="comment">#   depth                        int          32    &#x27;d2</span></div>
+            <div class="log-line"><span class="comment">#   parent sequence (name)       string       9     check_seq</span></div>
+            <div class="log-line"><span class="comment">#   parent sequence (full name)  string       42    uvm_test_top.env.agent.sequencer.check_seq</span></div>
+            <div class="log-line"><span class="comment">#   sequencer                    string       32    uvm_test_top.env.agent.sequencer</span></div>
+            <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------------</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO verilog_src/uvm-1.1d/src/base/uvm_objection.svh(1267) @ 1053000: reporter [TEST_DONE] &#x27;run&#x27; phase is ready to proceed to the &#x27;extract&#x27; phase</span></div>
             <div class="log-line"><span class="comment">#</span></div>
             <div class="log-line"><span class="uvm-summary-header"># --- UVM Report Summary ---</span></div>
             <div class="log-line"><span class="comment">#</span></div>
             <div class="log-line"><span class="comment"># ** Report counts by severity</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO :   11</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO :   17</span></div>
             <div class="log-line"><span class="uvm-warning"># UVM_WARNING :    0</span></div>
-            <div class="log-line"><span class="uvm-error"># UVM_ERROR :    0</span></div>
+            <div class="log-line"><span class="uvm-error"># UVM_ERROR :    1</span></div>
             <div class="log-line"><span class="uvm-fatal"># UVM_FATAL :    0</span></div>
             <div class="log-line"><span class="comment"># ** Report counts by id</span></div>
-            <div class="log-line"><span class="comment"># [Driver]     3</span></div>
+            <div class="log-line"><span class="comment"># [Driver]     6</span></div>
             <div class="log-line"><span class="comment"># [Questa UVM]     2</span></div>
             <div class="log-line"><span class="comment"># [RNTST]     1</span></div>
             <div class="log-line"><span class="comment"># [Reset Sequence]     1</span></div>
+            <div class="log-line"><span class="comment"># [Reset Test]     1</span></div>
             <div class="log-line"><span class="comment"># [TEST_DONE]     1</span></div>
-            <div class="log-line"><span class="comment"># [TRANSACTION]     3</span></div>
+            <div class="log-line"><span class="comment"># [TRANSACTION]     6</span></div>
             <div class="log-line"><span class="comment"># ** Note: $finish    : C:/questasim64_10.7c/win64/../verilog_src/uvm-1.1d/src/base/uvm_root.svh(430)</span></div>
-            <div class="log-line"><span class="comment">#    Time: 1285 ns  Iteration: 54  Instance: /tb</span></div>
-            <div class="log-line"><span class="comment"># End time: 10:54:54 on Mar 03,2026, Elapsed time: 0:00:03</span></div>
+            <div class="log-line"><span class="comment">#    Time: 1053 ns  Iteration: 54  Instance: /tb</span></div>
+            <div class="log-line"><span class="comment"># End time: 13:25:35 on Mar 03,2026, Elapsed time: 0:00:02</span></div>
             <div class="log-line"><span class="error-line"># Errors: 0, Warnings: 1</span></div>
             <div class="log-line"></div>
         </div>
