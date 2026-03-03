@@ -176,6 +176,26 @@ add wave -position insertpoint sim:/tb/dut/*
 run -all
 ```
 
+**Test 6: Full Write → Full Read Test**
+```tcl
+vlib work
+vmap work work
+vlog -sv +acc +incdir+uvm rtl/axi4_lite_fifo_async.v uvm/interface.sv uvm/axi4_uvm_pkg.sv tb/testbench.sv
+vsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=full_write_full_read_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+**Test 7: Continuous Read & Write Test**
+```tcl
+vlib work
+vmap work work
+vlog -sv +acc +incdir+uvm rtl/axi4_lite_fifo_async.v uvm/interface.sv uvm/axi4_uvm_pkg.sv tb/testbench.sv
+vsim -gui work.tb -voptargs=+acc -wlf fifo_waveform.wlf +UVM_TESTNAME=continuous_rw_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
 ---
 
 ## 📊 Generating HTML Test Reports
@@ -214,13 +234,15 @@ If you run **`vsim -c -do run_all_uvm_tests.do`**, only **one** log file is prod
 scripts\run_all_uvm_tests.bat
 ```
 
-This compiles once (`scripts/compile.do`), then runs five separate vsim invocations so each test writes its own file:
+This compiles once (`scripts/compile.do`), then runs separate vsim invocations so each test writes its own file:
 
 - `uvm_test_logs/basic_rw_test.log`
 - `uvm_test_logs/fifo_full_test.log`
 - `uvm_test_logs/fifo_empty_test.log`
 - `uvm_test_logs/reset_test.log`
 - `uvm_test_logs/rand_test.log`
+- `uvm_test_logs/full_write_full_read_test.log`
+- `uvm_test_logs/continuous_rw_test.log`
 
 ### 2. Generate HTML reports (consumes `.log` / `.txt` from `uvm_test_logs/`)
 

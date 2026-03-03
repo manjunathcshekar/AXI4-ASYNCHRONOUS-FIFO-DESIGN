@@ -68,4 +68,10 @@ interface intf ();
         input rd_en, rd_data, rd_valid, rd_empty, rd_full,
         input irq_full, irq_empty, irq_clear_full, irq_clear_empty
     );
+
+    // Reset-driver modport: allows tests to toggle reset
+    modport rst_mp (
+        input  clk_axi, clk_periph,
+        output axi_resetn
+    );
 endinterface : intf

@@ -18,6 +18,9 @@ package axi4_uvm_pkg;
     `include "sequences/fifo_full_seq.sv"
     `include "sequences/fifo_empty_seq.sv"
     `include "sequences/reset_seq.sv"
+    `include "sequences/reset_check_seq.sv"
+    `include "sequences/full_write_full_read_seq.sv"
+    `include "sequences/continuous_rw_seq.sv"
     
     // Tests
     `include "tests/rand_test.sv"
@@ -25,6 +28,8 @@ package axi4_uvm_pkg;
     `include "tests/fifo_full_test.sv"
     `include "tests/fifo_empty_test.sv"
     `include "tests/reset_test.sv"
+    `include "tests/full_write_full_read_test.sv"
+    `include "tests/continuous_rw_test.sv"
 
 endpackage : axi4_uvm_pkg
 
