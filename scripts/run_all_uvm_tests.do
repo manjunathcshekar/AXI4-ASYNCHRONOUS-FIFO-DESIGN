@@ -30,6 +30,26 @@ run -all
 vsim -l uvm_test_logs/rand_test.log work.tb +UVM_TESTNAME=rand_test
 run -all
 
-echo "All UVM tests finished. Logs in uvm_test_logs/*.log"
+vsim -l uvm_test_logs/full_write_full_read_test.log work.tb +UVM_TESTNAME=full_write_full_read_test
+run -all
+
+vsim -l uvm_test_logs/continuous_rw_test.log work.tb +UVM_TESTNAME=continuous_rw_test
+run -all
+
+echo "Running NEW coverage-enhancing tests..."
+
+vsim -l uvm_test_logs/cdc_stress_test.log work.tb +UVM_TESTNAME=cdc_stress_test
+run -all
+
+vsim -l uvm_test_logs/burst_pattern_test.log work.tb +UVM_TESTNAME=burst_pattern_test
+run -all
+
+vsim -l uvm_test_logs/alternating_pattern_test.log work.tb +UVM_TESTNAME=alternating_pattern_test
+run -all
+
+vsim -l uvm_test_logs/boundary_condition_test.log work.tb +UVM_TESTNAME=boundary_condition_test
+run -all
+
+echo "All 11 UVM tests finished. Logs in uvm_test_logs/*.log"
 echo "Run: python scripts/generate_html_report.py  OR  scripts\\generate_report.bat"
 quit -f

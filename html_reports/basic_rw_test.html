@@ -141,13 +141,13 @@
             <span style="margin-left: 20px;"><strong>Errors:</strong> 0</span>
             <span style="margin-left: 20px;"><strong>Warnings:</strong> 1</span>
             <div class="metadata">
-                Generated: 2026-03-03 13:25:52
+                Generated: 2026-04-08 12:48:02
             </div>
         </div>
         <div class="log-content">
             <div class="log-line"><span class="comment"># vsim -c -coverage -l uvm_test_logs\basic_rw_test.log work.tb &quot;+UVM_TESTNAME=basic_rw_test&quot; -do &quot;run -all; coverage save -onexit uvm_test_logs/basic_rw_test.ucdb; quit -f&quot;</span></div>
-            <div class="log-line"><span class="comment"># Start time: 13:25:22 on Mar 03,2026</span></div>
-            <div class="log-line"><span class="comment"># ** Note: (vsim-8009) Loading existing optimized design _opt</span></div>
+            <div class="log-line"><span class="comment"># Start time: 12:46:27 on Apr 08,2026</span></div>
+            <div class="log-line"><span class="comment"># ** Note: (vsim-3813) Design is being optimized due to module recompilation...</span></div>
             <div class="log-line"><span class="comment"># //  Questa Sim-64</span></div>
             <div class="log-line"><span class="comment"># //  Version 10.7c win64 Aug 18 2018</span></div>
             <div class="log-line"><span class="comment"># //</span></div>
@@ -209,21 +209,21 @@
             <div class="log-line"><span class="comment">#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq</span></div>
             <div class="log-line"><span class="comment">#   sequencer                    string       32    uvm_test_top.env.agent.sequencer</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/components/driver.sv(42) @ 231000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/seq_item.sv(49) @ 231000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=PERIPH_READ addr=0x0 data=0x0 observed=0x0</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/components/driver.sv(42) @ 147000: uvm_test_top.env.agent.driver [Driver] Drove a transaction</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/seq_item.sv(49) @ 147000: uvm_test_top.env.agent.sequencer@@seq.tr [TRANSACTION] kind=PERIPH_READ addr=0x0 data=0x0 observed=0x0</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
             <div class="log-line"><span class="comment"># Name                           Type         Size  Value</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
             <div class="log-line"><span class="comment"># tr                             transaction  -     @686</span></div>
-            <div class="log-line"><span class="comment">#   begin_time                   time         64    205000</span></div>
+            <div class="log-line"><span class="comment">#   begin_time                   time         64    125000</span></div>
             <div class="log-line"><span class="comment">#   end_time                     time         64    105000</span></div>
             <div class="log-line"><span class="comment">#   depth                        int          32    &#x27;d2</span></div>
             <div class="log-line"><span class="comment">#   parent sequence (name)       string       3     seq</span></div>
             <div class="log-line"><span class="comment">#   parent sequence (full name)  string       36    uvm_test_top.env.agent.sequencer.seq</span></div>
             <div class="log-line"><span class="comment">#   sequencer                    string       32    uvm_test_top.env.agent.sequencer</span></div>
             <div class="log-line"><span class="comment"># --------------------------------------------------------------------------------------</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/basic_rw_seq.sv(31) @ 231000: uvm_test_top.env.agent.sequencer@@seq [Basic RW Sequence] Basic read-write sequence completed</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO verilog_src/uvm-1.1d/src/base/uvm_objection.svh(1267) @ 731000: reporter [TEST_DONE] &#x27;run&#x27; phase is ready to proceed to the &#x27;extract&#x27; phase</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/sequences/basic_rw_seq.sv(30) @ 147000: uvm_test_top.env.agent.sequencer@@seq [Basic RW Sequence] Basic read-write sequence completed</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO verilog_src/uvm-1.1d/src/base/uvm_objection.svh(1267) @ 647000: reporter [TEST_DONE] &#x27;run&#x27; phase is ready to proceed to the &#x27;extract&#x27; phase</span></div>
             <div class="log-line"><span class="comment">#</span></div>
             <div class="log-line"><span class="uvm-summary-header"># --- UVM Report Summary ---</span></div>
             <div class="log-line"><span class="comment">#</span></div>
@@ -240,8 +240,8 @@
             <div class="log-line"><span class="comment"># [TEST_DONE]     1</span></div>
             <div class="log-line"><span class="comment"># [TRANSACTION]     2</span></div>
             <div class="log-line"><span class="comment"># ** Note: $finish    : C:/questasim64_10.7c/win64/../verilog_src/uvm-1.1d/src/base/uvm_root.svh(430)</span></div>
-            <div class="log-line"><span class="comment">#    Time: 731 ns  Iteration: 54  Instance: /tb</span></div>
-            <div class="log-line"><span class="comment"># End time: 13:25:24 on Mar 03,2026, Elapsed time: 0:00:02</span></div>
+            <div class="log-line"><span class="comment">#    Time: 647 ns  Iteration: 54  Instance: /tb</span></div>
+            <div class="log-line"><span class="comment"># End time: 12:46:33 on Apr 08,2026, Elapsed time: 0:00:06</span></div>
             <div class="log-line"><span class="error-line"># Errors: 0, Warnings: 1</span></div>
             <div class="log-line"></div>
         </div>

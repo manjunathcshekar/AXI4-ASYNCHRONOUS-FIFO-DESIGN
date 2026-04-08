@@ -2,11 +2,11 @@ class continuous_rw_seq extends uvm_sequence #(transaction);
     `uvm_object_utils(continuous_rw_seq)
 
     transaction tr;
-    int num_iters = 50;
+    int num_iters = 50;  // Original iterations
 
     function new(string name = "continuous_rw_seq");
         super.new(name);
-        `uvm_info("Continuous RW Sequence", "Constructed continuous_rw_seq", UVM_HIGH)
+        `uvm_info("Continuous RW Sequence", "Constructed continuous_rw_seq (50 iterations)", UVM_HIGH)
     endfunction
 
     function void set_num_iters(int n);
