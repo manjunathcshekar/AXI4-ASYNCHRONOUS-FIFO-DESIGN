@@ -6,20 +6,32 @@ Comprehensive design and verification of an **AXI4-Lite Asynchronous FIFO** with
 
 ## 🚀 Quick Start: 3-Command Complete Verification
 
-Execute these three commands in sequence to run 14 tests and generate real coverage data:
+Execute these three commands in sequence to run 15 tests and generate real coverage data:
 
 ```bash
 # Step 1: Compile with coverage instrumentation (~2 sec)
 vsim -c -do "do scripts/compile.do"
 
-# Step 2: Run all 14 tests (~5-10 min)
+# Step 2: Run all 15 tests (~5-10 min)
 scripts\run_all_uvm_tests.bat
 
 # Step 3: Generate real coverage dashboard (seconds)
 python scripts/generate_coverage_report.py
 ```
 
-**Result:** `html_reports/functional_coverage.html` with **97.6% coverage** from **1,659 verified transactions**.
+**Result:** `html_reports/functional_coverage.html` with real coverage metrics from **1,658 verified transactions** (corrected count).
+
+### With Waveform Capture
+
+To also generate waveforms for each test:
+
+```bash
+# Run all 15 tests with waveform capture
+scripts\run_tests_with_waveforms.bat
+
+# Then view specific test waveforms in QuestaSim GUI
+vsim -gui -wlf uvm_test_logs/basic_rw_test_waveform.wlf
+```
 
 ---
 
@@ -28,10 +40,11 @@ python scripts/generate_coverage_report.py
 | Metric | Value |
 |--------|-------|
 | **Overall Coverage** | 97.6% |
-| **Total Transactions** | 1,659 |
-| **Tests Executed** | 14 |
+| **Total Transactions** | 1,658 |
+| **Tests Executed** | 15 (14 core + 1 comprehensive) |
 | **Domain Coverage** | 5 domains (87%-100% each) |
-| **Coverage Databases** | 14 .ucdb files |
+| **Coverage Databases** | 15 .ucdb files |
+| **Waveform Files** | 15 .wlf files |
 
 ### Coverage by Domain
 
@@ -45,7 +58,7 @@ python scripts/generate_coverage_report.py
 
 ---
 
-## 🧪 14-Test Comprehensive Suite
+## 🧪 15-Test Comprehensive Suite
 
 ### Core Tests (7 Original)
 
@@ -59,7 +72,7 @@ python scripts/generate_coverage_report.py
 | 6 | `rand_test` | Random transaction sequences |
 | 7 | `reset_test` | Reset and recovery |
 
-### Enhancement Tests (7 New)
+### Coverage Enhancement Tests (7)
 
 | # | Test | Purpose | Focus |
 |---|------|---------|-------|
@@ -70,6 +83,12 @@ python scripts/generate_coverage_report.py
 | 12 | `interrupt_signals_test` | Interrupt combinations | 100% interrupt coverage |
 | 13 | `stress_load_test` | 500+ transactions | Stress & reliability |
 | 14 | `protocol_edge_case_test` | AXI protocol limits | Protocol robustness |
+
+### Comprehensive Coverage Test (1)
+
+| # | Test | Purpose |
+|---|------|---------|
+| 15 | `coverage_test` | Orchestrates all coverage sequences | Maximum domain coverage |
 
 ---
 
@@ -171,7 +190,7 @@ AXI4-ASYNCHRONOUS-FIFO-DESIGN/
 # 1. Compile (once)
 vsim -c -do "do scripts/compile.do"
 
-# 2. Run all 14 tests (generates logs and UCDB files)
+# 2. Run all 15 tests (generates logs and UCDB files)
 scripts\run_all_uvm_tests.bat
 
 # 3. Generate real coverage report
@@ -186,15 +205,26 @@ html_reports/functional_coverage.html
 | Command | Output | Time |
 |---------|--------|------|
 | `compile.do` | `work/` compiled design | ~2 sec |
-| `run_all_uvm_tests.bat` | 14 logs + 14 UCDB files | 5-10 min |
+| `run_all_uvm_tests.bat` | 15 logs + 15 UCDB files + HTML reports | 5-15 min |
 | `generate_coverage_report.py` | Real HTML dashboard | < 1 sec |
+
+### To Also Generate Waveforms
+
+```bash
+# Run all 15 tests with waveform capture
+scripts\run_tests_with_waveforms.bat
+
+# This additionally generates:
+# - 15 .wlf waveform files for each test
+# - Each file contains full signal trace for debugging
+```
 
 ---
 
 ## 🎯 Coverage Metrics Explained
 
 ### Transaction-Level Coverage
-- **Total transactions**: 1,659 verified AXI operations
+- **Total transactions**: 1,658 verified AXI operations (corrected for +1 offset bug)
 - **Write operations**: High-volume stress testing (500+)
 - **Read operations**: Synchronized read patterns
 - **Coverage per test**: Visible in dashboard
@@ -335,6 +365,133 @@ vsim -c -l uvm_test_logs/basic_rw_test.log work.tb "+UVM_TESTNAME=basic_rw_test"
 ```
 
 Replace `basic_rw_test` with any of the 14 test names.
+
+---
+
+## 🌊 Viewing Waveforms in QuestaSim
+
+### Step 1: Generate Waveforms (with Coverage)
+
+Run all 15 tests with waveform capture:
+
+```bash
+# From project root:
+scripts\run_tests_with_waveforms.bat
+```
+
+This generates:
+- `uvm_test_logs/{test_name}.log` — Test execution logs
+- `uvm_test_logs/{test_name}_waveform.wlf` — Waveform database (15 files)
+- `uvm_test_logs/{test_name}.ucdb` — Coverage database (15 files)
+- `html_reports/*.html` — Coverage reports
+
+**Result:** 15 `.wlf` waveform files ready for viewing
+
+### Step 2: View Waveforms in QuestaSim GUI
+
+After waveforms are generated, view each test's waveforms:
+
+#### **Basic Read-Write Test**
+```bash
+vsim -gui -do "do scripts/view_waveforms_template.do; set TEST_NAME basic_rw_test; set WAVEFORM_FILE uvm_test_logs/basic_rw_test_waveform.wlf"
+```
+
+#### **Alternative: Manual Viewing**
+
+Launch QuestaSim GUI and load waveform file manually:
+
+```bash
+# Start QuestaSim GUI
+vsim -gui
+
+# In QuestaSim Transcript:
+open_file uvm_test_logs/basic_rw_test_waveform.wlf
+add wave -noupdate /tb/dut/*
+wave zoom full
+```
+
+### Complete Commands for All 15 Tests
+
+```bash
+# Test 1: Basic Read-Write
+vsim -gui -wlf uvm_test_logs/basic_rw_test_waveform.wlf
+
+# Test 2: FIFO Full
+vsim -gui -wlf uvm_test_logs/fifo_full_test_waveform.wlf
+
+# Test 3: FIFO Empty  
+vsim -gui -wlf uvm_test_logs/fifo_empty_test_waveform.wlf
+
+# Test 4: Reset Test
+vsim -gui -wlf uvm_test_logs/reset_test_waveform.wlf
+
+# Test 5: Original Random Test
+vsim -gui -wlf uvm_test_logs/rand_test_waveform.wlf
+
+# Test 6: Full Write → Full Read Test
+vsim -gui -wlf uvm_test_logs/full_write_full_read_test_waveform.wlf
+
+# Test 7: Continuous Read & Write
+vsim -gui -wlf uvm_test_logs/continuous_rw_test_waveform.wlf
+
+# Test 8: CDC Stress Test
+vsim -gui -wlf uvm_test_logs/cdc_stress_test_waveform.wlf
+
+# Test 9: Burst Pattern Test
+vsim -gui -wlf uvm_test_logs/burst_pattern_test_waveform.wlf
+
+# Test 10: Alternating Pattern Test
+vsim -gui -wlf uvm_test_logs/alternating_pattern_test_waveform.wlf
+
+# Test 11: Boundary Condition Test
+vsim -gui -wlf uvm_test_logs/boundary_condition_test_waveform.wlf
+
+# Test 12: Interrupt Signals Test
+vsim -gui -wlf uvm_test_logs/interrupt_signals_test_waveform.wlf
+
+# Test 13: Stress Load Test
+vsim -gui -wlf uvm_test_logs/stress_load_test_waveform.wlf
+
+# Test 14: Protocol Edge Case Test
+vsim -gui -wlf uvm_test_logs/protocol_edge_case_test_waveform.wlf
+
+# Test 15: Coverage Test
+vsim -gui -wlf uvm_test_logs/coverage_test_waveform.wlf
+```
+
+### Waveform Navigation Tips
+
+**Key Controls in QuestaSim:**
+
+| Action | How to Do It |
+|--------|-------------|
+| Zoom to Full | Menu: Wave → Zoom → Full |
+| Zoom to Selection | Wave → Zoom → Fit |
+| Pan/Scroll | Use scrollbars or arrow keys |
+| Search Signal in Time | Wave → Find → Signal Editor |
+| Add Marker | Wave → Marker → Create (for timing measurements) |
+| Compare Signals | Drag one signal onto another |
+| Bookmark Position | Wave → Bookmark → Create |
+| Export Waveform | File → Export → Waveform Data |
+
+**Useful Wave Window Signals:**
+
+For CDC (Clock Domain Crossing) Analysis:
+- `/tb/dut/fifo_wr_ptr_gray_r` - Write pointer (Gray code)
+- `/tb/dut/fifo_wr_ptr_gray_sync_periph_1` - Sync stage 1
+- `/tb/dut/fifo_wr_ptr_gray_sync_periph_2` - Sync stage 2 (synchronized)
+
+For AXI Protocol Analysis:
+- `/tb/axi_awvalid`, `/tb/axi_awready` - Write address handshake
+- `/tb/axi_wvalid`, `/tb/axi_wready` - Write data handshake
+- `/tb/axi_bvalid`, `/tb/axi_bready` - Write response handshake
+- `/tb/axi_arvalid`, `/tb/axi_arready` - Read address handshake
+- `/tb/axi_rvalid`, `/tb/axi_rready` - Read data handshake
+
+For FIFO Internal State:
+- `/tb/dut/fifo_empty_periph_w` - FIFO empty flag
+- `/tb/dut/fifo_full_axi_w` - FIFO full flag
+- `/tb/dut/fifo_mem[*]` - FIFO memory contents
 
 ---
 

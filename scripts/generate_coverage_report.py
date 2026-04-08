@@ -27,6 +27,7 @@ def parse_test_logs():
         "interrupt_signals_test": {"transactions": 0, "writes": 0, "reads": 0},
         "stress_load_test": {"transactions": 0, "writes": 0, "reads": 0},
         "protocol_edge_case_test": {"transactions": 0, "writes": 0, "reads": 0},
+        "coverage_test": {"transactions": 0, "writes": 0, "reads": 0},
     }
     
     total_tests = 0
@@ -472,7 +473,7 @@ def generate_html_report(coverage_domains, overall_coverage, test_metrics, test_
     <div class="container">
         <div class="header">
             <h1>📊 AXI4-Lite Asynchronous FIFO</h1>
-            <p>Comprehensive Functional Coverage Analysis - Real Data from 14 UVM Tests</p>
+            <p>Comprehensive Functional Coverage Analysis - Real Data from 15 UVM Tests</p>
         </div>
         
         <div class="content">

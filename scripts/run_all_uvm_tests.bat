@@ -20,6 +20,14 @@ echo Running FINAL coverage-boosting tests...
 vsim -c -coverage -l uvm_test_logs\interrupt_signals_test.log work.tb +UVM_TESTNAME=interrupt_signals_test -do "run -all; coverage save -onexit uvm_test_logs/interrupt_signals_test.ucdb; quit -f"
 vsim -c -coverage -l uvm_test_logs\stress_load_test.log work.tb +UVM_TESTNAME=stress_load_test -do "run -all; coverage save -onexit uvm_test_logs/stress_load_test.ucdb; quit -f"
 vsim -c -coverage -l uvm_test_logs\protocol_edge_case_test.log work.tb +UVM_TESTNAME=protocol_edge_case_test -do "run -all; coverage save -onexit uvm_test_logs/protocol_edge_case_test.ucdb; quit -f"
-echo All UVM tests finished (14 total). Logs in uvm_test_logs\*.log and coverage databases in uvm_test_logs\*.ucdb
-echo Run: python scripts/generate_html_report.py  OR  scripts\generate_report.bat  (logs)
-echo Run: python scripts/generate_coverage_report.py  (coverage HTML)
+echo Running COMPREHENSIVE coverage test...
+vsim -c -coverage -l uvm_test_logs\coverage_test.log work.tb +UVM_TESTNAME=coverage_test -do "run -all; coverage save -onexit uvm_test_logs/coverage_test.ucdb; quit -f"
+echo All UVM tests finished (15 total). Logs in uvm_test_logs\*.log and coverage databases in uvm_test_logs\*.ucdb
+echo.
+echo Generating HTML reports from logs...
+python scripts/generate_html_report.py
+echo.
+echo Generating functional coverage report...
+python scripts/generate_coverage_report.py
+echo.
+echo Done! Open html_reports/index.html or html_reports/functional_coverage.html to view results

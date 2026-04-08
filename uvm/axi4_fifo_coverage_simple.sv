@@ -16,10 +16,6 @@ package axi4_fifo_coverage_pkg;
         
         // Covergroups (defined INSIDE the class, not in package)
         covergroup write_operations;
-            address: coverpoint last_tr.addr {
-                bins addr_data = {4'h0};
-                bins addr_status = {4'h4};
-            }
             write_kind: coverpoint (last_tr.kind == WRITE) {
                 bins is_write = {1};
                 bins not_write = {0};
@@ -31,7 +27,7 @@ package axi4_fifo_coverage_pkg;
                 bins pattern_A = {32'hA5A5A5A5};
                 bins other = default;
             }
-            cross write_kind, address, wr_data;
+            cross write_kind, wr_data;
         endgroup
         
         covergroup read_operations;

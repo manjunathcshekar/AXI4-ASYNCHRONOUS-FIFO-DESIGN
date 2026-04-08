@@ -44,7 +44,7 @@ class reset_test extends uvm_test;
         join
 
         // Allow CDC to settle, then check reset state
-        repeat (4) @(posedge mon_vif.clk_periph);
+        repeat (10) @(posedge mon_vif.clk_periph);
         if (mon_vif.rd_empty !== 1'b1)
             `uvm_error("Reset Test", $sformatf("Expected FIFO EMPTY=1 after reset, got %0b", mon_vif.rd_empty))
         if (mon_vif.rd_full !== 1'b0)

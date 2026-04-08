@@ -50,6 +50,22 @@ run -all
 vsim -l uvm_test_logs/boundary_condition_test.log work.tb +UVM_TESTNAME=boundary_condition_test
 run -all
 
-echo "All 11 UVM tests finished. Logs in uvm_test_logs/*.log"
+echo "Running FINAL coverage-boosting tests..."
+
+vsim -l uvm_test_logs/interrupt_signals_test.log work.tb +UVM_TESTNAME=interrupt_signals_test
+run -all
+
+vsim -l uvm_test_logs/stress_load_test.log work.tb +UVM_TESTNAME=stress_load_test
+run -all
+
+vsim -l uvm_test_logs/protocol_edge_case_test.log work.tb +UVM_TESTNAME=protocol_edge_case_test
+run -all
+
+echo "Running COMPREHENSIVE coverage test..."
+
+vsim -l uvm_test_logs/coverage_test.log work.tb +UVM_TESTNAME=coverage_test
+run -all
+
+echo "All 15 UVM tests finished. Logs in uvm_test_logs/*.log"
 echo "Run: python scripts/generate_html_report.py  OR  scripts\\generate_report.bat"
 quit -f

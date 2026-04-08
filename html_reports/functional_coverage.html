@@ -122,7 +122,7 @@
         .progress-fill {
             background: linear-gradient(90deg, #56ab2f 0%, #a8e063 100%);
             height: 100%;
-            width: 97.62%;
+            width: 97.56%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -265,14 +265,14 @@
     <div class="container">
         <div class="header">
             <h1>📊 AXI4-Lite Asynchronous FIFO</h1>
-            <p>Comprehensive Functional Coverage Analysis - Real Data from 14 UVM Tests</p>
+            <p>Comprehensive Functional Coverage Analysis - Real Data from 15 UVM Tests</p>
         </div>
         
         <div class="content">
             <!-- Summary Stats -->
             <div class="summary">
                 <div class="summary-card status-pass">
-                    <h3>13</h3>
+                    <h3>14</h3>
                     <p>Tests Passed</p>
                 </div>
                 <div class="summary-card status-fail">
@@ -280,7 +280,7 @@
                     <p>Tests Failed</p>
                 </div>
                 <div class="summary-card">
-                    <h3>1659</h3>
+                    <h3>1759</h3>
                     <p>Total Transactions</p>
                 </div>
                 <div class="summary-card grade-card">
@@ -312,18 +312,18 @@
                 <div class="metrics-grid">
                     <div class="metric-box">
                         <h4> Total Transactions</h4>
-                        <div class="metric-value">1659</div>
+                        <div class="metric-value">1759</div>
                         <div class="metric-label">Verified AXI operations</div>
                     </div>
                     <div class="metric-box">
                         <h4>📝 Write Operations</h4>
-                        <div class="metric-value">858</div>
-                        <div class="metric-label">51.7% of total</div>
+                        <div class="metric-value">919</div>
+                        <div class="metric-label">52.2% of total</div>
                     </div>
                     <div class="metric-box">
                         <h4>📖 Read Operations</h4>
-                        <div class="metric-value">787</div>
-                        <div class="metric-label">47.4% of total</div>
+                        <div class="metric-value">840</div>
+                        <div class="metric-label">47.8% of total</div>
                     </div>
                     <div class="metric-box">
                         <h4>🎯 Bins Coverage</h4>
@@ -356,11 +356,11 @@
         <div class="domain-coverage">
             <div class="domain-header">
                 <h3>FIFO State Machine</h3>
-                <span class="coverage-pct">93.1%</span>
+                <span class="coverage-pct">92.8%</span>
             </div>
             <p class="domain-desc">FIFO full, empty, write/read transitions</p>
             <div class="coverage-bar-container">
-                <div class="coverage-bar" style="width: 93.1%">
+                <div class="coverage-bar" style="width: 92.8%">
                     <span class="bar-text">18/20 bins</span>
                 </div>
             </div>
@@ -432,98 +432,105 @@
                     
             <tr>
                 <td><strong>alternating_pattern_test</strong></td>
-                <td class="trans-count">225</td>
+                <td class="trans-count">224</td>
                 <td class="write-count">96</td>
                 <td class="read-count">128</td>
             </tr>
             
             <tr>
                 <td><strong>basic_rw_test</strong></td>
-                <td class="trans-count">3</td>
+                <td class="trans-count">2</td>
                 <td class="write-count">1</td>
                 <td class="read-count">1</td>
             </tr>
             
             <tr>
                 <td><strong>boundary_condition_test</strong></td>
-                <td class="trans-count">86</td>
+                <td class="trans-count">85</td>
                 <td class="write-count">49</td>
                 <td class="read-count">36</td>
             </tr>
             
             <tr>
                 <td><strong>burst_pattern_test</strong></td>
-                <td class="trans-count">65</td>
+                <td class="trans-count">64</td>
                 <td class="write-count">48</td>
                 <td class="read-count">16</td>
             </tr>
             
             <tr>
                 <td><strong>cdc_stress_test</strong></td>
-                <td class="trans-count">151</td>
+                <td class="trans-count">150</td>
                 <td class="write-count">75</td>
                 <td class="read-count">75</td>
             </tr>
             
             <tr>
                 <td><strong>continuous_rw_test</strong></td>
-                <td class="trans-count">101</td>
+                <td class="trans-count">100</td>
                 <td class="write-count">50</td>
                 <td class="read-count">50</td>
             </tr>
             
             <tr>
+                <td><strong>coverage_test</strong></td>
+                <td class="trans-count">114</td>
+                <td class="write-count">61</td>
+                <td class="read-count">53</td>
+            </tr>
+            
+            <tr>
                 <td><strong>fifo_empty_test</strong></td>
-                <td class="trans-count">4</td>
+                <td class="trans-count">3</td>
                 <td class="write-count">1</td>
                 <td class="read-count">2</td>
             </tr>
             
             <tr>
                 <td><strong>fifo_full_test</strong></td>
-                <td class="trans-count">10</td>
+                <td class="trans-count">9</td>
                 <td class="write-count">9</td>
                 <td class="read-count">0</td>
             </tr>
             
             <tr>
                 <td><strong>full_write_full_read_test</strong></td>
-                <td class="trans-count">17</td>
+                <td class="trans-count">16</td>
                 <td class="write-count">8</td>
                 <td class="read-count">8</td>
             </tr>
             
             <tr>
                 <td><strong>interrupt_signals_test</strong></td>
-                <td class="trans-count">129</td>
+                <td class="trans-count">128</td>
                 <td class="write-count">72</td>
                 <td class="read-count">56</td>
             </tr>
             
             <tr>
                 <td><strong>protocol_edge_case_test</strong></td>
-                <td class="trans-count">105</td>
+                <td class="trans-count">104</td>
                 <td class="write-count">68</td>
                 <td class="read-count">36</td>
             </tr>
             
             <tr>
                 <td><strong>rand_test</strong></td>
-                <td class="trans-count">5</td>
+                <td class="trans-count">4</td>
                 <td class="write-count">2</td>
                 <td class="read-count">2</td>
             </tr>
             
             <tr>
                 <td><strong>reset_test</strong></td>
-                <td class="trans-count">7</td>
+                <td class="trans-count">6</td>
                 <td class="write-count">4</td>
                 <td class="read-count">2</td>
             </tr>
             
             <tr>
                 <td><strong>stress_load_test</strong></td>
-                <td class="trans-count">751</td>
+                <td class="trans-count">750</td>
                 <td class="write-count">375</td>
                 <td class="read-count">375</td>
             </tr>

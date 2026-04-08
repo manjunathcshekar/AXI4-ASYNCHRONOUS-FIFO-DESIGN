@@ -141,12 +141,12 @@
             <span style="margin-left: 20px;"><strong>Errors:</strong> 0</span>
             <span style="margin-left: 20px;"><strong>Warnings:</strong> 0</span>
             <div class="metadata">
-                Generated: 2026-04-08 12:48:02
+                Generated: 2026-04-08 22:58:39
             </div>
         </div>
         <div class="log-content">
-            <div class="log-line"><span class="comment"># vsim -batch work.tb &quot;+UVM_TESTNAME=coverage_test&quot; -do &quot;run -all; quit&quot; -l uvm_test_logs/coverage_test.log</span></div>
-            <div class="log-line"><span class="comment"># Start time: 11:46:41 on Apr 08,2026</span></div>
+            <div class="log-line"><span class="comment"># vsim -c -coverage -l uvm_test_logs\coverage_test.log work.tb &quot;+UVM_TESTNAME=coverage_test&quot; -do &quot;run -all; coverage save -onexit uvm_test_logs/coverage_test.ucdb; quit -f&quot;</span></div>
+            <div class="log-line"><span class="comment"># Start time: 22:58:35 on Apr 08,2026</span></div>
             <div class="log-line"><span class="comment"># ** Note: (vsim-8009) Loading existing optimized design _opt</span></div>
             <div class="log-line"><span class="comment"># //  Questa Sim-64</span></div>
             <div class="log-line"><span class="comment"># //  Version 10.7c win64 Aug 18 2018</span></div>
@@ -172,7 +172,6 @@
             <div class="log-line"><span class="comment"># Loading work.axi_lite_async_fifo(fast)</span></div>
             <div class="log-line"><span class="comment"># Loading mtiUvm.questa_uvm_pkg(fast)</span></div>
             <div class="log-line"><span class="comment"># Loading C:/questasim64_10.7c/uvm-1.1d\win64\uvm_dpi.dll</span></div>
-            <div class="log-line"><span class="comment">#</span></div>
             <div class="log-line"><span class="comment"># run -all</span></div>
             <div class="log-line"><span class="comment"># ----------------------------------------------------------------</span></div>
             <div class="log-line"><span class="comment"># UVM-1.1d</span></div>
@@ -1689,7 +1688,7 @@
             <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/tests/coverage_test_simple.sv(63) @ 5405000: uvm_test_top [coverage_test] COVERAGE TEST COMPLETED SUCCESSFULLY!</span></div>
             <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/tests/coverage_test_simple.sv(64) @ 5405000: uvm_test_top [coverage_test] ====================================</span></div>
             <div class="log-line"><span class="uvm-info"># UVM_INFO verilog_src/uvm-1.1d/src/base/uvm_objection.svh(1267) @ 5405000: reporter [TEST_DONE] &#x27;run&#x27; phase is ready to proceed to the &#x27;extract&#x27; phase</span></div>
-            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/axi4_uvm_pkg.sv(92) @ 5405000: uvm_test_top.cov [COVERAGE] Coverage: 0 writes, 0 reads, 0 total</span></div>
+            <div class="log-line"><span class="uvm-info"># UVM_INFO uvm/axi4_uvm_pkg.sv(99) @ 5405000: uvm_test_top.cov [COVERAGE] Coverage: 0 writes, 0 reads, 0 total</span></div>
             <div class="log-line"><span class="comment">#</span></div>
             <div class="log-line"><span class="uvm-summary-header"># --- UVM Report Summary ---</span></div>
             <div class="log-line"><span class="comment">#</span></div>
@@ -1711,7 +1710,7 @@
             <div class="log-line"><span class="comment"># [coverage_test]     8</span></div>
             <div class="log-line"><span class="comment"># ** Note: $finish    : C:/questasim64_10.7c/win64/../verilog_src/uvm-1.1d/src/base/uvm_root.svh(430)</span></div>
             <div class="log-line"><span class="comment">#    Time: 5405 ns  Iteration: 54  Instance: /tb</span></div>
-            <div class="log-line"><span class="comment"># End time: 11:46:45 on Apr 08,2026, Elapsed time: 0:00:04</span></div>
+            <div class="log-line"><span class="comment"># End time: 22:58:39 on Apr 08,2026, Elapsed time: 0:00:04</span></div>
             <div class="log-line"><span class="success"># Errors: 0, Warnings: 0</span></div>
             <div class="log-line"></div>
         </div>
