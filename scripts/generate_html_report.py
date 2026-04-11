@@ -109,28 +109,29 @@ def convert_log_to_html(log_file_path, output_html_path, test_name):
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             margin: 0;
             padding: 20px;
-            background-color: #1e1e1e;
-            color: #d4d4d4;
+            background-color: #f5f5f5;
+            color: #333;
             line-height: 1.6;
         }}
         .container {{
             max-width: 1400px;
             margin: 0 auto;
-            background-color: #252526;
+            background-color: #ffffff;
             border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }}
         h1 {{
-            color: #4ec9b0;
-            border-bottom: 2px solid #4ec9b0;
+            color: #2c3e50;
+            border-bottom: 2px solid #667eea;
             padding-bottom: 10px;
         }}
         .test-header {{
-            background-color: #2d2d30;
+            background-color: #f8f9fa;
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
+            border-left: 4px solid #667eea;
         }}
         .status-badge {{
             display: inline-block;
@@ -156,8 +157,8 @@ def convert_log_to_html(log_file_path, output_html_path, test_name):
             color: white;
         }}
         .log-content {{
-            background-color: #1e1e1e;
-            border: 1px solid #3e3e42;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
             border-radius: 5px;
             padding: 15px;
             overflow-x: auto;
@@ -171,62 +172,62 @@ def convert_log_to_html(log_file_path, output_html_path, test_name):
             margin: 2px 0;
         }}
         .uvm-info {{
-            color: #4ec9b0;
+            color: #0066cc;
         }}
         .uvm-warning {{
-            color: #dcdcaa;
+            color: #ff9800;
         }}
         .uvm-error {{
-            color: #f48771;
+            color: #d32f2f;
             font-weight: bold;
         }}
         .uvm-fatal {{
-            color: #f44336;
+            color: #c41c3b;
             font-weight: bold;
         }}
         .driver {{
-            color: #569cd6;
+            color: #1976d2;
         }}
         .transaction {{
-            color: #ce9178;
+            color: #d84315;
         }}
         .test-done {{
-            color: #4ec9b0;
+            color: #2e7d32;
             font-weight: bold;
         }}
         .uvm-summary-header {{
-            color: #4ec9b0;
+            color: #1565c0;
             font-weight: bold;
             font-size: 14px;
         }}
         .success {{
-            color: #4caf50;
+            color: #2e7d32;
             font-weight: bold;
         }}
         .error-line {{
-            color: #f48771;
+            color: #d32f2f;
         }}
         .warning-line {{
-            color: #dcdcaa;
+            color: #ff9800;
         }}
         .comment {{
-            color: #6a9955;
+            color: #558b2f;
         }}
         .back-link {{
             display: inline-block;
             margin-bottom: 20px;
-            color: #4ec9b0;
+            color: #667eea;
             text-decoration: none;
             padding: 8px 15px;
-            border: 1px solid #4ec9b0;
+            border: 1px solid #667eea;
             border-radius: 5px;
         }}
         .back-link:hover {{
-            background-color: #4ec9b0;
-            color: #1e1e1e;
+            background-color: #667eea;
+            color: #ffffff;
         }}
         .metadata {{
-            color: #858585;
+            color: #666;
             font-size: 12px;
             margin-top: 10px;
         }}

@@ -92,62 +92,46 @@ def calculate_coverage_metrics(test_metrics, test_status):
             "description": "AXI addressing modes, strobes, bursts",
             "bins_hit": 35,
             "total_bins": 40,
-            "percentage": 87.5,  # Will be calculated
+            "percentage": 0.0,  # Will be calculated
             "contributors": ["burst_pattern_test", "protocol_edge_case_test", "alternating_pattern_test"]
         },
         "FIFO State Machine": {
             "description": "FIFO full, empty, write/read transitions",
             "bins_hit": 18,
             "total_bins": 20,
-            "percentage": 90.0,  # Will be calculated
+            "percentage": 0.0,  # Will be calculated
             "contributors": ["fifo_full_test", "fifo_empty_test", "full_write_full_read_test"]
         },
         "CDC Synchronization": {
             "description": "Clock domain crossing synchronizer behavior",
             "bins_hit": 24,
             "total_bins": 30,
-            "percentage": 80.0,  # Will be calculated
+            "percentage": 0.0,  # Will be calculated
             "contributors": ["cdc_stress_test", "stress_load_test"]
         },
         "Interrupt Signals": {
             "description": "FIFO full/empty interrupt combinations",
             "bins_hit": 12,
             "total_bins": 12,
-            "percentage": 100.0,  # Will be calculated
+            "percentage": 0.0,  # Will be calculated
             "contributors": ["interrupt_signals_test", "fifo_full_test", "fifo_empty_test"]
         },
         "Error Scenarios": {
             "description": "Reset, boundary conditions, edge cases",
             "bins_hit": 22,
             "total_bins": 25,
-            "percentage": 88.0,  # Will be calculated
+            "percentage": 0.0,  # Will be calculated
             "contributors": ["reset_test", "boundary_condition_test", "protocol_edge_case_test"]
         }
     }
     
-    # Calculate coverage percentages based on transaction volume from each contributor
-    domains_by_contrib = defaultdict(list)
-    for domain, info in coverage_domains.items():
-        for contrib in info["contributors"]:
-            if contrib in test_metrics:
-                trans = test_metrics[contrib]["transactions"]
-                if trans > 0:
-                    domains_by_contrib[domain].append(trans)
-    
-    # Adjust percentages based on actual transaction counts
+    # Calculate coverage percentages correctly: (bins_hit / total_bins) * 100
     for domain in coverage_domains:
-        if domain in domains_by_contrib:
-            # More transactions = better coverage estimate
-            trans_count = sum(domains_by_contrib[domain])
-            if trans_count > 0:
-                # Boost coverage based on transaction volume
-                boost = min(trans_count / 100 * 0.1, 0.15)  # Max 15% boost
-                coverage_domains[domain]["percentage"] = min(
-                    coverage_domains[domain]["percentage"] + boost * 100,
-                    100.0
-                )
+        bins_hit = coverage_domains[domain]["bins_hit"]
+        total_bins = coverage_domains[domain]["total_bins"]
+        coverage_domains[domain]["percentage"] = (bins_hit / total_bins) * 100.0
     
-    # Calculate overall coverage
+    # Calculate overall coverage as average of all domain percentages
     overall_coverage = sum(d["percentage"] for d in coverage_domains.values()) / len(coverage_domains)
     
     return coverage_domains, overall_coverage, total_trans, total_writes, total_reads
