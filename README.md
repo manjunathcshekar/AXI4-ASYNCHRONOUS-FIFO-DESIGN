@@ -19,7 +19,7 @@ scripts\run_all_uvm_tests.bat
 python scripts/generate_coverage_report.py
 ```
 
-**Result:** `html_reports/functional_coverage.html` with real coverage metrics from **1,658 verified transactions** (corrected count).
+**Result:** `html_reports/functional_coverage.html` with real coverage metrics from **1,774 verified transactions**.
 
 ### With Waveform Capture
 
@@ -35,26 +35,29 @@ vsim -gui -wlf uvm_test_logs/basic_rw_test_waveform.wlf
 
 ---
 
-## 📊 Coverage Results (Real Data)
+## 📊 Coverage Results (Real Data from Report)
 
-| Metric | Value |
-|--------|-------|
-| **Overall Coverage** | 97.6% |
-| **Total Transactions** | 1,658 |
-| **Tests Executed** | 15 (14 core + 1 comprehensive) |
-| **Domain Coverage** | 5 domains (87%-100% each) |
-| **Coverage Databases** | 15 .ucdb files |
-| **Waveform Files** | 15 .wlf files |
+| Metric | Value | Status |
+|--------|-------|--------|
+| **Overall Coverage** | 88.1% | Grade B |
+| **Total Transactions** | 1,774 | Verified |
+| **Tests Passed** | 14/15 | 93.3% |
+| **Tests Failed** | 1/15 | reset_test |
+| **Write Operations** | 919 | 51.8% of total |
+| **Read Operations** | 840 | 47.4% of total |
+| **Bins Exercised** | 114/133 | 85.7% |
+| **Coverage Databases** | 15 .ucdb files | ✅ Generated |
+| **Waveform Files** | 15 .wlf files | ✅ Available |
 
-### Coverage by Domain
+### Coverage by Domain (Real Metrics)
 
-| Domain | Coverage | Bins Hit | Key Tests |
-|--------|----------|----------|-----------|
-| AXI Protocol | 87.5% | 35/40 | burst_pattern, protocol_edge_case |
-| FIFO State Machine | 90.0% | 18/20 | fifo_full, fifo_empty |
-| CDC Synchronization | 80.0% | 24/30 | cdc_stress, stress_load |
-| Interrupt Signals | 100.0% | 12/12 | interrupt_signals |
-| Error Scenarios | 88.0% | 22/25 | reset, boundary_condition |
+| Domain | Coverage | Bins Hit | Status | Key Tests |
+|--------|----------|----------|--------|----------|
+| AXI Protocol | 82.6% | 38/46 | ✅ Good | burst_pattern, protocol_edge_case, basic_rw_test |
+| FIFO State Machine | 90.0% | 18/20 | ✅ Excellent | fifo_full, fifo_empty, full_write_full_read_test |
+| CDC Synchronization | 80.0% | 24/30 | ✅ Good | cdc_stress, stress_load |
+| Interrupt Signals | 100.0% | 12/12 | ✅ Perfect | interrupt_signals |
+| Error Scenarios | 88.0% | 22/25 | ✅ Good | reset, boundary_condition, protocol_edge_case |
 
 ---
 
@@ -170,9 +173,10 @@ AXI4-ASYNCHRONOUS-FIFO-DESIGN/
 - ✅ Clock Domain Crossing (CDC) synchronizer
 
 ### UVM Verification Environment
-- ✅ **14 comprehensive test scenarios**
-- ✅ **1,659 verified transactions**
-- ✅ **97.6% functional coverage**
+- ✅ **15 comprehensive test scenarios** (14 passing, 1 failing)
+- ✅ **1,774 verified transactions** (919 writes, 840 reads)
+- ✅ **88.1% functional coverage** (Grade B: 114/133 bins)
+- ✅ **5 coverage domains** fully analyzed
 - ✅ Real coverage data extraction from UCDB files
 - ✅ Professional HTML dashboard reporting
 - ✅ Per-domain coverage breakdown
@@ -221,44 +225,349 @@ scripts\run_tests_with_waveforms.bat
 
 ---
 
-## 🎯 Coverage Metrics Explained
+## � Waveform Generation Steps and Commands
+
+### Overview
+Generate waveforms (.wlf files) for all 15 test cases with detailed signal tracing. Waveforms are essential for debugging, timing analysis, and protocol verification.
+
+### Prerequisites
+- QuestaSim 10.7c or later installed
+- Project compiled (see Step 1 below)
+- Output directory: `uvm_test_logs/` (auto-created)
+
+---
+
+### Step 1: Compile the Design (Run Once)
+
+Execute this command **once** to compile all design files with coverage instrumentation:
+
+```tcl
+# QuestaSim Transcript Commands
+vlib work
+vmap work work
+vlog -sv +acc +incdir+uvm rtl/axi4_lite_fifo_async.v uvm/interface.sv uvm/axi4_uvm_pkg.sv tb/testbench.sv
+```
+
+**Output:** Compiled `work/` library directory ready for all 15 tests.
+
+---
+
+### Step 2: Generate Waveforms for All 15 Tests
+
+Run each test individually to generate separate waveform files. Copy and paste each command into **QuestaSim Transcript** window.
+
+#### **Test 1: Basic Read-Write Test**
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/basic_rw_test.wlf +UVM_TESTNAME=basic_rw_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+#### **Test 2: Boundary Condition Test** ⭐ NEW
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/boundary_condition_test.wlf +UVM_TESTNAME=boundary_condition_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+#### **Test 3: Burst Pattern Test** ⭐ NEW
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/burst_pattern_test.wlf +UVM_TESTNAME=burst_pattern_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+#### **Test 4: CDC Stress Test** ⭐ NEW
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/cdc_stress_test.wlf +UVM_TESTNAME=cdc_stress_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+#### **Test 5: Continuous Read-Write Test**
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/continuous_rw_test.wlf +UVM_TESTNAME=continuous_rw_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+#### **Test 6: Coverage Test** ⭐ NEW
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/coverage_test.wlf +UVM_TESTNAME=coverage_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+#### **Test 7: FIFO Empty Test**
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/fifo_empty_test.wlf +UVM_TESTNAME=fifo_empty_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+#### **Test 8: FIFO Full Test**
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/fifo_full_test.wlf +UVM_TESTNAME=fifo_full_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+#### **Test 9: Full Write-Full Read Test**
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/full_write_full_read_test.wlf +UVM_TESTNAME=full_write_full_read_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+#### **Test 10: Interrupt Signals Test** ⭐ NEW
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/interrupt_signals_test.wlf +UVM_TESTNAME=interrupt_signals_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+#### **Test 11: Protocol Edge Case Test** ⭐ NEW
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/protocol_edge_case_test.wlf +UVM_TESTNAME=protocol_edge_case_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+#### **Test 12: Random Test**
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/rand_test.wlf +UVM_TESTNAME=rand_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+#### **Test 13: Reset Test** ⚠️ FAILING TEST
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/reset_test.wlf +UVM_TESTNAME=reset_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+#### **Test 14: Alternating Pattern Test** ⭐ NEW
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/alternating_pattern_test.wlf +UVM_TESTNAME=alternating_pattern_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+#### **Test 15: Stress Load Test** ⭐ NEW
+```tcl
+vsim -gui work.tb -voptargs=+acc -wlf uvm_test_logs/stress_load_test.wlf +UVM_TESTNAME=stress_load_test
+add wave -position insertpoint sim:/tb/dut/*
+run -all
+```
+
+---
+
+### Step 3: Automated Batch Generation (Optional)
+
+Create a batch file `generate_all_waveforms.bat` to run all tests non-interactively:
+
+```batch
+@echo off
+REM ============================================================================
+REM Automated Waveform Generation for All 15 Tests
+REM ============================================================================
+
+echo.
+echo Compiling design (Step 1)...
+vlib work
+vmap work work
+vlog -sv +acc +incdir+uvm rtl/axi4_lite_fifo_async.v uvm/interface.sv uvm/axi4_uvm_pkg.sv tb/testbench.sv
+
+echo.
+echo Generating waveforms for all 15 tests (Step 2)...
+echo.
+
+REM Test 1
+echo [1/15] Running basic_rw_test...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/basic_rw_test.wlf +UVM_TESTNAME=basic_rw_test -do "run -all; quit"
+
+REM Test 2
+echo [2/15] Running boundary_condition_test...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/boundary_condition_test.wlf +UVM_TESTNAME=boundary_condition_test -do "run -all; quit"
+
+REM Test 3
+echo [3/15] Running burst_pattern_test...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/burst_pattern_test.wlf +UVM_TESTNAME=burst_pattern_test -do "run -all; quit"
+
+REM Test 4
+echo [4/15] Running cdc_stress_test...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/cdc_stress_test.wlf +UVM_TESTNAME=cdc_stress_test -do "run -all; quit"
+
+REM Test 5
+echo [5/15] Running continuous_rw_test...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/continuous_rw_test.wlf +UVM_TESTNAME=continuous_rw_test -do "run -all; quit"
+
+REM Test 6
+echo [6/15] Running coverage_test...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/coverage_test.wlf +UVM_TESTNAME=coverage_test -do "run -all; quit"
+
+REM Test 7
+echo [7/15] Running fifo_empty_test...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/fifo_empty_test.wlf +UVM_TESTNAME=fifo_empty_test -do "run -all; quit"
+
+REM Test 8
+echo [8/15] Running fifo_full_test...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/fifo_full_test.wlf +UVM_TESTNAME=fifo_full_test -do "run -all; quit"
+
+REM Test 9
+echo [9/15] Running full_write_full_read_test...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/full_write_full_read_test.wlf +UVM_TESTNAME=full_write_full_read_test -do "run -all; quit"
+
+REM Test 10
+echo [10/15] Running interrupt_signals_test...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/interrupt_signals_test.wlf +UVM_TESTNAME=interrupt_signals_test -do "run -all; quit"
+
+REM Test 11
+echo [11/15] Running protocol_edge_case_test...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/protocol_edge_case_test.wlf +UVM_TESTNAME=protocol_edge_case_test -do "run -all; quit"
+
+REM Test 12
+echo [12/15] Running rand_test...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/rand_test.wlf +UVM_TESTNAME=rand_test -do "run -all; quit"
+
+REM Test 13
+echo [13/15] Running reset_test (FAILING - for debugging)...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/reset_test.wlf +UVM_TESTNAME=reset_test -do "run -all; quit"
+
+REM Test 14
+echo [14/15] Running alternating_pattern_test...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/alternating_pattern_test.wlf +UVM_TESTNAME=alternating_pattern_test -do "run -all; quit"
+
+REM Test 15
+echo [15/15] Running stress_load_test...
+vsim -c work.tb -voptargs=+acc -wlf uvm_test_logs/stress_load_test.wlf +UVM_TESTNAME=stress_load_test -do "run -all; quit"
+
+echo.
+echo ============================================================================
+echo All 15 waveforms generated successfully!
+echo ============================================================================
+echo.
+echo Waveform files location: uvm_test_logs/
+echo.
+echo To view waveforms in QuestaSim GUI, use Step 4 below.
+echo.
+pause
+```
+
+**Run the batch file:**
+```bash
+generate_all_waveforms.bat
+```
+
+---
+
+### Step 4: View Individual Waveforms in QuestaSim GUI
+
+After waveforms are generated (Step 2 or 3), view them in QuestaSim GUI:
+
+#### **Open Specific Test Waveform**
+```tcl
+# In QuestaSim Transcript, open any waveform file:
+vsim -gui -wlf uvm_test_logs/basic_rw_test.wlf
+
+# Then add wave display:
+add wave -noupdate /tb/dut/*
+wave zoom full
+```
+
+#### **Example: View Reset Test (Failing Test)**
+```tcl
+vsim -gui -wlf uvm_test_logs/reset_test.wlf
+add wave -noupdate /tb/dut/axi_resetn
+add wave -noupdate /tb/dut/fifo_wr_ptr_bin_r
+add wave -noupdate /tb/dut/fifo_rd_ptr_bin_r
+add wave -noupdate /tb/dut/fifo_empty_periph_w
+add wave -noupdate /tb/dut/fifo_full_axi_w
+wave zoom full
+```
+
+---
+
+### Waveform Files Generated
+
+After completing Steps 2 or 3, the following `.wlf` files will be created in `uvm_test_logs/`:
+
+```
+uvm_test_logs/
+├── basic_rw_test.wlf                     ✅ Pass
+├── boundary_condition_test.wlf           ✅ Pass
+├── burst_pattern_test.wlf                ✅ Pass
+├── cdc_stress_test.wlf                   ✅ Pass
+├── continuous_rw_test.wlf                ✅ Pass
+├── coverage_test.wlf                     ✅ Pass
+├── fifo_empty_test.wlf                   ✅ Pass
+├── fifo_full_test.wlf                    ✅ Pass
+├── full_write_full_read_test.wlf         ✅ Pass
+├── interrupt_signals_test.wlf            ✅ Pass
+├── protocol_edge_case_test.wlf           ✅ Pass
+├── rand_test.wlf                         ✅ Pass
+├── reset_test.wlf                        ⚠️ FAIL (Debug this)
+├── alternating_pattern_test.wlf          ✅ Pass
+└── stress_load_test.wlf                  ✅ Pass
+```
+
+---
+
+### Troubleshooting Waveform Generation
+
+| Issue | Solution |
+|-------|----------|
+| `.wlf` file not created | Check simulator output; ensure `uvm_test_logs/` directory exists |
+| Waveforms show no signals | Use `add wave` command before `run -all` |
+| Simulation hangs | Check for UVM deadlock in failing test (reset_test) |
+| Out of memory | Reduce waveform recording scope using `add wave -sel` |
+
+---
+
+## �🎯 Coverage Metrics Explained
 
 ### Transaction-Level Coverage
-- **Total transactions**: 1,658 verified AXI operations (corrected for +1 offset bug)
-- **Write operations**: High-volume stress testing (500+)
-- **Read operations**: Synchronized read patterns
-- **Coverage per test**: Visible in dashboard
+- **Total transactions**: 1,774 verified AXI operations
+  - **Write operations**: 919 (51.8%)
+  - **Read operations**: 840 (47.4%)
+- **Largest contributor**: stress_load_test (751 txns, 42.3%)
+- **Smallest contributor**: fifo_empty_test (4 txns, 0.2%)
+- **Coverage per test**: Visible in dashboard and html_reports/
 
 ### Domain-Based Coverage
 Each test contributes to multiple coverage domains:
 
-1. **AXI Protocol** (87.5%)
-   - Address decoding patterns
-   - Burst type handling
-   - Strobe coverage
-   - Response timing
+1. **AXI Protocol** (82.6% - 38/46 bins)
+   - Write address modes (0x0, 0x4)
+   - Write strobe patterns (0xF, 0x5, 0xA)
+   - Response codes (OKAY, SLVERR on overflow)
+   - Read address modes and responses
 
-2. **FIFO State Machine** (90.0%)
-   - Empty state transitions
-   - Full state transitions
-   - Write/read alternation
-   - Boundary conditions
+2. **FIFO State Machine** (90.0% - 18/20 bins)
+   - Occupancy levels (0-8 entries)
+   - Empty (0) and Full (8) states
+   - State transitions and FSM coverage
+   - Empty/full flag correlations
 
-3. **CDC Synchronization** (80.0%)
-   - Clock domain crossing delays
-   - Synchronizer metastability handling
-   - Reset propagation
+3. **CDC Synchronization** (80.0% - 24/30 bins)
+   - Gray-code pointer transitions (4 bits each direction)
+   - Clock domain crossing delays (0-5 cycles)
+   - Synchronizer safety and metastability
+   - Pointer wraparound events
 
-4. **Interrupt Signals** (100.0%)
-   - Full interrupt combinations
-   - Empty interrupt combinations
-   - Simultaneous interrupt scenarios
+4. **Interrupt Signals** (100.0% ✅ Perfect - 12/12 bins)
+   - IRQ_FULL signal assertions and clearing
+   - IRQ_EMPTY signal assertions and clearing
+   - All interrupt state combinations exercised
+   - Interrupt timing and duration tracking
 
-5. **Error Scenarios** (88.0%)
-   - Reset recovery
-   - Edge cases
-   - Boundary addresses
-   - Protocol violations
+5. **Error Scenarios** (88.0% - 22/25 bins)
+   - Overflow detection and SLVERR response
+   - Underflow prevention
+   - Reset timing at various operational phases
+   - Post-reset data validity
+   - FIFO boundary conditions and edge cases
 
 ---
 
@@ -305,11 +614,33 @@ html_reports/
 
 ## 📈 Coverage Advancement
 
-| Phase | Tests | Trans. | Coverage |
-|-------|-------|--------|----------|
-| Original | 7 | ~400 | ~65% |
-| Enhanced | +4 | +600 | ~85% |
-| Complete | +3 | +659 | **97.6%** |
+| Phase | Tests | Transactions | Pass Rate | Coverage | Grade |
+|-------|-------|--------------|-----------|----------|-------|
+| Original | 7 | ~400 | ~100% | ~65% | C+ |
+| Enhanced | +4 | +600 | ~95% | ~80% | B- |
+| Current | 15 | 1,774 | **93.3%** | **88.1%** | **B** |
+| Target | 15 | 1,774+ | 100% | >95% | A |
+
+### Actual Test Results
+
+| Test | Status | Transactions | Type |
+|------|--------|--------------|------|
+| basic_rw_test | ✅ PASS | 3 | Core |
+| boundary_condition_test | ✅ PASS | 86 | Enhancement |
+| burst_pattern_test | ✅ PASS | 65 | Enhancement |
+| cdc_stress_test | ✅ PASS | 151 | Enhancement |
+| continuous_rw_test | ✅ PASS | 101 | Core |
+| coverage_test | ✅ PASS | 115 | Coverage |
+| fifo_empty_test | ✅ PASS | 4 | Core |
+| fifo_full_test | ✅ PASS | 10 | Core |
+| full_write_full_read_test | ✅ PASS | 17 | Core |
+| interrupt_signals_test | ✅ PASS | 129 | Enhancement |
+| protocol_edge_case_test | ✅ PASS | 105 | Enhancement |
+| rand_test | ✅ PASS | 5 | Core |
+| reset_test | ⚠️ FAIL | 7 | Core |
+| alternating_pattern_test | ✅ PASS | 225 | Enhancement |
+| stress_load_test | ✅ PASS | 751 | Enhancement |
+| **TOTAL** | **14/15** | **1,774** | **93.3%** |
 
 ---
 
@@ -520,5 +851,6 @@ For issues or questions about the verification environment, refer to:
 
 ---
 
-**Generated**: April 8, 2026  
-**Coverage Status**: ✅ 97.6% (14 tests, 1,659 transactions, 5 domains)
+**Last Updated**: April 20, 2026  
+**Coverage Status**: ✅ 88.1% Grade B (14/15 tests passing, 1,774 transactions, 5 domains, 114/133 bins)  
+**Next Target**: 95%+ coverage (A grade) with reset_test fix

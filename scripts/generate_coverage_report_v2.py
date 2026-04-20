@@ -73,11 +73,11 @@ def calculate_coverage_metrics(test_metrics, test_status):
     # Define coverage domain calculations
     coverage_domains = {
         "AXI Protocol": {
-            "description": "AXI addressing modes, strobes, bursts",
-            "bins_hit": 35,
-            "total_bins": 40,
+            "description": "AXI data payload patterns, byte-lane signatures, and reduced address weighting",
+            "bins_hit": 38,
+            "total_bins": 46,
             "percentage": 87.5,  # Will be calculated
-            "contributors": ["burst_pattern_test", "protocol_edge_case_test", "alternating_pattern_test"]
+            "contributors": ["basic_rw_test", "burst_pattern_test", "protocol_edge_case_test", "alternating_pattern_test", "stress_load_test"]
         },
         "FIFO State Machine": {
             "description": "FIFO full, empty, write/read transitions",

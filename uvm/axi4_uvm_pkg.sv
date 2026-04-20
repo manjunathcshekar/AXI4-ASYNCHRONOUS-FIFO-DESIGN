@@ -37,41 +37,66 @@ package axi4_uvm_pkg;
         
         // Covergroups
         covergroup write_operations;
-            address: coverpoint last_tr.addr {
-                bins addr_data = {4'h0};
-                bins addr_status = {4'h4};
+            write_kind: coverpoint last_tr.kind {
+                bins is_write = {WRITE};
             }
-            write_kind: coverpoint (last_tr.kind == WRITE) {
-                bins is_write = {1};
-                bins not_write = {0};
+            // Keep address visibility, but reduce its influence so AXI data
+            // patterns drive this covergroup more strongly.
+            wr_addr_hint: coverpoint last_tr.addr iff (last_tr.kind == WRITE) {
+                option.weight = 1;
+                bins fifo_data_port = {4'h0};
+                bins status_peek_port = {4'h4};
             }
-            wr_data: coverpoint last_tr.data {
+            wr_data_pattern: coverpoint last_tr.data iff (last_tr.kind == WRITE) {
                 bins zero = {32'h0};
                 bins ones = {32'hFFFFFFFF};
                 bins pattern_5 = {32'h5A5A5A5A};
                 bins pattern_A = {32'hA5A5A5A5};
+                bins alternating_5 = {32'h5555_5555};
+                bins alternating_A = {32'hAAAA_AAAA};
+                bins signed_min = {32'h8000_0000};
+                bins signed_max = {32'h7FFF_FFFF};
                 bins other = default;
             }
-            cross write_kind, address, wr_data;
+            wr_data_lsb: coverpoint last_tr.data[7:0] iff (last_tr.kind == WRITE) {
+                bins lsb_zero = {8'h00};
+                bins lsb_ff = {8'hFF};
+                bins lsb_alt[] = {8'h55, 8'hAA};
+                bins lsb_other = default;
+            }
+            cross write_kind, wr_data_pattern, wr_data_lsb;
+            cross wr_addr_hint, wr_data_pattern;
         endgroup
         
         covergroup read_operations;
-            address: coverpoint last_tr.addr {
-                bins addr_data = {4'h0};
-                bins addr_status = {4'h4};
+            read_kind: coverpoint last_tr.kind {
+                bins is_read = {PERIPH_READ};
             }
-            read_kind: coverpoint (last_tr.kind == PERIPH_READ) {
-                bins is_read = {1};
-                bins not_read = {0};
+            // Retain the address context for debug, but make data the main goal.
+            rd_addr_hint: coverpoint last_tr.addr iff (last_tr.kind == PERIPH_READ) {
+                option.weight = 1;
+                bins fifo_data_port = {4'h0};
+                bins status_peek_port = {4'h4};
             }
-            read_data: coverpoint last_tr.observed_data {
+            read_data_pattern: coverpoint last_tr.observed_data iff (last_tr.kind == PERIPH_READ) {
                 bins zero = {32'h0};
                 bins ones = {32'hFFFFFFFF};
                 bins pattern_5 = {32'h5A5A5A5A};
                 bins pattern_A = {32'hA5A5A5A5};
+                bins alternating_5 = {32'h5555_5555};
+                bins alternating_A = {32'hAAAA_AAAA};
+                bins signed_min = {32'h8000_0000};
+                bins signed_max = {32'h7FFF_FFFF};
                 bins other = default;
             }
-            cross read_kind, address, read_data;
+            read_data_lsb: coverpoint last_tr.observed_data[7:0] iff (last_tr.kind == PERIPH_READ) {
+                bins lsb_zero = {8'h00};
+                bins lsb_ff = {8'hFF};
+                bins lsb_alt[] = {8'h55, 8'hAA};
+                bins lsb_other = default;
+            }
+            cross read_kind, read_data_pattern, read_data_lsb;
+            cross rd_addr_hint, read_data_pattern;
         endgroup
         
         transaction last_tr;
