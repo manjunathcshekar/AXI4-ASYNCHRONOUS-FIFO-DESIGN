@@ -31,20 +31,36 @@ class reset_test extends uvm_test;
         seq = reset_seq::type_id::create("seq");
         check_seq = reset_check_seq::type_id::create("check_seq");
 
-        // Start traffic, then assert reset in the middle
+        // Start traffic, then assert reset in the middle.
+        // Important: stop any in-flight sequences at reset assertion so they do not
+        // continue driving new writes immediately after reset is released.
         fork
-            seq.start(environment.agent.sequencer);
+            begin
+                seq.start(environment.agent.sequencer);
+            end
             begin
                 // wait a bit so writes are in-flight
                 #60ns;
                 rst_vif.axi_resetn = 1'b0;
-                repeat (8) @(posedge rst_vif.clk_axi);
+
+                // Kill active sequences and flush queued items so post-reset state is quiet.
+                environment.agent.sequencer.stop_sequences();
+                seq.kill();
+
+                // Hold reset long enough to cover both clock domains
+                repeat (12) @(posedge rst_vif.clk_axi);
+                repeat (8)  @(posedge rst_vif.clk_periph);
+
+                // Deassert reset cleanly
                 rst_vif.axi_resetn = 1'b1;
             end
-        join
+        join_any
+        disable fork;
 
-        // Allow CDC to settle, then check reset state
-        repeat (10) @(posedge mon_vif.clk_periph);
+        // Allow CDC to settle with no traffic, then check reset state.
+        // Wait for reset deassert to be observed and flags to become non-X.
+        wait (mon_vif.axi_resetn === 1'b1);
+        repeat (20) @(posedge mon_vif.clk_periph);
         if (mon_vif.rd_empty !== 1'b1)
             `uvm_error("Reset Test", $sformatf("Expected FIFO EMPTY=1 after reset, got %0b", mon_vif.rd_empty))
         if (mon_vif.rd_full !== 1'b0)
