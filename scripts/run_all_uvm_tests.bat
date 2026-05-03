@@ -3,26 +3,21 @@ cd /d "%~dp0\.."
 echo Compiling...
 vsim -c -do scripts/compile.do
 if %ERRORLEVEL% NEQ 0 (echo Compile failed. & exit /b 1)
-echo Running all UVM tests (each writes .log + .ucdb into uvm_test_logs/)...
-vsim -c -coverage -l uvm_test_logs\basic_rw_test.log work.tb +UVM_TESTNAME=basic_rw_test -do "run -all; coverage save -onexit uvm_test_logs/basic_rw_test.ucdb; quit -f"
-vsim -c -coverage -l uvm_test_logs\fifo_full_test.log work.tb +UVM_TESTNAME=fifo_full_test -do "run -all; coverage save -onexit uvm_test_logs/fifo_full_test.ucdb; quit -f"
-vsim -c -coverage -l uvm_test_logs\fifo_empty_test.log work.tb +UVM_TESTNAME=fifo_empty_test -do "run -all; coverage save -onexit uvm_test_logs/fifo_empty_test.ucdb; quit -f"
-vsim -c -coverage -l uvm_test_logs\reset_test.log work.tb +UVM_TESTNAME=reset_test -do "run -all; coverage save -onexit uvm_test_logs/reset_test.ucdb; quit -f"
-vsim -c -coverage -l uvm_test_logs\rand_test.log work.tb +UVM_TESTNAME=rand_test -do "run -all; coverage save -onexit uvm_test_logs/rand_test.ucdb; quit -f"
-vsim -c -coverage -l uvm_test_logs\full_write_full_read_test.log work.tb +UVM_TESTNAME=full_write_full_read_test -do "run -all; coverage save -onexit uvm_test_logs/full_write_full_read_test.ucdb; quit -f"
-vsim -c -coverage -l uvm_test_logs\continuous_rw_test.log work.tb +UVM_TESTNAME=continuous_rw_test -do "run -all; coverage save -onexit uvm_test_logs/continuous_rw_test.ucdb; quit -f"
-echo Running NEW coverage-enhancing tests...
-vsim -c -coverage -l uvm_test_logs\cdc_stress_test.log work.tb +UVM_TESTNAME=cdc_stress_test -do "run -all; coverage save -onexit uvm_test_logs/cdc_stress_test.ucdb; quit -f"
-vsim -c -coverage -l uvm_test_logs\burst_pattern_test.log work.tb +UVM_TESTNAME=burst_pattern_test -do "run -all; coverage save -onexit uvm_test_logs/burst_pattern_test.ucdb; quit -f"
-vsim -c -coverage -l uvm_test_logs\alternating_pattern_test.log work.tb +UVM_TESTNAME=alternating_pattern_test -do "run -all; coverage save -onexit uvm_test_logs/alternating_pattern_test.ucdb; quit -f"
-vsim -c -coverage -l uvm_test_logs\boundary_condition_test.log work.tb +UVM_TESTNAME=boundary_condition_test -do "run -all; coverage save -onexit uvm_test_logs/boundary_condition_test.ucdb; quit -f"
-echo Running FINAL coverage-boosting tests...
-vsim -c -coverage -l uvm_test_logs\interrupt_signals_test.log work.tb +UVM_TESTNAME=interrupt_signals_test -do "run -all; coverage save -onexit uvm_test_logs/interrupt_signals_test.ucdb; quit -f"
-vsim -c -coverage -l uvm_test_logs\stress_load_test.log work.tb +UVM_TESTNAME=stress_load_test -do "run -all; coverage save -onexit uvm_test_logs/stress_load_test.ucdb; quit -f"
-vsim -c -coverage -l uvm_test_logs\protocol_edge_case_test.log work.tb +UVM_TESTNAME=protocol_edge_case_test -do "run -all; coverage save -onexit uvm_test_logs/protocol_edge_case_test.ucdb; quit -f"
-echo Running COMPREHENSIVE coverage test...
-vsim -c -coverage -l uvm_test_logs\coverage_test.log work.tb +UVM_TESTNAME=coverage_test -do "run -all; coverage save -onexit uvm_test_logs/coverage_test.ucdb; quit -f"
-echo All UVM tests finished (15 total). Logs in uvm_test_logs\*.log and coverage databases in uvm_test_logs\*.ucdb
+
+echo Running all UVM tests...
+
+for %%T in (basic_rw_test fifo_full_test fifo_empty_test reset_test rand_test full_write_full_read_test continuous_rw_test cdc_stress_test burst_pattern_test alternating_pattern_test boundary_condition_test interrupt_signals_test stress_load_test protocol_edge_case_test coverage_test) do (
+    echo Running %%T...
+    echo run -all > scripts\_tmp_run.do
+    echo coverage save uvm_test_logs/%%T.ucdb >> scripts\_tmp_run.do
+    echo quit -f >> scripts\_tmp_run.do
+    vsim -c -coverage -l uvm_test_logs\%%T.log work.tb +UVM_TESTNAME=%%T -do scripts\_tmp_run.do
+)
+
+del scripts\_tmp_run.do 2>nul
+
+echo.
+echo All UVM tests finished. Logs in uvm_test_logs\*.log, UCDBs in uvm_test_logs\*.ucdb
 echo.
 echo Generating HTML reports from logs...
 python scripts/generate_html_report.py

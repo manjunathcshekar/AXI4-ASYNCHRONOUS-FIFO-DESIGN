@@ -3,6 +3,7 @@ class env extends uvm_env;
 
     agnt agent;
     scb  scoreboard;
+    axi4_fifo_coverage cov;
 
     function new(string name = "env", uvm_component parent);
         super.new(name, parent);
@@ -14,14 +15,17 @@ class env extends uvm_env;
         `uvm_info("Env", "Build phase environment", UVM_HIGH)
         agent = agnt::type_id::create("agent", this);
         scoreboard = scb::type_id::create("scoreboard", this);
+        cov = axi4_fifo_coverage::type_id::create("cov", this);
     endfunction
 
     function void connect_phase(uvm_phase phase);
         super.connect_phase(phase);
         `uvm_info("Env", "Connect phase environment", UVM_HIGH)
 
-        // ? STEP 8: Change analysis imp port name if you've changed it in monitor or scoreboard
+        // Connect monitor to scoreboard and coverage collector
         agent.monitor.monitor_port.connect(scoreboard.scoreboard_port);
+        agent.monitor.monitor_port.connect(cov.analysis_export);
+        agent.driver.coverage_port.connect(cov.analysis_export);
     endfunction
 
 

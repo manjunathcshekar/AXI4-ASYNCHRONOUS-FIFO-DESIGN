@@ -32,8 +32,8 @@ class interrupt_stimulus_seq extends uvm_sequence #(transaction);
         // Phase 1: Generate FULL interrupt by filling FIFO
         `uvm_info("Interrupt Seq", "Phase 1: Filling FIFO to generate IRQ_FULL", UVM_LOW)
         for (int i = 0; i < 8; i++) begin
-            start_item(tr);
             tr = transaction::type_id::create("tr");
+            start_item(tr);
             tr.kind = WRITE;
             tr.addr = 4'h0;
             tr.data = data_pattern + i;
@@ -53,8 +53,8 @@ class interrupt_stimulus_seq extends uvm_sequence #(transaction);
         #100ns;  // CDC settling time before starting reads
         
         for (int i = 0; i < 8; i++) begin
-            start_item(tr);
             tr = transaction::type_id::create("tr");
+            start_item(tr);
             tr.kind = PERIPH_READ;
             tr.addr = 4'h0;
             finish_item(tr);

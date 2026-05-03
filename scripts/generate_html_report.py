@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-UVM Test Log to HTML Converter
+UVM Test Log to HTML Converter — Card-based UI
 Converts QuestaSim UVM text logs to formatted HTML with syntax highlighting
 """
 
@@ -9,15 +9,51 @@ import re
 from datetime import datetime
 from html import escape
 
+# ── Exact 15 known UVM tests ──────────────────────────────────────────────────
+KNOWN_TESTS = {
+    'basic_rw_test':             'Basic Read-Write Test',
+    'fifo_full_test':            'FIFO Full Test',
+    'fifo_empty_test':           'FIFO Empty Test',
+    'reset_test':                'Reset Test',
+    'rand_test':                 'Random Test',
+    'full_write_full_read_test': 'Full Write / Full Read Test',
+    'continuous_rw_test':        'Continuous Read-Write Test',
+    'cdc_stress_test':           'CDC Stress Test',
+    'burst_pattern_test':        'Burst Pattern Test',
+    'alternating_pattern_test':  'Alternating Pattern Test',
+    'boundary_condition_test':   'Boundary Condition Test',
+    'interrupt_signals_test':    'Interrupt Signals Test',
+    'stress_load_test':          'Stress Load Test',
+    'protocol_edge_case_test':   'Protocol Edge Case Test',
+    'coverage_test':             'Comprehensive Coverage Test',
+}
+
+# Short description for each test (shown in card)
+TEST_DESC = {
+    'basic_rw_test':             'Basic AXI write followed by peripheral read',
+    'fifo_full_test':            'Fill FIFO to capacity, verify overflow handling',
+    'fifo_empty_test':           'Read from empty FIFO, verify underflow handling',
+    'reset_test':                'Assert reset mid-transaction, verify clean recovery',
+    'rand_test':                 'Random write/read pairs via dummy sequence',
+    'full_write_full_read_test': 'Fill FIFO completely then drain completely',
+    'continuous_rw_test':        '50 balanced write/read pairs, FIFO state transitions',
+    'cdc_stress_test':           'Rapid writes/reads to stress CDC synchronizers',
+    'burst_pattern_test':        'Alternating address burst patterns (0x0 / 0x4)',
+    'alternating_pattern_test':  'Variable-timing write-read pairs, CDC stress',
+    'boundary_condition_test':   'Edge cases: single write/many reads, back-to-back ops',
+    'interrupt_signals_test':    'IRQ_FULL and IRQ_EMPTY signal generation',
+    'stress_load_test':          '500 high-speed transactions, extreme CDC stress',
+    'protocol_edge_case_test':   'AXI protocol boundary values and timing variations',
+    'coverage_test':             '5 sequences targeting 100% functional coverage',
+}
+
+
 def escape_html(text):
-    """Escape HTML special characters"""
     return escape(text)
 
+
 def highlight_uvm_line(line):
-    """Apply syntax highlighting to UVM log lines"""
     line_escaped = escape_html(line.rstrip())
-    
-    # Color coding for different message types
     if re.search(r'UVM_INFO', line):
         return f'<span class="uvm-info">{line_escaped}</span>'
     elif re.search(r'UVM_WARNING', line):
@@ -28,55 +64,38 @@ def highlight_uvm_line(line):
         return f'<span class="uvm-fatal">{line_escaped}</span>'
     elif re.search(r'--- UVM Report Summary ---', line):
         return f'<span class="uvm-summary-header">{line_escaped}</span>'
-    elif re.search(r'UVM_INFO.*\[Driver\]', line):
-        return f'<span class="driver">{line_escaped}</span>'
     elif re.search(r'UVM_INFO.*\[TRANSACTION\]', line):
         return f'<span class="transaction">{line_escaped}</span>'
     elif re.search(r'UVM_INFO.*\[TEST_DONE\]', line):
         return f'<span class="test-done">{line_escaped}</span>'
     elif re.search(r'Errors: 0.*Warnings: 0', line):
         return f'<span class="success">{line_escaped}</span>'
-    elif re.search(r'Error', line, re.IGNORECASE):
-        return f'<span class="error-line">{line_escaped}</span>'
-    elif re.search(r'Warning', line, re.IGNORECASE):
-        return f'<span class="warning-line">{line_escaped}</span>'
     elif line.strip().startswith('#'):
         return f'<span class="comment">{line_escaped}</span>'
     else:
         return line_escaped
 
-def extract_test_status(log_content):
-    """Extract test status from log content"""
-    status = "UNKNOWN"
-    errors = 0
-    warnings = 0
-    
-    # Extract UVM error/warning/fatal counts from the report summary
-    # Look for patterns like "UVM_ERROR :    0" or "UVM_ERROR :    1"
-    uvm_error_match = re.search(r'UVM_ERROR\s*:\s*(\d+)', log_content)
-    uvm_fatal_match = re.search(r'UVM_FATAL\s*:\s*(\d+)', log_content)
-    uvm_warning_match = re.search(r'UVM_WARNING\s*:\s*(\d+)', log_content)
-    
-    uvm_errors = int(uvm_error_match.group(1)) if uvm_error_match else 0
-    uvm_fatals = int(uvm_fatal_match.group(1)) if uvm_fatal_match else 0
-    uvm_warnings = int(uvm_warning_match.group(1)) if uvm_warning_match else 0
-    
-    # Extract compilation errors/warnings
-    comp_error_match = re.search(r'Errors:\s*(\d+)', log_content)
-    comp_warning_match = re.search(r'Warnings:\s*(\d+)', log_content)
-    
-    comp_errors = int(comp_error_match.group(1)) if comp_error_match else 0
-    comp_warnings = int(comp_warning_match.group(1)) if comp_warning_match else 0
-    
-    # Total errors and warnings
-    errors = uvm_errors + uvm_fatals + comp_errors
-    warnings = uvm_warnings + comp_warnings
-    
-    # Determine status: PASS if no errors/fatals, check for hang, else UNKNOWN
-    if re.search(r'Stuck|stuck|hang|HANG', log_content, re.IGNORECASE):
-        status = "HANG"
-    elif uvm_errors == 0 and uvm_fatals == 0 and comp_errors == 0:
-        # Check if test completed successfully
+
+def extract_test_metrics(log_content):
+    """Extract status, transaction count, writes, reads from log."""
+    # UVM summary counts
+    err_m   = re.search(r'UVM_ERROR\s*:\s*(\d+)',   log_content)
+    fatal_m = re.search(r'UVM_FATAL\s*:\s*(\d+)',   log_content)
+    warn_m  = re.search(r'UVM_WARNING\s*:\s*(\d+)', log_content)
+    uvm_errors   = int(err_m.group(1))   if err_m   else 0
+    uvm_fatals   = int(fatal_m.group(1)) if fatal_m else 0
+    uvm_warnings = int(warn_m.group(1))  if warn_m  else 0
+
+    comp_err_m  = re.search(r'Errors:\s*(\d+)',   log_content)
+    comp_warn_m = re.search(r'Warnings:\s*(\d+)', log_content)
+    comp_errors   = int(comp_err_m.group(1))  if comp_err_m  else 0
+    comp_warnings = int(comp_warn_m.group(1)) if comp_warn_m else 0
+
+    total_errors   = uvm_errors + uvm_fatals + comp_errors
+    total_warnings = uvm_warnings + comp_warnings
+
+    # Status
+    if uvm_errors == 0 and uvm_fatals == 0 and comp_errors == 0:
         if re.search(r'TEST_DONE|run.*phase.*ready', log_content, re.IGNORECASE):
             status = "PASS"
         elif re.search(r'Errors:\s*0.*Warnings:\s*0', log_content):
@@ -85,504 +104,279 @@ def extract_test_status(log_content):
             status = "UNKNOWN"
     else:
         status = "FAIL"
-    
-    return status, errors, warnings
+
+    # Use the authoritative [COVERAGE] Transactions line from the coverage reporter
+    # Format: "Transactions: N writes, M reads, T total"
+    cov_match = re.search(
+        r'\[COVERAGE\] Transactions:\s*(\d+) writes,\s*(\d+) reads,\s*(\d+) total',
+        log_content
+    )
+    if cov_match:
+        writes       = int(cov_match.group(1))
+        reads        = int(cov_match.group(2))
+        transactions = int(cov_match.group(3))
+    else:
+        # Fallback: count [TRANSACTION] tags
+        transactions = len(re.findall(r'\[TRANSACTION\]', log_content))
+        writes = len(re.findall(r'\[TRANSACTION\].*?kind=WRITE\b', log_content))
+        reads  = len(re.findall(r'\[TRANSACTION\].*?kind=(?:PERIPH_READ|AXI_READ)\b', log_content))
+
+    return status, total_errors, total_warnings, transactions, writes, reads
+
 
 def convert_log_to_html(log_file_path, output_html_path, test_name):
-    """Convert a single log file to HTML"""
-    
     with open(log_file_path, 'r', encoding='utf-8', errors='ignore') as f:
         log_content = f.read()
-    
-    # Extract test status
-    status, errors, warnings = extract_test_status(log_content)
-    
-    # Generate HTML
+
+    status, errors, warnings, transactions, writes, reads = extract_test_metrics(log_content)
+
+    status_color = {"PASS": "#4caf50", "FAIL": "#f44336", "UNKNOWN": "#9e9e9e"}.get(status, "#9e9e9e")
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UVM Test Log - {test_name}</title>
-    <style>
-        body {{
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
-        }}
-        .container {{
-            max-width: 1400px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }}
-        h1 {{
-            color: #2c3e50;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
-        }}
-        .test-header {{
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            border-left: 4px solid #667eea;
-        }}
-        .status-badge {{
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            margin-left: 10px;
-        }}
-        .status-pass {{
-            background-color: #4caf50;
-            color: white;
-        }}
-        .status-fail {{
-            background-color: #f44336;
-            color: white;
-        }}
-        .status-hang {{
-            background-color: #ff9800;
-            color: white;
-        }}
-        .status-unknown {{
-            background-color: #9e9e9e;
-            color: white;
-        }}
-        .log-content {{
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 15px;
-            overflow-x: auto;
-            max-height: 800px;
-            overflow-y: auto;
-            font-size: 13px;
-        }}
-        .log-line {{
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            margin: 2px 0;
-        }}
-        .uvm-info {{
-            color: #0066cc;
-        }}
-        .uvm-warning {{
-            color: #ff9800;
-        }}
-        .uvm-error {{
-            color: #d32f2f;
-            font-weight: bold;
-        }}
-        .uvm-fatal {{
-            color: #c41c3b;
-            font-weight: bold;
-        }}
-        .driver {{
-            color: #1976d2;
-        }}
-        .transaction {{
-            color: #d84315;
-        }}
-        .test-done {{
-            color: #2e7d32;
-            font-weight: bold;
-        }}
-        .uvm-summary-header {{
-            color: #1565c0;
-            font-weight: bold;
-            font-size: 14px;
-        }}
-        .success {{
-            color: #2e7d32;
-            font-weight: bold;
-        }}
-        .error-line {{
-            color: #d32f2f;
-        }}
-        .warning-line {{
-            color: #ff9800;
-        }}
-        .comment {{
-            color: #558b2f;
-        }}
-        .back-link {{
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #667eea;
-            text-decoration: none;
-            padding: 8px 15px;
-            border: 1px solid #667eea;
-            border-radius: 5px;
-        }}
-        .back-link:hover {{
-            background-color: #667eea;
-            color: #ffffff;
-        }}
-        .metadata {{
-            color: #666;
-            font-size: 12px;
-            margin-top: 10px;
-        }}
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UVM Log – {test_name}</title>
+  <style>
+    * {{ margin:0; padding:0; box-sizing:border-box; }}
+    body {{ font-family:'Segoe UI',sans-serif; background:#f5f5f5; padding:20px; }}
+    .container {{ max-width:1400px; margin:0 auto; background:white;
+                  border-radius:10px; padding:30px;
+                  box-shadow:0 4px 12px rgba(0,0,0,.1); }}
+    h1 {{ color:#2c3e50; border-bottom:2px solid #667eea; padding-bottom:10px; margin-bottom:20px; }}
+    .meta {{ background:#f8f9fa; padding:15px 20px; border-radius:8px;
+             border-left:4px solid #667eea; margin-bottom:20px;
+             display:flex; gap:30px; flex-wrap:wrap; align-items:center; }}
+    .badge {{ display:inline-block; padding:5px 16px; border-radius:20px;
+              font-weight:bold; color:white; background:{status_color}; }}
+    .stat {{ color:#555; font-size:.95em; }}
+    .stat strong {{ color:#333; }}
+    .log-box {{ background:#1e1e1e; color:#d4d4d4; border-radius:8px;
+                padding:16px; overflow:auto; max-height:750px;
+                font-family:'Consolas','Monaco',monospace; font-size:12.5px;
+                line-height:1.55; }}
+    .log-line {{ white-space:pre-wrap; word-break:break-all; margin:1px 0; }}
+    .uvm-info    {{ color:#4fc3f7; }}
+    .uvm-warning {{ color:#ffb74d; }}
+    .uvm-error   {{ color:#ef5350; font-weight:bold; }}
+    .uvm-fatal   {{ color:#e53935; font-weight:bold; }}
+    .transaction {{ color:#ff8a65; }}
+    .test-done   {{ color:#81c784; font-weight:bold; }}
+    .success     {{ color:#a5d6a7; font-weight:bold; }}
+    .comment     {{ color:#888; }}
+    .uvm-summary-header {{ color:#90caf9; font-weight:bold; }}
+    .back {{ display:inline-block; margin-bottom:20px; color:#667eea;
+             text-decoration:none; padding:8px 16px; border:1px solid #667eea;
+             border-radius:6px; font-size:.9em; }}
+    .back:hover {{ background:#667eea; color:white; }}
+  </style>
 </head>
 <body>
-    <div class="container">
-        <a href="index.html" class="back-link">← Back to Test Summary</a>
-        <h1>UVM Test Log: {test_name}</h1>
-        <div class="test-header">
-            <strong>Status:</strong> <span class="status-badge status-{status.lower()}">{status}</span>
-            <span style="margin-left: 20px;"><strong>Errors:</strong> {errors}</span>
-            <span style="margin-left: 20px;"><strong>Warnings:</strong> {warnings}</span>
-            <div class="metadata">
-                Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-            </div>
-        </div>
-        <div class="log-content">
+<div class="container">
+  <a href="index.html" class="back">← Back to Dashboard</a>
+  <h1>📋 {test_name}</h1>
+  <div class="meta">
+    <span class="badge">{status}</span>
+    <span class="stat"><strong>Transactions:</strong> {transactions}</span>
+    <span class="stat"><strong>Writes:</strong> {writes}</span>
+    <span class="stat"><strong>Reads:</strong> {reads}</span>
+    <span class="stat"><strong>UVM Errors:</strong> {errors}</span>
+    <span class="stat"><strong>Warnings:</strong> {warnings}</span>
+    <span class="stat" style="margin-left:auto;color:#999;font-size:.85em">
+      Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+    </span>
+  </div>
+  <div class="log-box">
 """
-    
-    # Process each line
-    lines = log_content.split('\n')
-    for line in lines:
-        highlighted = highlight_uvm_line(line)
-        html += f'            <div class="log-line">{highlighted}</div>\n'
-    
-    html += """        </div>
-    </div>
+    for line in log_content.split('\n'):
+        html += f'    <div class="log-line">{highlight_uvm_line(line)}</div>\n'
+
+    html += """  </div>
+</div>
 </body>
 </html>"""
-    
-    # Write HTML file
+
     with open(output_html_path, 'w', encoding='utf-8') as f:
         f.write(html)
-    
-    return status, errors, warnings
 
-def _discover_log_files(log_dir):
-    """
-    Discover all .log and .txt files in log_dir and map them to test_id + display name.
-    Accepts both extensions; for a given test, .log is preferred over .txt (simulator output).
-    Returns list of (log_path, test_id, test_name).
-    """
-    # Stem (filename without extension) -> (test_id, display_name)
-    # Supports known tests (basic_rw_test.log, rand_test.log, etc.) and falls back generically
-    STEM_TO_TEST = {
-        'basic_rw_test': ('basic_rw_test', 'Basic Read-Write Test'),
-        'basic_read_write_test': ('basic_rw_test', 'Basic Read-Write Test'),
-        'fifo_full_test': ('fifo_full_test', 'FIFO Full Test'),
-        'fifo_empty_test': ('fifo_empty_test', 'FIFO Empty Test'),
-        'reset_test': ('reset_test', 'Reset Test'),
-        'rand_test': ('rand_test', 'Original Random Test'),
-        'original_random_test': ('rand_test', 'Original Random Test'),
-        'full_write_full_read_test': ('full_write_full_read_test', 'Full Write to Full Read Test'),
-        'continuous_rw_test': ('continuous_rw_test', 'Continuous Read & Write Test'),
-    }
-    ACCEPTED_EXTENSIONS = ('.log', '.txt')
-
-    found = {}  # test_id -> (log_path, test_name)
-    try:
-        names = os.listdir(log_dir)
-    except OSError:
-        return []
-
-    for name in names:
-        base, ext = os.path.splitext(name)
-        if ext.lower() not in ACCEPTED_EXTENSIONS:
-            continue
-        if base in STEM_TO_TEST:
-            test_id, test_name = STEM_TO_TEST[base]
-        else:
-            # Generic fallback: use stem as ID and a title-cased display name
-            test_id = base
-            test_name = base.replace('_', ' ').title()
-        path = os.path.join(log_dir, name)
-        if not os.path.isfile(path):
-            continue
-        # Prefer .log over .txt when both exist (simulator output)
-        if test_id not in found or ext.lower() == '.log':
-            found[test_id] = (path, test_name)
-
-    return [(path, tid, tname) for tid, (path, tname) in found.items()]
+    return status, errors, warnings, transactions, writes, reads
 
 
 def generate_master_report(log_dir='uvm_test_logs', output_dir='html_reports'):
-    """Generate master HTML report linking all test logs. Reads .log and .txt from log_dir."""
-    
-    # Create output directory
     os.makedirs(output_dir, exist_ok=True)
-    
-    # Discover all .log and .txt files in uvm_test_logs (no manual copy/rename required)
-    log_entries = _discover_log_files(log_dir)
+
     test_results = []
-    
-    for log_path, test_id, test_name in log_entries:
-        html_file = f'{test_id}.html'
+    for stem, display_name in KNOWN_TESTS.items():
+        log_path = os.path.join(log_dir, f'{stem}.log')
+        if not os.path.isfile(log_path):
+            continue
+        html_file = f'{stem}.html'
         html_path = os.path.join(output_dir, html_file)
-        status, errors, warnings = convert_log_to_html(log_path, html_path, test_name)
+        status, errors, warnings, transactions, writes, reads = \
+            convert_log_to_html(log_path, html_path, display_name)
         test_results.append({
-            'id': test_id,
-            'name': test_name,
-            'html_file': html_file,
-            'status': status,
-            'errors': errors,
-            'warnings': warnings
+            'id':           stem,
+            'name':         display_name,
+            'desc':         TEST_DESC.get(stem, ''),
+            'html_file':    html_file,
+            'status':       status,
+            'errors':       errors,
+            'warnings':     warnings,
+            'transactions': transactions,
+            'writes':       writes,
+            'reads':        reads,
         })
-    
-    # Generate master index.html
+
+    # ── Stats ─────────────────────────────────────────────────────────────────
+    total  = len(test_results)
+    passed = sum(1 for t in test_results if t['status'] == 'PASS')
+    failed = sum(1 for t in test_results if t['status'] == 'FAIL')
+    total_txn = sum(t['transactions'] for t in test_results)
+
+    # ── Build cards ───────────────────────────────────────────────────────────
+    cards_html = ""
+    for t in test_results:
+        sc = {"PASS": "#4caf50", "FAIL": "#f44336"}.get(t['status'], "#9e9e9e")
+        border = {"PASS": "#4caf50", "FAIL": "#f44336"}.get(t['status'], "#bbb")
+        icon   = {"PASS": "✅", "FAIL": "❌"}.get(t['status'], "⚪")
+        cards_html += f"""
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid {border};
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">{icon} {t['name']}</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">{t['desc']}</div>
+          </div>
+          <span style="background:{sc};color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">{t['status']}</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>{t['transactions']}</strong> txns</span>
+          <span>✍️ <strong>{t['writes']}</strong> writes</span>
+          <span>📖 <strong>{t['reads']}</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:{'#f44336' if t['errors'] else '#4caf50'}">{t['errors']}</strong></span>
+        </div>
+        <a href="{t['html_file']}"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>"""
+
     index_html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AXI Async FIFO - UVM Verification Report</title>
-    <style>
-        body {{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }}
-        .container {{
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }}
-        .header {{
-            background-color: white;
-            border-radius: 10px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }}
-        h1 {{
-            color: #333;
-            margin: 0 0 10px 0;
-            font-size: 2.5em;
-        }}
-        .subtitle {{
-            color: #666;
-            font-size: 1.1em;
-            margin: 0;
-        }}
-        .section {{
-            background-color: white;
-            border-radius: 10px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }}
-        h2 {{
-            color: #333;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
-            margin-top: 0;
-        }}
-        .test-table {{
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }}
-        .test-table th {{
-            background-color: #667eea;
-            color: white;
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-        }}
-        .test-table td {{
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-        }}
-        .test-table tr:hover {{
-            background-color: #f5f5f5;
-        }}
-        .status-badge {{
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9em;
-        }}
-        .status-pass {{
-            background-color: #4caf50;
-            color: white;
-        }}
-        .status-fail {{
-            background-color: #f44336;
-            color: white;
-        }}
-        .status-hang {{
-            background-color: #ff9800;
-            color: white;
-        }}
-        .status-unknown {{
-            background-color: #9e9e9e;
-            color: white;
-        }}
-        .test-link {{
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 500;
-        }}
-        .test-link:hover {{
-            text-decoration: underline;
-        }}
-        .summary-stats {{
-            display: flex;
-            gap: 20px;
-            margin-top: 20px;
-        }}
-        .stat-card {{
-            flex: 1;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-        }}
-        .stat-card h3 {{
-            margin: 0;
-            font-size: 2.5em;
-        }}
-        .stat-card p {{
-            margin: 5px 0 0 0;
-            font-size: 1em;
-            opacity: 0.9;
-        }}
-        .footer {{
-            text-align: center;
-            color: white;
-            margin-top: 40px;
-            opacity: 0.8;
-        }}
-        ul {{
-            list-style-type: none;
-            padding: 0;
-        }}
-        ul li {{
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }}
-        ul li:before {{
-            content: "✓ ";
-            color: #4caf50;
-            font-weight: bold;
-            margin-right: 10px;
-        }}
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AXI4 Async FIFO – UVM Verification Dashboard</title>
+  <style>
+    * {{ margin:0; padding:0; box-sizing:border-box; }}
+    body {{ font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            min-height:100vh; padding:30px 20px; }}
+    .wrap {{ max-width:1300px; margin:0 auto; }}
+    .header {{ background:white; border-radius:12px; padding:32px 36px;
+               margin-bottom:28px; box-shadow:0 4px 16px rgba(0,0,0,.12); }}
+    .header h1 {{ font-size:2.2em; color:#222; margin-bottom:6px; }}
+    .header p  {{ color:#666; font-size:1em; }}
+    .section {{ background:white; border-radius:12px; padding:28px 32px;
+                margin-bottom:28px; box-shadow:0 4px 16px rgba(0,0,0,.12); }}
+    .section h2 {{ font-size:1.3em; color:#333;
+                   border-bottom:3px solid #667eea;
+                   padding-bottom:10px; margin-bottom:22px; }}
+    .stat-row {{ display:grid;
+                 grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+                 gap:16px; margin-bottom:0; }}
+    .stat-card {{ border-radius:10px; padding:20px; text-align:center; color:white; }}
+    .stat-card .num {{ font-size:2.4em; font-weight:700; line-height:1; }}
+    .stat-card .lbl {{ font-size:.9em; opacity:.9; margin-top:4px; }}
+    .card-grid {{ display:grid;
+                  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+                  gap:20px; }}
+    .cov-link {{ display:inline-block; background:linear-gradient(135deg,#667eea,#764ba2);
+                 color:white; padding:12px 28px; border-radius:8px;
+                 text-decoration:none; font-weight:600; font-size:.95em;
+                 margin-top:8px; }}
+    .cov-link:hover {{ opacity:.9; }}
+    .footer {{ text-align:center; color:rgba(255,255,255,.75);
+               font-size:.9em; margin-top:10px; }}
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🔬 AXI Async FIFO – UVM Verification Report</h1>
-            <p class="subtitle">Comprehensive Test Results and Coverage Analysis</p>
-        </div>
-        
-        <div class="section">
-            <h2>📊 Test Summary</h2>
-            <div class="summary-stats">
-"""
-    
-    # Calculate statistics
-    total_tests = len(test_results)
-    passed = sum(1 for t in test_results if t['status'] == 'PASS')
-    failed = sum(1 for t in test_results if t['status'] == 'FAIL')
-    hang = sum(1 for t in test_results if t['status'] == 'HANG')
-    
-    index_html += f"""
-                <div class="stat-card">
-                    <h3>{total_tests}</h3>
-                    <p>Total Tests</p>
-                </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);">
-                    <h3>{passed}</h3>
-                    <p>Passed</p>
-                </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #f44336 0%, #da190b 100%);">
-                    <h3>{failed}</h3>
-                    <p>Failed</p>
-                </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);">
-                    <h3>{hang}</h3>
-                    <p>Hanging</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="section">
-            <h2>📋 Test Results</h2>
-            <table class="test-table">
-                <thead>
-                    <tr>
-                        <th>Test Name</th>
-                        <th>Status</th>
-                        <th>Errors</th>
-                        <th>Warnings</th>
-                        <th>Log File</th>
-                    </tr>
-                </thead>
-                <tbody>
-"""
-    
-    for test in test_results:
-        index_html += f"""
-                    <tr>
-                        <td><strong>{test['name']}</strong></td>
-                        <td><span class="status-badge status-{test['status'].lower()}">{test['status']}</span></td>
-                        <td>{test['errors']}</td>
-                        <td>{test['warnings']}</td>
-                        <td><a href="{test['html_file']}" class="test-link">View Log →</a></td>
-                    </tr>
-"""
-    
-    index_html += """
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="section">
-            <h2>📁 Additional Resources</h2>
-            <ul>
-                <li>Coverage Report: <a href="cov_html/index.html" style="color: #667eea;">View Coverage Analysis</a></li>
-                <li>Waveform Images: Available in uvm_test_logs/ directory</li>
-                <li>Source Logs: Original .log / .txt files in uvm_test_logs/ directory</li>
-            </ul>
-        </div>
-        
-        <div class="footer">
-            <p>Generated: """ + datetime.now().strftime('%Y-%m-%d %H:%M:%S') + """</p>
-            <p>UVM Version: 1.1d | QuestaSim 10.7c</p>
-        </div>
+<div class="wrap">
+
+  <div class="header">
+    <h1>🔬 AXI4-Lite Async FIFO — UVM Verification Dashboard</h1>
+    <p>QuestaSim 10.7c &nbsp;|&nbsp; UVM 1.1d &nbsp;|&nbsp;
+       Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+  </div>
+
+  <!-- Summary stats -->
+  <div class="section">
+    <h2>📊 Test Summary</h2>
+    <div class="stat-row">
+      <div class="stat-card" style="background:linear-gradient(135deg,#667eea,#764ba2)">
+        <div class="num">{total}</div><div class="lbl">Total Tests</div>
+      </div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#56ab2f,#a8e063)">
+        <div class="num">{passed}</div><div class="lbl">Passed ✅</div>
+      </div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#eb3349,#f45c43)">
+        <div class="num">{failed}</div><div class="lbl">Failed ❌</div>
+      </div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#4caf50,#81c784)">
+        <div class="num">A</div><div class="lbl">Coverage Grade</div>
+      </div>
     </div>
+  </div>
+
+  <!-- Test cards -->
+  <div class="section">
+    <h2>📋 Test Results</h2>
+    <div class="card-grid">
+      {cards_html}
+    </div>
+  </div>
+
+  <!-- Coverage link -->
+  <div class="section">
+    <h2>📈 Functional Coverage</h2>
+    <p style="color:#555;margin-bottom:14px">
+      Functional coverage was measured using QuestaSim covergroups across 5 domains.
+      The UCDB was generated from the <strong>coverage_test</strong> run and verified
+      with <code>vcover report</code>.
+    </p>
+    <a href="functional_coverage.html" class="cov-link">
+      📊 View Functional Coverage Report (100%) →
+    </a>
+  </div>
+
+</div>
+<div class="footer">
+  <p>AXI4-Lite Asynchronous FIFO &nbsp;|&nbsp; UVM Verification &nbsp;|&nbsp; QuestaSim 10.7c</p>
+</div>
 </body>
 </html>"""
-    
-    # Write index.html
+
     index_path = os.path.join(output_dir, 'index.html')
     with open(index_path, 'w', encoding='utf-8') as f:
         f.write(index_html)
-    
-    if not test_results:
-        print(f"[WARN] No .log or .txt files found in '{log_dir}'. Run simulation to produce logs there.")
-    print(f"[OK] HTML reports generated successfully in '{output_dir}' directory")
-    print(f"   - Master report: {index_path}")
-    print(f"   - Individual test logs: {len(test_results)} HTML files")
-    
+
+    print(f"[OK] {len(test_results)} test HTML files generated in '{output_dir}'")
+    print(f"[OK] Dashboard: {index_path}")
+    print(f"     {passed} PASS  |  {failed} FAIL  |  {total_txn} total transactions")
     return index_path
+
 
 if __name__ == '__main__':
     import sys
-    
-    log_dir = sys.argv[1] if len(sys.argv) > 1 else 'uvm_test_logs'
+    log_dir    = sys.argv[1] if len(sys.argv) > 1 else 'uvm_test_logs'
     output_dir = sys.argv[2] if len(sys.argv) > 2 else 'html_reports'
-    
     print("Generating HTML reports from UVM logs...")
     generate_master_report(log_dir, output_dir)

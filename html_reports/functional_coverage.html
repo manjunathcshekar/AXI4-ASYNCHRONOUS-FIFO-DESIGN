@@ -1,551 +1,986 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AXI4 FIFO - Functional Coverage Report</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px;
-            text-align: center;
-        }
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        .back-link {
-            display: inline-block;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 0.9em;
-            margin-bottom: 20px;
-            transition: background 0.2s;
-        }
-        .back-link:hover {
-            background: rgba(255,255,255,0.3);
-        }
-        .content {
-            padding: 40px;
-        }
-        .summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-        .summary-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        .summary-card h3 {
-            font-size: 2em;
-            margin-bottom: 5px;
-        }
-        .summary-card p {
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-        .status-pass {
-            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
-        }
-        .status-fail {
-            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-        }
-        .grade-card {
-            background: #8bc34a;
-        }
-        .section {
-            margin-bottom: 40px;
-        }
-        .section h2 {
-            color: #333;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-        .overall-coverage {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        .overall-percentage {
-            font-size: 4em;
-            font-weight: bold;
-            color: #667eea;
-            min-width: 120px;
-            text-align: center;
-        }
-        .coverage-progress {
-            flex: 1;
-        }
-        .progress-bar {
-            background: #e0e0e0;
-            height: 40px;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-        .progress-fill {
-            background: linear-gradient(90deg, #56ab2f 0%, #a8e063 100%);
-            height: 100%;
-            width: 88.12173913043478%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            transition: width 0.3s ease;
-        }
-        .domain-coverage {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #667eea;
-        }
-        .domain-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .domain-header h3 {
-            color: #333;
-            font-size: 1.1em;
-        }
-        .coverage-pct {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #667eea;
-        }
-        .domain-desc {
-            color: #666;
-            font-size: 0.9em;
-            margin-bottom: 8px;
-        }
-        .coverage-bar-container {
-            background: #e0e0e0;
-            height: 25px;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }
-        .coverage-bar {
-            background: linear-gradient(90deg, #56ab2f 0%, #a8e063 100%);
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            color: white;
-            font-weight: bold;
-            font-size: 0.85em;
-            padding-right: 8px;
-            transition: width 0.3s ease;
-        }
-        .bar-text {
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
-        .contributors {
-            color: #999;
-            font-size: 0.85em;
-            margin-top: 5px;
-        }
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .metric-box {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
-        .metric-box h4 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 1.1em;
-        }
-        .metric-value {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-        .metric-label {
-            color: #666;
-            font-size: 0.9em;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        th {
-            background: #f5f5f5;
-            padding: 12px;
-            text-align: left;
-            border-bottom: 2px solid #ddd;
-            font-weight: 600;
-            color: #333;
-        }
-        td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #eee;
-        }
-        tr:hover {
-            background: #f9f9f9;
-        }
-        .trans-count, .write-count, .read-count {
-            text-align: center;
-            font-weight: 500;
-        }
-        .footer {
-            background: #f5f5f5;
-            padding: 20px;
-            text-align: center;
-            color: #999;
-            font-size: 0.9em;
-        }
-        .back-link-footer {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .back-link-footer a {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 10px 30px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-        .back-link-footer a:hover {
-            background: #5568d3;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AXI4 FIFO – Functional Coverage Report</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            min-height:100vh; padding:20px; }
+    .container { max-width:1200px; margin:0 auto; background:white;
+                  border-radius:10px; box-shadow:0 10px 40px rgba(0,0,0,.2);
+                  overflow:hidden; }
+    .header { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+               color:white; padding:40px; text-align:center; }
+    .header h1 { font-size:2.2em; margin-bottom:8px; }
+    .header p  { opacity:.9; }
+    .content { padding:40px; }
+    .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+                  gap:20px; margin-bottom:40px; }
+    .stat-card { padding:20px; border-radius:8px; text-align:center; color:white; }
+    .stat-card h3 { font-size:2em; margin-bottom:4px; }
+    .stat-card p  { font-size:.9em; opacity:.9; }
+    .section h2 { color:#333; border-bottom:3px solid #667eea;
+                   padding-bottom:10px; margin-bottom:20px; font-size:1.4em; }
+    .overall-bar { background:#e0e0e0; height:40px; border-radius:8px;
+                    overflow:hidden; margin:15px 0; }
+    .overall-fill { height:100%; display:flex; align-items:center;
+                     justify-content:center; color:white; font-weight:bold;
+                     font-size:1.1em; }
+    table { width:100%; border-collapse:collapse; }
+    th { background:#f5f5f5; padding:12px; text-align:left;
+          border-bottom:2px solid #ddd; font-weight:600; color:#333; }
+    td { padding:10px 12px; border-bottom:1px solid #eee; }
+    tr:hover { background:#f9f9f9; }
+    .footer { background:#f5f5f5; padding:20px; text-align:center;
+               color:#999; font-size:.9em; }
+    a.back { display:inline-block; background:#667eea; color:white;
+              padding:10px 25px; border-radius:5px; text-decoration:none;
+              margin-top:15px; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📊 AXI4-Lite Asynchronous FIFO</h1>
-            <p>Comprehensive Functional Coverage Analysis - Real Data from 15 UVM Tests</p>
+<div class="container">
+  <div class="header">
+    <h1>📊 AXI4-Lite Asynchronous FIFO</h1>
+    <p>Functional Coverage Report – Real data from QuestaSim UCDB</p>
+    <p style="margin-top:8px;font-size:.9em;opacity:.8">
+      Source: uvm_test_logs/coverage_test.ucdb → coverage_test_report2.txt
+    </p>
+  </div>
+
+  <div class="content">
+
+    <!-- Summary cards -->
+    <div class="stat-grid">
+      <div class="stat-card" style="background:linear-gradient(135deg,#56ab2f,#a8e063)">
+        <h3>15</h3><p>Tests Passed</p>
+      </div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#eb3349,#f45c43)">
+        <h3>0</h3><p>Tests Failed</p>
+      </div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#667eea,#764ba2)">
+        <h3>592</h3><p>Total Transactions</p>
+      </div>
+      <div class="stat-card" style="background:#4caf50">
+        <h3>A</h3><p>Coverage Grade</p>
+      </div>
+    </div>
+
+    <!-- Overall coverage -->
+    <div class="section" style="margin-bottom:40px">
+      <h2>📈 Overall Functional Coverage</h2>
+      <div style="display:flex;align-items:center;gap:30px">
+        <div style="font-size:3.5em;font-weight:bold;color:#4caf50;min-width:110px;text-align:center">
+          100.00%
         </div>
-        
-        <div class="content">
-            <!-- Summary Stats -->
-            <div class="summary">
-                <div class="summary-card status-pass">
-                    <h3>15</h3>
-                    <p>Tests Passed</p>
-                </div>
-                <div class="summary-card status-fail">
-                    <h3>0</h3>
-                    <p>Tests Failed</p>
-                </div>
-                <div class="summary-card">
-                    <h3>1771</h3>
-                    <p>Total Transactions</p>
-                </div>
-                <div class="summary-card grade-card">
-                    <h3>B</h3>
-                    <p>Coverage Grade</p>
-                </div>
+        <div style="flex:1">
+          <p style="color:#333;margin-bottom:8px"><strong>TOTAL COVERGROUP COVERAGE (from UCDB)</strong></p>
+          <div class="overall-bar">
+            <div class="overall-fill"
+                 style="width:100.00%;background:#4caf50">
+              100.00%
             </div>
-            
-            <!-- Overall Coverage -->
-            <div class="section">
-                <h2>📈 Overall Coverage Achievement</h2>
-                <div class="overall-coverage">
-                    <div class="overall-percentage">88.1%</div>
-                    <div class="coverage-progress">
-                        <p style="color: #333; margin-bottom: 10px;"><strong>Coverage Progress</strong></p>
-                        <div class="progress-bar">
-                            <div class="progress-fill">88.1%</div>
-                        </div>
-                        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
-                            Grade: <strong>B</strong> | Bins Hit: <strong>114/133</strong>
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Coverage Metrics -->
-            <div class="section">
-                <h2>📊 Coverage Statistics & Metrics</h2>
-                <div class="metrics-grid">
-                    <div class="metric-box">
-                        <h4> Total Transactions</h4>
-                        <div class="metric-value">1771</div>
-                        <div class="metric-label">Verified AXI operations</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>📝 Write Operations</h4>
-                        <div class="metric-value">916</div>
-                        <div class="metric-label">51.7% of total</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>📖 Read Operations</h4>
-                        <div class="metric-value">840</div>
-                        <div class="metric-label">47.4% of total</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>🎯 Bins Coverage</h4>
-                        <div class="metric-value">114/133</div>
-                        <div class="metric-label">85.7% bins exercised</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Coverage by Domain -->
-            <div class="section">
-                <h2>🗂️ Coverage by Domain (5 Domains)</h2>
-                
-        <div class="domain-coverage">
-            <div class="domain-header">
-                <h3>AXI Protocol</h3>
-                <span class="coverage-pct">82.6%</span>
-            </div>
-            <p class="domain-desc">AXI data payload patterns, byte-lane signatures, and reduced address weighting</p>
-            <div class="coverage-bar-container">
-                <div class="coverage-bar" style="width: 82.6086956521739%">
-                    <span class="bar-text">38/46 bins</span>
-                </div>
-            </div>
-            <div class="contributors">
-                <small>Tests: basic_rw_test, burst_pattern_test, protocol_edge_case_test, alternating_pattern_test, stress_load_test</small>
-            </div>
+          </div>
+          <p style="color:#666;font-size:.9em">
+            Grade: <strong>A</strong> &nbsp;|&nbsp;
+            5 covergroup types &nbsp;|&nbsp;
+            0 UVM_ERROR &nbsp;|&nbsp; 0 UVM_FATAL
+          </p>
         </div>
-        
-        <div class="domain-coverage">
-            <div class="domain-header">
-                <h3>FIFO State Machine</h3>
-                <span class="coverage-pct">90.0%</span>
+      </div>
+    </div>
+
+    <!-- Per-covergroup breakdown -->
+    <div class="section" style="margin-bottom:40px">
+      <h2>🗂️ Covergroup Breakdown (5 Covergroups)</h2>
+      
+        <div style="background:#f9f9f9;border-radius:8px;padding:20px;margin-bottom:20px;border-left:4px solid #4caf50">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h3 style="margin:0;color:#333;font-size:1.1em">Transaction Type (cg_txn_type)</h3>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="background:#4caf50;color:white;padding:3px 10px;border-radius:12px;font-size:0.8em">Covered</span>
+              <span style="font-size:1.3em;font-weight:bold;color:#4caf50">100.0%</span>
             </div>
-            <p class="domain-desc">FIFO full, empty, write/read transitions</p>
-            <div class="coverage-bar-container">
-                <div class="coverage-bar" style="width: 90.0%">
-                    <span class="bar-text">18/20 bins</span>
-                </div>
+          </div>
+          <p style="color:#666;font-size:0.9em;margin:0 0 10px">Verifies all three transaction kinds are exercised: WRITE, PERIPH_READ, AXI_READ</p>
+          <div style="background:#e0e0e0;height:20px;border-radius:5px;overflow:hidden;margin-bottom:8px">
+            <div style="background:#4caf50;height:100%;width:100.0%;display:flex;align-items:center;justify-content:flex-end;padding-right:6px">
+              <span style="color:white;font-size:0.8em;font-weight:bold">3/3 bins</span>
             </div>
-            <div class="contributors">
-                <small>Tests: fifo_full_test, fifo_empty_test, full_write_full_read_test</small>
-            </div>
+          </div>
+          
+        <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:0.9em">
+          <thead>
+            <tr style="background:#f5f5f5">
+              <th style="padding:6px 10px;text-align:left;border-bottom:2px solid #ddd">Bin</th>
+              <th style="padding:6px 10px;text-align:center;border-bottom:2px solid #ddd">Hits</th>
+              <th style="padding:6px 10px;text-align:center;border-bottom:2px solid #ddd">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">wr</td>
+              <td style="padding:6px 10px;text-align:center">218</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">periph_rd</td>
+              <td style="padding:6px 10px;text-align:center">103</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">axi_rd</td>
+              <td style="padding:6px 10px;text-align:center">16</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">wr</td>
+              <td style="padding:6px 10px;text-align:center">218</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">periph_rd</td>
+              <td style="padding:6px 10px;text-align:center">103</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">axi_rd</td>
+              <td style="padding:6px 10px;text-align:center">16</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr></tbody>
+        </table>
         </div>
-        
-        <div class="domain-coverage">
-            <div class="domain-header">
-                <h3>CDC Synchronization</h3>
-                <span class="coverage-pct">80.0%</span>
+        <div style="background:#f9f9f9;border-radius:8px;padding:20px;margin-bottom:20px;border-left:4px solid #4caf50">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h3 style="margin:0;color:#333;font-size:1.1em">AXI Write Coverage (cg_axi_write)</h3>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="background:#4caf50;color:white;padding:3px 10px;border-radius:12px;font-size:0.8em">Covered</span>
+              <span style="font-size:1.3em;font-weight:bold;color:#4caf50">100.0%</span>
             </div>
-            <p class="domain-desc">Clock domain crossing synchronizer behavior</p>
-            <div class="coverage-bar-container">
-                <div class="coverage-bar" style="width: 80.0%">
-                    <span class="bar-text">24/30 bins</span>
-                </div>
+          </div>
+          <p style="color:#666;font-size:0.9em;margin:0 0 10px">AXI write address (0x0/0x4), strobe patterns (0x5/0xA/0xF), FIFO-full flag, and cross-coverage</p>
+          <div style="background:#e0e0e0;height:20px;border-radius:5px;overflow:hidden;margin-bottom:8px">
+            <div style="background:#4caf50;height:100%;width:100.0%;display:flex;align-items:center;justify-content:flex-end;padding-right:6px">
+              <span style="color:white;font-size:0.8em;font-weight:bold">14/14 bins</span>
             </div>
-            <div class="contributors">
-                <small>Tests: cdc_stress_test, stress_load_test</small>
-            </div>
+          </div>
+          
+        <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:0.9em">
+          <thead>
+            <tr style="background:#f5f5f5">
+              <th style="padding:6px 10px;text-align:left;border-bottom:2px solid #ddd">Bin</th>
+              <th style="padding:6px 10px;text-align:center;border-bottom:2px solid #ddd">Hits</th>
+              <th style="padding:6px 10px;text-align:center;border-bottom:2px solid #ddd">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">addr_data</td>
+              <td style="padding:6px 10px;text-align:center">38</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">addr_ctrl</td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">strb_partial_lo</td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">strb_partial_hi</td>
+              <td style="padding:6px 10px;text-align:center">2</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">strb_full</td>
+              <td style="padding:6px 10px;text-align:center">38</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">not_full</td>
+              <td style="padding:6px 10px;text-align:center">40</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">full</td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_data,strb_partial_lo></td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_data,strb_partial_hi></td>
+              <td style="padding:6px 10px;text-align:center">2</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_data,strb_full></td>
+              <td style="padding:6px 10px;text-align:center">32</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_ctrl,strb_full></td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_data,not_full></td>
+              <td style="padding:6px 10px;text-align:center">34</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_data,full></td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_ctrl,not_full></td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">addr_data</td>
+              <td style="padding:6px 10px;text-align:center">38</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">addr_ctrl</td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">strb_partial_lo</td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">strb_partial_hi</td>
+              <td style="padding:6px 10px;text-align:center">2</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">strb_full</td>
+              <td style="padding:6px 10px;text-align:center">38</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">not_full</td>
+              <td style="padding:6px 10px;text-align:center">40</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">full</td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_data,strb_partial_lo></td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_data,strb_partial_hi></td>
+              <td style="padding:6px 10px;text-align:center">2</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_data,strb_full></td>
+              <td style="padding:6px 10px;text-align:center">32</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_ctrl,strb_full></td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_data,not_full></td>
+              <td style="padding:6px 10px;text-align:center">34</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_data,full></td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_ctrl,not_full></td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr></tbody>
+        </table>
         </div>
-        
-        <div class="domain-coverage">
-            <div class="domain-header">
-                <h3>Interrupt Signals</h3>
-                <span class="coverage-pct">100.0%</span>
+        <div style="background:#f9f9f9;border-radius:8px;padding:20px;margin-bottom:20px;border-left:4px solid #4caf50">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h3 style="margin:0;color:#333;font-size:1.1em">AXI Read Coverage (cg_axi_read)</h3>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="background:#4caf50;color:white;padding:3px 10px;border-radius:12px;font-size:0.8em">Covered</span>
+              <span style="font-size:1.3em;font-weight:bold;color:#4caf50">100.0%</span>
             </div>
-            <p class="domain-desc">FIFO full/empty interrupt combinations</p>
-            <div class="coverage-bar-container">
-                <div class="coverage-bar" style="width: 100.0%">
-                    <span class="bar-text">12/12 bins</span>
-                </div>
+          </div>
+          <p style="color:#666;font-size:0.9em;margin:0 0 10px">AXI read address (status 0x0 / peek 0x4) × FIFO-empty flag cross-coverage</p>
+          <div style="background:#e0e0e0;height:20px;border-radius:5px;overflow:hidden;margin-bottom:8px">
+            <div style="background:#4caf50;height:100%;width:100.0%;display:flex;align-items:center;justify-content:flex-end;padding-right:6px">
+              <span style="color:white;font-size:0.8em;font-weight:bold">8/8 bins</span>
             </div>
-            <div class="contributors">
-                <small>Tests: interrupt_signals_test, fifo_full_test, fifo_empty_test</small>
-            </div>
+          </div>
+          
+        <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:0.9em">
+          <thead>
+            <tr style="background:#f5f5f5">
+              <th style="padding:6px 10px;text-align:left;border-bottom:2px solid #ddd">Bin</th>
+              <th style="padding:6px 10px;text-align:center;border-bottom:2px solid #ddd">Hits</th>
+              <th style="padding:6px 10px;text-align:center;border-bottom:2px solid #ddd">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">addr_status</td>
+              <td style="padding:6px 10px;text-align:center">8</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">addr_peek</td>
+              <td style="padding:6px 10px;text-align:center">8</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">not_empty</td>
+              <td style="padding:6px 10px;text-align:center">10</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">empty</td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_status,not_empty></td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_status,empty></td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_peek,not_empty></td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_peek,empty></td>
+              <td style="padding:6px 10px;text-align:center">2</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">addr_status</td>
+              <td style="padding:6px 10px;text-align:center">8</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">addr_peek</td>
+              <td style="padding:6px 10px;text-align:center">8</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">not_empty</td>
+              <td style="padding:6px 10px;text-align:center">10</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">empty</td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_status,not_empty></td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_status,empty></td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_peek,not_empty></td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><addr_peek,empty></td>
+              <td style="padding:6px 10px;text-align:center">2</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr></tbody>
+        </table>
         </div>
-        
-        <div class="domain-coverage">
-            <div class="domain-header">
-                <h3>Error Scenarios</h3>
-                <span class="coverage-pct">88.0%</span>
+        <div style="background:#f9f9f9;border-radius:8px;padding:20px;margin-bottom:20px;border-left:4px solid #4caf50">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h3 style="margin:0;color:#333;font-size:1.1em">Peripheral Read Coverage (cg_periph_read)</h3>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="background:#4caf50;color:white;padding:3px 10px;border-radius:12px;font-size:0.8em">Covered</span>
+              <span style="font-size:1.3em;font-weight:bold;color:#4caf50">100.0%</span>
             </div>
-            <p class="domain-desc">Reset, boundary conditions, edge cases</p>
-            <div class="coverage-bar-container">
-                <div class="coverage-bar" style="width: 88.0%">
-                    <span class="bar-text">22/25 bins</span>
-                </div>
+          </div>
+          <p style="color:#666;font-size:0.9em;margin:0 0 10px">Peripheral reads with FIFO-empty and FIFO-full flag combinations</p>
+          <div style="background:#e0e0e0;height:20px;border-radius:5px;overflow:hidden;margin-bottom:8px">
+            <div style="background:#4caf50;height:100%;width:100.0%;display:flex;align-items:center;justify-content:flex-end;padding-right:6px">
+              <span style="color:white;font-size:0.8em;font-weight:bold">4/4 bins</span>
             </div>
-            <div class="contributors">
-                <small>Tests: reset_test, boundary_condition_test, protocol_edge_case_test</small>
-            </div>
+          </div>
+          
+        <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:0.9em">
+          <thead>
+            <tr style="background:#f5f5f5">
+              <th style="padding:6px 10px;text-align:left;border-bottom:2px solid #ddd">Bin</th>
+              <th style="padding:6px 10px;text-align:center;border-bottom:2px solid #ddd">Hits</th>
+              <th style="padding:6px 10px;text-align:center;border-bottom:2px solid #ddd">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">not_empty</td>
+              <td style="padding:6px 10px;text-align:center">45</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">empty</td>
+              <td style="padding:6px 10px;text-align:center">1</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">not_full</td>
+              <td style="padding:6px 10px;text-align:center">40</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">full</td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">not_empty</td>
+              <td style="padding:6px 10px;text-align:center">45</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">empty</td>
+              <td style="padding:6px 10px;text-align:center">1</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">not_full</td>
+              <td style="padding:6px 10px;text-align:center">40</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">full</td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr></tbody>
+        </table>
         </div>
-        
+        <div style="background:#f9f9f9;border-radius:8px;padding:20px;margin-bottom:20px;border-left:4px solid #4caf50">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h3 style="margin:0;color:#333;font-size:1.1em">FIFO State Coverage (cg_fifo_state)</h3>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="background:#4caf50;color:white;padding:3px 10px;border-radius:12px;font-size:0.8em">Covered</span>
+              <span style="font-size:1.3em;font-weight:bold;color:#4caf50">100.0%</span>
             </div>
-            
-            <!-- Test Execution Details -->
-            <div class="section">
-                <h2>📋 Test Execution Summary</h2>
-                <table>
-                    <tr>
-                        <th>Test Name</th>
-                        <th>Total Transactions</th>
-                        <th>Write Ops</th>
-                        <th>Read Ops</th>
-                    </tr>
-                    
-            <tr>
-                <td><strong>alternating_pattern_test</strong></td>
-                <td class="trans-count">225</td>
-                <td class="write-count">96</td>
-                <td class="read-count">128</td>
-            </tr>
-            
-            <tr>
-                <td><strong>basic_rw_test</strong></td>
-                <td class="trans-count">3</td>
-                <td class="write-count">1</td>
-                <td class="read-count">1</td>
-            </tr>
-            
-            <tr>
-                <td><strong>boundary_condition_test</strong></td>
-                <td class="trans-count">86</td>
-                <td class="write-count">49</td>
-                <td class="read-count">36</td>
-            </tr>
-            
-            <tr>
-                <td><strong>burst_pattern_test</strong></td>
-                <td class="trans-count">65</td>
-                <td class="write-count">48</td>
-                <td class="read-count">16</td>
-            </tr>
-            
-            <tr>
-                <td><strong>cdc_stress_test</strong></td>
-                <td class="trans-count">151</td>
-                <td class="write-count">75</td>
-                <td class="read-count">75</td>
-            </tr>
-            
-            <tr>
-                <td><strong>continuous_rw_test</strong></td>
-                <td class="trans-count">101</td>
-                <td class="write-count">50</td>
-                <td class="read-count">50</td>
-            </tr>
-            
-            <tr>
-                <td><strong>coverage_test</strong></td>
-                <td class="trans-count">115</td>
-                <td class="write-count">61</td>
-                <td class="read-count">53</td>
-            </tr>
-            
-            <tr>
-                <td><strong>fifo_empty_test</strong></td>
-                <td class="trans-count">4</td>
-                <td class="write-count">1</td>
-                <td class="read-count">2</td>
-            </tr>
-            
-            <tr>
-                <td><strong>fifo_full_test</strong></td>
-                <td class="trans-count">10</td>
-                <td class="write-count">9</td>
-                <td class="read-count">0</td>
-            </tr>
-            
-            <tr>
-                <td><strong>full_write_full_read_test</strong></td>
-                <td class="trans-count">17</td>
-                <td class="write-count">8</td>
-                <td class="read-count">8</td>
-            </tr>
-            
-            <tr>
-                <td><strong>interrupt_signals_test</strong></td>
-                <td class="trans-count">129</td>
-                <td class="write-count">72</td>
-                <td class="read-count">56</td>
-            </tr>
-            
-            <tr>
-                <td><strong>protocol_edge_case_test</strong></td>
-                <td class="trans-count">105</td>
-                <td class="write-count">68</td>
-                <td class="read-count">36</td>
-            </tr>
-            
-            <tr>
-                <td><strong>rand_test</strong></td>
-                <td class="trans-count">5</td>
-                <td class="write-count">2</td>
-                <td class="read-count">2</td>
-            </tr>
-            
-            <tr>
-                <td><strong>reset_test</strong></td>
-                <td class="trans-count">4</td>
-                <td class="write-count">1</td>
-                <td class="read-count">2</td>
-            </tr>
-            
-            <tr>
-                <td><strong>stress_load_test</strong></td>
-                <td class="trans-count">751</td>
-                <td class="write-count">375</td>
-                <td class="read-count">375</td>
-            </tr>
-            
-                </table>
+          </div>
+          <p style="color:#666;font-size:0.9em;margin:0 0 10px">All three FIFO states (empty/partial/full) × all three transaction types cross-coverage</p>
+          <div style="background:#e0e0e0;height:20px;border-radius:5px;overflow:hidden;margin-bottom:8px">
+            <div style="background:#4caf50;height:100%;width:100.0%;display:flex;align-items:center;justify-content:flex-end;padding-right:6px">
+              <span style="color:white;font-size:0.8em;font-weight:bold">15/15 bins</span>
             </div>
-        </div>
-        
-        <div class="footer">
-            <p>🔍 Real coverage data extracted from UCDB coverage databases</p>
-            <p>Coverage Report | Generated: April 8, 2026 | Source: 14 UVM Test Simulations</p>
-            <div class="back-link-footer">
-                <a href="index.html">← Back to Main Dashboard</a>
-            </div>
+          </div>
+          
+        <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:0.9em">
+          <thead>
+            <tr style="background:#f5f5f5">
+              <th style="padding:6px 10px;text-align:left;border-bottom:2px solid #ddd">Bin</th>
+              <th style="padding:6px 10px;text-align:center;border-bottom:2px solid #ddd">Hits</th>
+              <th style="padding:6px 10px;text-align:center;border-bottom:2px solid #ddd">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">state_empty</td>
+              <td style="padding:6px 10px;text-align:center">123</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">state_partial</td>
+              <td style="padding:6px 10px;text-align:center">200</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">state_full</td>
+              <td style="padding:6px 10px;text-align:center">14</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">wr</td>
+              <td style="padding:6px 10px;text-align:center">218</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">periph_rd</td>
+              <td style="padding:6px 10px;text-align:center">103</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">axi_rd</td>
+              <td style="padding:6px 10px;text-align:center">16</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><wr,state_empty></td>
+              <td style="padding:6px 10px;text-align:center">116</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><wr,state_partial></td>
+              <td style="padding:6px 10px;text-align:center">98</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><wr,state_full></td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><periph_rd,state_empty></td>
+              <td style="padding:6px 10px;text-align:center">1</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><periph_rd,state_partial></td>
+              <td style="padding:6px 10px;text-align:center">96</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><periph_rd,state_full></td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><axi_rd,state_empty></td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><axi_rd,state_partial></td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><axi_rd,state_full></td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">state_empty</td>
+              <td style="padding:6px 10px;text-align:center">123</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">state_partial</td>
+              <td style="padding:6px 10px;text-align:center">200</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">state_full</td>
+              <td style="padding:6px 10px;text-align:center">14</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">wr</td>
+              <td style="padding:6px 10px;text-align:center">218</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">periph_rd</td>
+              <td style="padding:6px 10px;text-align:center">103</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">axi_rd</td>
+              <td style="padding:6px 10px;text-align:center">16</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><wr,state_empty></td>
+              <td style="padding:6px 10px;text-align:center">116</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><wr,state_partial></td>
+              <td style="padding:6px 10px;text-align:center">98</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><wr,state_full></td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><periph_rd,state_empty></td>
+              <td style="padding:6px 10px;text-align:center">1</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><periph_rd,state_partial></td>
+              <td style="padding:6px 10px;text-align:center">96</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><periph_rd,state_full></td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><axi_rd,state_empty></td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><axi_rd,state_partial></td>
+              <td style="padding:6px 10px;text-align:center">6</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace"><axi_rd,state_full></td>
+              <td style="padding:6px 10px;text-align:center">4</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:#4caf50;font-weight:bold">Covered</span>
+              </td>
+            </tr></tbody>
+        </table>
         </div>
     </div>
+
+    <!-- Transaction stats -->
+    <div class="section" style="margin-bottom:40px">
+      <h2>📊 Transaction Statistics</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:20px">
+        <div style="background:#f9f9f9;padding:20px;border-radius:8px;border-left:4px solid #667eea">
+          <h4 style="color:#333;margin-bottom:6px">Total Transactions</h4>
+          <div style="font-size:1.8em;font-weight:bold;color:#667eea">592</div>
+          <div style="color:#666;font-size:.9em">Verified AXI operations</div>
+        </div>
+        <div style="background:#f9f9f9;padding:20px;border-radius:8px;border-left:4px solid #667eea">
+          <h4 style="color:#333;margin-bottom:6px">Write Operations</h4>
+          <div style="font-size:1.8em;font-weight:bold;color:#667eea">1536</div>
+          <div style="color:#666;font-size:.9em">259.5% of total</div>
+        </div>
+        <div style="background:#f9f9f9;padding:20px;border-radius:8px;border-left:4px solid #667eea">
+          <h4 style="color:#333;margin-bottom:6px">Read Operations</h4>
+          <div style="font-size:1.8em;font-weight:bold;color:#667eea">920</div>
+          <div style="color:#666;font-size:.9em">155.4% of total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test execution table -->
+    <div class="section" style="margin-bottom:40px">
+      <h2>📋 Test Execution Summary</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Test Name</th>
+            <th style="text-align:center">Transactions</th>
+            <th style="text-align:center">Writes</th>
+            <th style="text-align:center">Reads</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td style="padding:10px 12px"><strong>alternating_pattern_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">96</td>
+              <td style="padding:10px 12px;text-align:center">192</td>
+              <td style="padding:10px 12px;text-align:center">128</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px"><strong>basic_rw_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">1</td>
+              <td style="padding:10px 12px;text-align:center">2</td>
+              <td style="padding:10px 12px;text-align:center">1</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px"><strong>boundary_condition_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">38</td>
+              <td style="padding:10px 12px;text-align:center">87</td>
+              <td style="padding:10px 12px;text-align:center">36</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px"><strong>burst_pattern_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">16</td>
+              <td style="padding:10px 12px;text-align:center">64</td>
+              <td style="padding:10px 12px;text-align:center">16</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px"><strong>cdc_stress_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">33</td>
+              <td style="padding:10px 12px;text-align:center">108</td>
+              <td style="padding:10px 12px;text-align:center">75</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px"><strong>continuous_rw_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">50</td>
+              <td style="padding:10px 12px;text-align:center">100</td>
+              <td style="padding:10px 12px;text-align:center">50</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px"><strong>coverage_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">115</td>
+              <td style="padding:10px 12px;text-align:center">218</td>
+              <td style="padding:10px 12px;text-align:center">119</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px"><strong>fifo_empty_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">1</td>
+              <td style="padding:10px 12px;text-align:center">2</td>
+              <td style="padding:10px 12px;text-align:center">2</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px"><strong>fifo_full_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">8</td>
+              <td style="padding:10px 12px;text-align:center">17</td>
+              <td style="padding:10px 12px;text-align:center">0</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px"><strong>full_write_full_read_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">8</td>
+              <td style="padding:10px 12px;text-align:center">16</td>
+              <td style="padding:10px 12px;text-align:center">8</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px"><strong>interrupt_signals_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">47</td>
+              <td style="padding:10px 12px;text-align:center">119</td>
+              <td style="padding:10px 12px;text-align:center">56</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px"><strong>protocol_edge_case_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">43</td>
+              <td style="padding:10px 12px;text-align:center">97</td>
+              <td style="padding:10px 12px;text-align:center">50</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px"><strong>rand_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">2</td>
+              <td style="padding:10px 12px;text-align:center">4</td>
+              <td style="padding:10px 12px;text-align:center">2</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px"><strong>reset_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">1</td>
+              <td style="padding:10px 12px;text-align:center">2</td>
+              <td style="padding:10px 12px;text-align:center">2</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px"><strong>stress_load_test</strong></td>
+              <td style="padding:10px 12px;text-align:center">133</td>
+              <td style="padding:10px 12px;text-align:center">508</td>
+              <td style="padding:10px 12px;text-align:center">375</td>
+            </tr></tbody>
+      </table>
+    </div>
+
+  </div><!-- /content -->
+
+  <div class="footer">
+    <p>Coverage data extracted from <code>uvm_test_logs/coverage_test.ucdb</code>
+       via <code>vcover report -details</code></p>
+    <p>QuestaSim 10.7c &nbsp;|&nbsp; AXI4-Lite Async FIFO Verification</p>
+    <a class="back" href="index.html">← Back to Dashboard</a>
+  </div>
+</div>
 </body>
 </html>

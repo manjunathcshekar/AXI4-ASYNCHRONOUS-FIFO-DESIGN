@@ -53,9 +53,9 @@ class protocol_edge_case_seq extends uvm_sequence #(transaction);
             finish_item(tr);
             #8ns;
 
-            // Read from address 0x4
+            // Read from address 0x4 (peek/status via AXI read channel)
             start_item(tr);
-            tr.kind = PERIPH_READ;
+            tr.kind = AXI_READ;
             tr.addr = 4'h4;
             tr.data = 32'h0;
             finish_item(tr);
@@ -76,7 +76,7 @@ class protocol_edge_case_seq extends uvm_sequence #(transaction);
                 #6ns;
 
                 start_item(tr);
-                tr.kind = PERIPH_READ;
+                tr.kind = (j == 0) ? PERIPH_READ : AXI_READ;
                 tr.addr = (j == 0) ? 4'h0 : 4'h4;
                 tr.data = 32'h0;
                 finish_item(tr);

@@ -32,8 +32,8 @@ class cdc_wraparound_seq extends uvm_sequence #(transaction);
         for (int cycle = 0; cycle < 3; cycle++) begin
             // Fill phase: Write 8 entries
             for (int i = 0; i < 8; i++) begin
-                start_item(tr);
                 tr = transaction::type_id::create("tr");
+                start_item(tr);
                 tr.kind = WRITE;
                 tr.addr = 4'h0;
                 tr.data = data_pattern + (cycle * 8) + i;
@@ -48,8 +48,8 @@ class cdc_wraparound_seq extends uvm_sequence #(transaction);
             #100ns;
             
             for (int i = 0; i < 8; i++) begin
-                start_item(tr);
                 tr = transaction::type_id::create("tr");
+                start_item(tr);
                 tr.kind = PERIPH_READ;
                 tr.addr = 4'h0;
                 finish_item(tr);

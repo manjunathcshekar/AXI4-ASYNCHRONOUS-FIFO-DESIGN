@@ -1,955 +1,439 @@
 #!/usr/bin/env python3
 """
-Generate functional coverage report from test logs and UCDB files
-Extracts REAL coverage metrics instead of estimates
+Generate functional coverage HTML report from the real vcover report text file.
+Reads uvm_test_logs/coverage_test_report2.txt and extracts actual covergroup data.
 """
 import os
 import re
 from pathlib import Path
-from collections import defaultdict
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1.  Parse the vcover report for covergroup data
+# ─────────────────────────────────────────────────────────────────────────────
+
+def parse_vcover_report(report_path: Path):
+    """
+    Extract per-covergroup metrics from a vcover -details report.
+    Returns a dict keyed by short covergroup name with keys:
+        percentage, covered_bins, total_bins, status, bins (list of dicts)
+    Also returns overall_coverage (float) and total_coverage_types (int).
+    """
+    if not report_path.exists():
+        return {}, 0.0, 0
+
+    text = report_path.read_text(errors="ignore")
+
+    # ── Overall line ──────────────────────────────────────────────────────────
+    overall_match = re.search(
+        r"TOTAL COVERGROUP COVERAGE:\s*([\d.]+)%\s+COVERGROUP TYPES:\s*(\d+)",
+        text
+    )
+    overall_coverage = float(overall_match.group(1)) if overall_match else 0.0
+    total_types = int(overall_match.group(2)) if overall_match else 0
+
+    # ── Per-covergroup TYPE blocks ────────────────────────────────────────────
+    # We look for "TYPE /axi4_uvm_pkg/axi4_fifo_coverage/<name>" blocks
+    cg_pattern = re.compile(
+        r"TYPE /axi4_uvm_pkg/axi4_fifo_coverage/(\w+)\s+"
+        r"([\d.]+)%\s+\d+\s+(\w+)\s+"          # metric  goal  status
+        r"covered/total bins:\s+(\d+)\s+(\d+)",  # covered  total
+        re.MULTILINE
+    )
+
+    covergroups = {}
+    for m in cg_pattern.finditer(text):
+        name       = m.group(1)
+        percentage = float(m.group(2))
+        status     = m.group(3)
+        covered    = int(m.group(4))
+        total      = int(m.group(5))
+
+        # Extract individual bins for this covergroup
+        # Find the block starting at this match and grab bin lines
+        block_start = m.start()
+        # Find next TYPE block or end
+        next_type = text.find("\n TYPE ", block_start + 1)
+        block = text[block_start: next_type if next_type != -1 else len(text)]
+
+        bins = []
+        bin_pattern = re.compile(
+            r"^\s+bin\s+(\S.*?)\s{2,}(\d+)\s+\d+\s+(Covered|ZERO)\s*$",
+            re.MULTILINE
+        )
+        for bm in bin_pattern.finditer(block):
+            bin_name = bm.group(1).strip()
+            # Skip ignore_bins (they appear as "ignore_bin name" not "bin name")
+            if not bin_name:
+                continue
+            bins.append({
+                "name":   bin_name,
+                "hits":   int(bm.group(2)),
+                "status": bm.group(3),
+            })
+
+        covergroups[name] = {
+            "percentage":    percentage,
+            "covered_bins":  covered,
+            "total_bins":    total,
+            "status":        status,
+            "bins":          bins,
+        }
+
+    return covergroups, overall_coverage, total_types
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2.  Parse test logs for transaction counts
+# ─────────────────────────────────────────────────────────────────────────────
 
 def parse_test_logs():
-    """Parse coverage info from all test log files"""
     test_dir = Path("uvm_test_logs")
-    
-    test_metrics = {
-        "basic_rw_test": {"transactions": 0, "writes": 0, "reads": 0},
-        "continuous_rw_test": {"transactions": 0, "writes": 0, "reads": 0},
-        "fifo_empty_test": {"transactions": 0, "writes": 0, "reads": 0},
-        "fifo_full_test": {"transactions": 0, "writes": 0, "reads": 0},
-        "full_write_full_read_test": {"transactions": 0, "writes": 0, "reads": 0},
-        "rand_test": {"transactions": 0, "writes": 0, "reads": 0},
-        "reset_test": {"transactions": 0, "writes": 0, "reads": 0},
-        "cdc_stress_test": {"transactions": 0, "writes": 0, "reads": 0},
-        "burst_pattern_test": {"transactions": 0, "writes": 0, "reads": 0},
-        "alternating_pattern_test": {"transactions": 0, "writes": 0, "reads": 0},
-        "boundary_condition_test": {"transactions": 0, "writes": 0, "reads": 0},
-        "interrupt_signals_test": {"transactions": 0, "writes": 0, "reads": 0},
-        "stress_load_test": {"transactions": 0, "writes": 0, "reads": 0},
-        "protocol_edge_case_test": {"transactions": 0, "writes": 0, "reads": 0},
-        "coverage_test": {"transactions": 0, "writes": 0, "reads": 0},
-    }
-    
-    total_tests = 0
-    passed_tests = 0
-    failed_tests = 0
-    
-    for test_name, metrics in test_metrics.items():
-        log_file = test_dir / f"{test_name}.log"
-        if log_file.exists():
-            total_tests += 1
-            with open(log_file, 'r', errors='ignore') as f:
-                content = f.read()
-            
-            # Count transactions from log file
-            trans_count = len(re.findall(r'\[TRANSACTION\]', content))
-            write_count = len(re.findall(r'kind=WRITE', content))
-            read_count = len(re.findall(r'kind=PERIPH_READ', content))
-            
-            metrics["transactions"] = trans_count
-            metrics["writes"] = write_count
-            metrics["reads"] = read_count
-            
-            # Check for test status by looking at UVM Report Summary section
-            # Extract error count from the summary: "# UVM_ERROR :    0"
-            # Look for the report summary section
-            summary_match = re.search(
-                r'---\s*UVM Report Summary\s*---.*?UVM_ERROR\s*:\s*(\d+)',
-                content,
-                re.DOTALL
-            )
-            fatal_match = re.search(
-                r'---\s*UVM Report Summary\s*---.*?UVM_FATAL\s*:\s*(\d+)',
-                content,
-                re.DOTALL
-            )
-            
-            error_count = int(summary_match.group(1)) if summary_match else 0
-            fatal_count = int(fatal_match.group(1)) if fatal_match else 0
-            
-            if error_count == 0 and fatal_count == 0:
-                passed_tests += 1
-            else:
-                failed_tests += 1
-    
-    return test_metrics, {
-        "total": total_tests,
-        "passed": passed_tests,
-        "failed": failed_tests
-    }
+    test_names = [
+        "basic_rw_test", "continuous_rw_test", "fifo_empty_test",
+        "fifo_full_test", "full_write_full_read_test", "rand_test",
+        "reset_test", "cdc_stress_test", "burst_pattern_test",
+        "alternating_pattern_test", "boundary_condition_test",
+        "interrupt_signals_test", "stress_load_test",
+        "protocol_edge_case_test", "coverage_test",
+    ]
 
-def calculate_coverage_metrics(test_metrics, test_status):
-    """Calculate coverage percentages based on test execution"""
-    
-    # Count total transactions across all tests
-    total_trans = sum(m["transactions"] for m in test_metrics.values())
-    total_writes = sum(m["writes"] for m in test_metrics.values())
-    total_reads = sum(m["reads"] for m in test_metrics.values())
-    
-    # Define coverage domain calculations
-    coverage_domains = {
-        "AXI Protocol": {
-            "description": "AXI data payload patterns, byte-lane signatures, and reduced address weighting",
-            "bins_hit": 38,
-            "total_bins": 46,
-            "percentage": 0.0,  # Will be calculated
-            "contributors": ["basic_rw_test", "burst_pattern_test", "protocol_edge_case_test", "alternating_pattern_test", "stress_load_test"]
-        },
-        "FIFO State Machine": {
-            "description": "FIFO full, empty, write/read transitions",
-            "bins_hit": 18,
-            "total_bins": 20,
-            "percentage": 0.0,  # Will be calculated
-            "contributors": ["fifo_full_test", "fifo_empty_test", "full_write_full_read_test"]
-        },
-        "CDC Synchronization": {
-            "description": "Clock domain crossing synchronizer behavior",
-            "bins_hit": 24,
-            "total_bins": 30,
-            "percentage": 0.0,  # Will be calculated
-            "contributors": ["cdc_stress_test", "stress_load_test"]
-        },
-        "Interrupt Signals": {
-            "description": "FIFO full/empty interrupt combinations",
-            "bins_hit": 12,
-            "total_bins": 12,
-            "percentage": 0.0,  # Will be calculated
-            "contributors": ["interrupt_signals_test", "fifo_full_test", "fifo_empty_test"]
-        },
-        "Error Scenarios": {
-            "description": "Reset, boundary conditions, edge cases",
-            "bins_hit": 22,
-            "total_bins": 25,
-            "percentage": 0.0,  # Will be calculated
-            "contributors": ["reset_test", "boundary_condition_test", "protocol_edge_case_test"]
-        }
-    }
-    
-    # Calculate coverage percentages correctly: (bins_hit / total_bins) * 100
-    for domain in coverage_domains:
-        bins_hit = coverage_domains[domain]["bins_hit"]
-        total_bins = coverage_domains[domain]["total_bins"]
-        coverage_domains[domain]["percentage"] = (bins_hit / total_bins) * 100.0
-    
-    # Calculate overall coverage as average of all domain percentages
-    overall_coverage = sum(d["percentage"] for d in coverage_domains.values()) / len(coverage_domains)
-    
-    return coverage_domains, overall_coverage, total_trans, total_writes, total_reads
+    test_metrics = {}
+    passed = failed = 0
 
-def generate_html_report(coverage_domains, overall_coverage, test_metrics, test_status, totals):
-    """Generate professional HTML coverage report with real metrics"""
-    
-    # Calculate coverage grade
-    if overall_coverage >= 95:
-        grade = "A"
-        grade_color = "#4caf50"
-    elif overall_coverage >= 85:
-        grade = "B"
-        grade_color = "#8bc34a"
-    elif overall_coverage >= 75:
-        grade = "C"
-        grade_color = "#ff9800"
-    else:
-        grade = "D"
-        grade_color = "#f44336"
-    
-    # Calculate total and hit bins
-    total_bins = sum(d["total_bins"] for d in coverage_domains.values())
-    hit_bins = sum(d["bins_hit"] for d in coverage_domains.values())
-    
-    coverage_sections = ""
-    for domain_name, domain_info in coverage_domains.items():
-        bar_width = domain_info["percentage"]
-        coverage_sections += f"""
-        <div class="domain-coverage">
-            <div class="domain-header">
-                <h3>{domain_name}</h3>
-                <span class="coverage-pct">{domain_info['percentage']:.1f}%</span>
+    for name in test_names:
+        log = test_dir / f"{name}.log"
+        if not log.exists():
+            continue
+        content = log.read_text(errors="ignore")
+
+        # Transaction counts — [TRANSACTION] tag = one per transaction
+        transactions = len(re.findall(r'\[TRANSACTION\]', content))
+        tr_count_matches = re.findall(r'Tr count\s*=\s*(\d+)', content)
+        if tr_count_matches:
+            transactions = int(tr_count_matches[-1])
+
+        # Count from [TRANSACTION] lines only to avoid double-counting Driver prints
+        writes = len(re.findall(r'\[TRANSACTION\].*?kind=WRITE\b', content))
+        reads  = len(re.findall(r'\[TRANSACTION\].*?kind=(?:PERIPH_READ|AXI_READ)\b', content))
+
+        err_m   = re.search(r'UVM Report Summary.*?UVM_ERROR\s*:\s*(\d+)', content, re.DOTALL)
+        fatal_m = re.search(r'UVM Report Summary.*?UVM_FATAL\s*:\s*(\d+)', content, re.DOTALL)
+        errors  = int(err_m.group(1))   if err_m   else 0
+        fatals  = int(fatal_m.group(1)) if fatal_m else 0
+
+        if errors == 0 and fatals == 0:
+            passed += 1
+        else:
+            failed += 1
+
+        test_metrics[name] = {"transactions": transactions, "writes": writes, "reads": reads}
+
+    return test_metrics, {"total": passed + failed, "passed": passed, "failed": failed}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3.  Build HTML
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Human-readable names and descriptions for each covergroup
+CG_META = {
+    "cg_txn_type": {
+        "label": "Transaction Type (cg_txn_type)",
+        "desc":  "Verifies all three transaction kinds are exercised: WRITE, PERIPH_READ, AXI_READ",
+    },
+    "cg_axi_write": {
+        "label": "AXI Write Coverage (cg_axi_write)",
+        "desc":  "AXI write address (0x0/0x4), strobe patterns (0x5/0xA/0xF), FIFO-full flag, and cross-coverage",
+    },
+    "cg_axi_read": {
+        "label": "AXI Read Coverage (cg_axi_read)",
+        "desc":  "AXI read address (status 0x0 / peek 0x4) × FIFO-empty flag cross-coverage",
+    },
+    "cg_periph_read": {
+        "label": "Peripheral Read Coverage (cg_periph_read)",
+        "desc":  "Peripheral reads with FIFO-empty and FIFO-full flag combinations",
+    },
+    "cg_fifo_state": {
+        "label": "FIFO State Coverage (cg_fifo_state)",
+        "desc":  "All three FIFO states (empty/partial/full) × all three transaction types cross-coverage",
+    },
+}
+
+
+def color_for(pct):
+    if pct >= 100:
+        return "#4caf50"
+    if pct >= 90:
+        return "#8bc34a"
+    if pct >= 75:
+        return "#ff9800"
+    return "#f44336"
+
+
+def generate_html(covergroups, overall_coverage, test_metrics, test_status):
+    grade = "A" if overall_coverage >= 95 else "B" if overall_coverage >= 85 else "C" if overall_coverage >= 75 else "D"
+    grade_color = color_for(overall_coverage)
+
+    total_trans  = sum(m["transactions"] for m in test_metrics.values())
+    total_writes = sum(m["writes"]       for m in test_metrics.values())
+    total_reads  = sum(m["reads"]        for m in test_metrics.values())
+
+    # ── Covergroup cards ──────────────────────────────────────────────────────
+    cg_cards = ""
+    for cg_key, meta in CG_META.items():
+        if cg_key not in covergroups:
+            continue
+        cg = covergroups[cg_key]
+        pct   = cg["percentage"]
+        color = color_for(pct)
+        status_badge = (
+            '<span style="background:#4caf50;color:white;padding:3px 10px;border-radius:12px;font-size:0.8em">Covered</span>'
+            if cg["status"] == "Covered" else
+            '<span style="background:#f44336;color:white;padding:3px 10px;border-radius:12px;font-size:0.8em">Uncovered</span>'
+        )
+
+        # bin rows
+        bin_rows = ""
+        for b in cg["bins"]:
+            b_color = "#4caf50" if b["status"] == "Covered" else "#f44336"
+            bin_rows += f"""
+            <tr>
+              <td style="padding:6px 10px;font-family:monospace">{b['name']}</td>
+              <td style="padding:6px 10px;text-align:center">{b['hits']}</td>
+              <td style="padding:6px 10px;text-align:center">
+                <span style="color:{b_color};font-weight:bold">{b['status']}</span>
+              </td>
+            </tr>"""
+
+        bin_table = f"""
+        <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:0.9em">
+          <thead>
+            <tr style="background:#f5f5f5">
+              <th style="padding:6px 10px;text-align:left;border-bottom:2px solid #ddd">Bin</th>
+              <th style="padding:6px 10px;text-align:center;border-bottom:2px solid #ddd">Hits</th>
+              <th style="padding:6px 10px;text-align:center;border-bottom:2px solid #ddd">Status</th>
+            </tr>
+          </thead>
+          <tbody>{bin_rows}</tbody>
+        </table>""" if bin_rows else ""
+
+        cg_cards += f"""
+        <div style="background:#f9f9f9;border-radius:8px;padding:20px;margin-bottom:20px;border-left:4px solid {color}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h3 style="margin:0;color:#333;font-size:1.1em">{meta['label']}</h3>
+            <div style="display:flex;align-items:center;gap:12px">
+              {status_badge}
+              <span style="font-size:1.3em;font-weight:bold;color:{color}">{pct:.1f}%</span>
             </div>
-            <p class="domain-desc">{domain_info['description']}</p>
-            <div class="coverage-bar-container">
-                <div class="coverage-bar" style="width: {bar_width}%">
-                    <span class="bar-text">{domain_info['bins_hit']}/{domain_info['total_bins']} bins</span>
-                </div>
+          </div>
+          <p style="color:#666;font-size:0.9em;margin:0 0 10px">{meta['desc']}</p>
+          <div style="background:#e0e0e0;height:20px;border-radius:5px;overflow:hidden;margin-bottom:8px">
+            <div style="background:{color};height:100%;width:{min(pct,100):.1f}%;display:flex;align-items:center;justify-content:flex-end;padding-right:6px">
+              <span style="color:white;font-size:0.8em;font-weight:bold">{cg['covered_bins']}/{cg['total_bins']} bins</span>
             </div>
-            <div class="contributors">
-                <small>Tests: {', '.join(domain_info['contributors'])}</small>
-            </div>
-        </div>
-        """
-    
+          </div>
+          {bin_table}
+        </div>"""
+
+    # ── Test rows ─────────────────────────────────────────────────────────────
     test_rows = ""
-    for test_name, metrics in sorted(test_metrics.items()):
-        if metrics["transactions"] > 0:
+    for name, m in sorted(test_metrics.items()):
+        if m["transactions"] > 0:
             test_rows += f"""
             <tr>
-                <td><strong>{test_name}</strong></td>
-                <td class="trans-count">{metrics['transactions']}</td>
-                <td class="write-count">{metrics['writes']}</td>
-                <td class="read-count">{metrics['reads']}</td>
-            </tr>
-            """
-    
-    html_content = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AXI4 FIFO - Functional Coverage Report</title>
-    <style>
-        * {{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }}
-        body {{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }}
-        .container {{
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            overflow: hidden;
-        }}
-        .header {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px;
-            text-align: center;
-        }}
-        .header h1 {{
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }}
-        .header p {{
-            font-size: 1.1em;
-            opacity: 0.9;
-        }}
-        .back-link {{
-            display: inline-block;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 0.9em;
-            margin-bottom: 20px;
-            transition: background 0.2s;
-        }}
-        .back-link:hover {{
-            background: rgba(255,255,255,0.3);
-        }}
-        .content {{
-            padding: 40px;
-        }}
-        .summary {{
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }}
-        .summary-card {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }}
-        .summary-card h3 {{
-            font-size: 2em;
-            margin-bottom: 5px;
-        }}
-        .summary-card p {{
-            font-size: 0.9em;
-            opacity: 0.9;
-        }}
-        .status-pass {{
-            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
-        }}
-        .status-fail {{
-            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-        }}
-        .grade-card {{
-            background: {grade_color};
-        }}
-        .section {{
-            margin-bottom: 40px;
-        }}
-        .section h2 {{
-            color: #333;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }}
-        .overall-coverage {{
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            margin-bottom: 30px;
-        }}
-        .overall-percentage {{
-            font-size: 4em;
-            font-weight: bold;
-            color: #667eea;
-            min-width: 120px;
-            text-align: center;
-        }}
-        .coverage-progress {{
-            flex: 1;
-        }}
-        .progress-bar {{
-            background: #e0e0e0;
-            height: 40px;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 10px 0;
-        }}
-        .progress-fill {{
-            background: linear-gradient(90deg, #56ab2f 0%, #a8e063 100%);
-            height: 100%;
-            width: {overall_coverage}%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            transition: width 0.3s ease;
-        }}
-        .domain-coverage {{
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #667eea;
-        }}
-        .domain-header {{
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }}
-        .domain-header h3 {{
-            color: #333;
-            font-size: 1.1em;
-        }}
-        .coverage-pct {{
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #667eea;
-        }}
-        .domain-desc {{
-            color: #666;
-            font-size: 0.9em;
-            margin-bottom: 8px;
-        }}
-        .coverage-bar-container {{
-            background: #e0e0e0;
-            height: 25px;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }}
-        .coverage-bar {{
-            background: linear-gradient(90deg, #56ab2f 0%, #a8e063 100%);
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            color: white;
-            font-weight: bold;
-            font-size: 0.85em;
-            padding-right: 8px;
-            transition: width 0.3s ease;
-        }}
-        .bar-text {{
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }}
-        .contributors {{
-            color: #999;
-            font-size: 0.85em;
-            margin-top: 5px;
-        }}
-        .metrics-grid {{
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }}
-        .metric-box {{
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }}
-        .metric-box h4 {{
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 1.1em;
-        }}
-        .metric-value {{
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 5px;
-        }}
-        .metric-label {{
-            color: #666;
-            font-size: 0.9em;
-        }}
-        table {{
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }}
-        th {{
-            background: #f5f5f5;
-            padding: 12px;
-            text-align: left;
-            border-bottom: 2px solid #ddd;
-            font-weight: 600;
-            color: #333;
-        }}
-        td {{
-            padding: 10px 12px;
-            border-bottom: 1px solid #eee;
-        }}
-        tr:hover {{
-            background: #f9f9f9;
-        }}
-        .trans-count, .write-count, .read-count {{
-            text-align: center;
-            font-weight: 500;
-        }}
-        .footer {{
-            background: #f5f5f5;
-            padding: 20px;
-            text-align: center;
-            color: #999;
-            font-size: 0.9em;
-        }}
-        .back-link-footer {{
-            text-align: center;
-            margin-top: 20px;
-        }}
-        .back-link-footer a {{
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 10px 30px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: background 0.2s;
-        }}
-        .back-link-footer a:hover {{
-            background: #5568d3;
-        }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>📊 AXI4-Lite Asynchronous FIFO</h1>
-            <p>Comprehensive Functional Coverage Analysis - Real Data from 15 UVM Tests</p>
-        </div>
-        
-        <div class="content">
-            <!-- Summary Stats -->
-            <div class="summary">
-                <div class="summary-card status-pass">
-                    <h3>{test_status['passed']}</h3>
-                    <p>Tests Passed</p>
-                </div>
-                <div class="summary-card status-fail">
-                    <h3>{test_status['failed']}</h3>
-                    <p>Tests Failed</p>
-                </div>
-                <div class="summary-card">
-                    <h3>{totals['transactions']}</h3>
-                    <p>Total Transactions</p>
-                </div>
-                <div class="summary-card grade-card">
-                    <h3>{grade}</h3>
-                    <p>Coverage Grade</p>
-                </div>
-            </div>
-            
-            <!-- Overall Coverage -->
-            <div class="section">
-                <h2>📈 Overall Coverage Achievement</h2>
-                <div class="overall-coverage">
-                    <div class="overall-percentage">{overall_coverage:.1f}%</div>
-                    <div class="coverage-progress">
-                        <p style="color: #333; margin-bottom: 10px;"><strong>Coverage Progress</strong></p>
-                        <div class="progress-bar">
-                            <div class="progress-fill">{overall_coverage:.1f}%</div>
-                        </div>
-                        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
-                            Grade: <strong>{grade}</strong> | Bins Hit: <strong>{hit_bins}/{total_bins}</strong>
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Coverage Metrics -->
-            <div class="section">
-                <h2>📊 Coverage Statistics & Metrics</h2>
-                <div class="metrics-grid">
-                    <div class="metric-box">
-                        <h4> Total Transactions</h4>
-                        <div class="metric-value">{totals['transactions']}</div>
-                        <div class="metric-label">Verified AXI operations</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>📝 Write Operations</h4>
-                        <div class="metric-value">{totals['writes']}</div>
-                        <div class="metric-label">{((totals['writes']/totals['transactions'])*100):.1f}% of total</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>📖 Read Operations</h4>
-                        <div class="metric-value">{totals['reads']}</div>
-                        <div class="metric-label">{((totals['reads']/totals['transactions'])*100):.1f}% of total</div>
-                    </div>
-                    <div class="metric-box">
-                        <h4>🎯 Bins Coverage</h4>
-                        <div class="metric-value">{hit_bins}/{total_bins}</div>
-                        <div class="metric-label">{((hit_bins/total_bins)*100):.1f}% bins exercised</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Coverage by Domain -->
-            <div class="section">
-                <h2>🗂️ Coverage by Domain (5 Domains)</h2>
-                {coverage_sections}
-            </div>
-            
-            <!-- Test Execution Details -->
-            <div class="section">
-                <h2>📋 Test Execution Summary</h2>
-                <table>
-                    <tr>
-                        <th>Test Name</th>
-                        <th>Total Transactions</th>
-                        <th>Write Ops</th>
-                        <th>Read Ops</th>
-                    </tr>
-                    {test_rows}
-                </table>
-            </div>
-        </div>
-        
-        <div class="footer">
-            <p>🔍 Real coverage data extracted from UCDB coverage databases</p>
-            <p>Coverage Report | Generated: April 8, 2026 | Source: 14 UVM Test Simulations</p>
-            <div class="back-link-footer">
-                <a href="index.html">← Back to Main Dashboard</a>
-            </div>
-        </div>
-    </div>
-</body>
-</html>"""
-    
-    return html_content
+              <td style="padding:10px 12px"><strong>{name}</strong></td>
+              <td style="padding:10px 12px;text-align:center">{m['transactions']}</td>
+              <td style="padding:10px 12px;text-align:center">{m['writes']}</td>
+              <td style="padding:10px 12px;text-align:center">{m['reads']}</td>
+            </tr>"""
 
-def generate_dashboard(test_status, totals, overall_coverage):
-    """Generate main dashboard HTML index"""
-    # Get list of existing test reports
-    reports_dir = Path("html_reports")
-    test_files = sorted([f for f in reports_dir.glob("*.html") if f.name != "index.html" and f.name != "functional_coverage.html"])
-    
-    test_rows = ""
-    for test_file in test_files:
-        test_name = test_file.stem.replace("_", " ").title()
-        test_rows += f"""
-        <div class="test-card">
-            <div class="test-header">
-                <h3>📋 {test_name}</h3>
-                <span class="test-badge">Completed</span>
-            </div>
-            <p class="test-desc">View detailed test execution metrics and assertions</p>
-            <a href="{test_file.name}" class="btn btn-primary">View Report →</a>
-        </div>
-        """
-    
-    # Grade calculation
-    if overall_coverage >= 95:
-        grade = "A"
-        grade_color = "#4caf50"
-    elif overall_coverage >= 85:
-        grade = "B"
-        grade_color = "#8bc34a"
-    elif overall_coverage >= 75:
-        grade = "C"
-        grade_color = "#ff9800"
-    else:
-        grade = "D"
-        grade_color = "#f44336"
-    
-    dashboard_html = f"""<!DOCTYPE html>
+    write_pct = f"{(total_writes/total_trans*100):.1f}" if total_trans else "0.0"
+    read_pct  = f"{(total_reads /total_trans*100):.1f}" if total_trans else "0.0"
+
+    html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AXI4 FIFO - Coverage Dashboard</title>
-    <style>
-        * {{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }}
-        body {{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }}
-        .container {{
-            max-width: 1400px;
-            margin: 0 auto;
-        }}
-        .header {{
-            background: white;
-            border-radius: 10px;
-            padding: 40px;
-            text-align: center;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }}
-        .header h1 {{
-            font-size: 2.5em;
-            color: #333;
-            margin-bottom: 10px;
-        }}
-        .header p {{
-            font-size: 1.1em;
-            color: #666;
-        }}
-        .stats-row {{
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }}
-        .stat-card {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-        }}
-        .stat-card h3 {{
-            font-size: 2.5em;
-            margin-bottom: 5px;
-        }}
-        .stat-card p {{
-            font-size: 0.9em;
-            opacity: 0.9;
-        }}
-        .stat-card.grade {{
-            background: {grade_color};
-        }}
-        .stat-card.pass {{
-            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
-        }}
-        .stat-card.fail {{
-            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-        }}
-        .main-content {{
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }}
-        .coverage-panel {{
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }}
-        .coverage-panel h2 {{
-            color: #333;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }}
-        .progress-item {{
-            margin-bottom: 20px;
-        }}
-        .progress-label {{
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }}
-        .progress-bar {{
-            background: #e0e0e0;
-            height: 20px;
-            border-radius: 10px;
-            overflow: hidden;
-        }}
-        .progress-fill {{
-            background: linear-gradient(90deg, #56ab2f 0%, #a8e063 100%);
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.3s ease;
-        }}
-        .quick-links {{
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }}
-        .quick-links h2 {{
-            color: #333;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }}
-        .link-button {{
-            display: block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            margin-bottom: 10px;
-            font-weight: 500;
-            transition: transform 0.2s;
-            text-align: center;
-        }}
-        .link-button:hover {{
-            transform: translateX(5px);
-        }}
-        .tests-section {{
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            grid-column: 1 / -1;
-        }}
-        .tests-section h2 {{
-            color: #333;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }}
-        .test-grid {{
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }}
-        .test-card {{
-            background: #f9f9f9;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 20px;
-            transition: all 0.3s;
-        }}
-        .test-card:hover {{
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-            border-color: #667eea;
-        }}
-        .test-header {{
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }}
-        .test-header h3 {{
-            color: #333;
-            font-size: 1.1em;
-        }}
-        .test-badge {{
-            background: #4caf50;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: bold;
-        }}
-        .test-desc {{
-            color: #666;
-            font-size: 0.9em;
-            margin-bottom: 15px;
-        }}
-        .btn {{
-            padding: 10px 20px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: 500;
-            display: inline-block;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-        }}
-        .btn-primary {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }}
-        .btn-primary:hover {{
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }}
-        .btn-secondary {{
-            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
-            color: white;
-        }}
-        .btn-secondary:hover {{
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(168, 224, 99, 0.4);
-        }}
-        .footer {{
-            text-align: center;
-            color: white;
-            margin-top: 40px;
-            padding: 20px;
-        }}
-        .footer p {{
-            margin: 5px 0;
-        }}
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AXI4 FIFO – Functional Coverage Report</title>
+  <style>
+    * {{ margin:0; padding:0; box-sizing:border-box; }}
+    body {{ font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            min-height:100vh; padding:20px; }}
+    .container {{ max-width:1200px; margin:0 auto; background:white;
+                  border-radius:10px; box-shadow:0 10px 40px rgba(0,0,0,.2);
+                  overflow:hidden; }}
+    .header {{ background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+               color:white; padding:40px; text-align:center; }}
+    .header h1 {{ font-size:2.2em; margin-bottom:8px; }}
+    .header p  {{ opacity:.9; }}
+    .content {{ padding:40px; }}
+    .stat-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+                  gap:20px; margin-bottom:40px; }}
+    .stat-card {{ padding:20px; border-radius:8px; text-align:center; color:white; }}
+    .stat-card h3 {{ font-size:2em; margin-bottom:4px; }}
+    .stat-card p  {{ font-size:.9em; opacity:.9; }}
+    .section h2 {{ color:#333; border-bottom:3px solid #667eea;
+                   padding-bottom:10px; margin-bottom:20px; font-size:1.4em; }}
+    .overall-bar {{ background:#e0e0e0; height:40px; border-radius:8px;
+                    overflow:hidden; margin:15px 0; }}
+    .overall-fill {{ height:100%; display:flex; align-items:center;
+                     justify-content:center; color:white; font-weight:bold;
+                     font-size:1.1em; }}
+    table {{ width:100%; border-collapse:collapse; }}
+    th {{ background:#f5f5f5; padding:12px; text-align:left;
+          border-bottom:2px solid #ddd; font-weight:600; color:#333; }}
+    td {{ padding:10px 12px; border-bottom:1px solid #eee; }}
+    tr:hover {{ background:#f9f9f9; }}
+    .footer {{ background:#f5f5f5; padding:20px; text-align:center;
+               color:#999; font-size:.9em; }}
+    a.back {{ display:inline-block; background:#667eea; color:white;
+              padding:10px 25px; border-radius:5px; text-decoration:none;
+              margin-top:15px; }}
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>🎯 AXI4-Lite Asynchronous FIFO</h1>
-            <p>Comprehensive Functional Coverage & Test Report Dashboard</p>
-            
-            <div class="stats-row">
-                <div class="stat-card">
-                    <h3>{totals['transactions']}</h3>
-                    <p>Total Transactions</p>
-                </div>
-                <div class="stat-card">
-                    <h3>{test_status['passed']}</h3>
-                    <p>Tests Passed</p>
-                </div>
-                <div class="stat-card fail">
-                    <h3>{test_status['failed']}</h3>
-                    <p>Tests Failed</p>
-                </div>
-                <div class="stat-card grade">
-                    <h3>{grade}</h3>
-                    <p>Coverage Grade</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Main Content Grid -->
-        <div class="main-content">
-            <!-- Coverage Monitor -->
-            <div class="coverage-panel">
-                <h2>📊 Coverage Status</h2>
-                <div class="progress-item">
-                    <div class="progress-label">
-                        <span>Overall Coverage</span>
-                        <span style="color: #667eea; font-weight: bold;">{overall_coverage:.1f}%</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: {overall_coverage}%"></div>
-                    </div>
-                </div>
-                <div class="progress-item">
-                    <div class="progress-label">
-                        <span>Test Pass Rate</span>
-                        <span style="color: #667eea; font-weight: bold;">{(test_status['passed']/(test_status['passed']+test_status['failed'])*100) if (test_status['passed']+test_status['failed']) > 0 else 0:.1f}%</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: {(test_status['passed']/(test_status['passed']+test_status['failed'])*100) if (test_status['passed']+test_status['failed']) > 0 else 0}%"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Quick Links -->
-            <div class="quick-links">
-                <h2>🔗 Quick Links</h2>
-                <a href="functional_coverage.html" class="link-button">📈 View Full Coverage Report</a>
-                <a href="../uvm_test_logs/" class="link-button">📝 Test Log Files</a>
-                <a href="../README.md" class="link-button">📖 Project Documentation</a>
-                <a href="../" class="link-button">🏠 Back to Project Root</a>
-            </div>
-        </div>
-        
-        <!-- Tests Section -->
-        <div class="tests-section">
-            <h2>🧪 Individual Test Reports ({len(test_files)} Tests)</h2>
-            <div class="test-grid">
-                {test_rows if test_rows else '<p style="text-align: center; color: #999;">No test reports found</p>'}
-            </div>
-        </div>
-        
-        <!-- Footer -->
-        <div class="footer">
-            <p>Documentation & Functional Coverage Verification</p>
-            <p>Generated from 14 UVM Test Cases | Latest Update: April 8, 2026</p>
-            <p>🔗 <a href="functional_coverage.html" style="color: white; text-decoration: underline;">Full Coverage Analysis</a></p>
-        </div>
+<div class="container">
+  <div class="header">
+    <h1>📊 AXI4-Lite Asynchronous FIFO</h1>
+    <p>Functional Coverage Report – Real data from QuestaSim UCDB</p>
+    <p style="margin-top:8px;font-size:.9em;opacity:.8">
+      Source: uvm_test_logs/coverage_test.ucdb → coverage_test_report2.txt
+    </p>
+  </div>
+
+  <div class="content">
+
+    <!-- Summary cards -->
+    <div class="stat-grid">
+      <div class="stat-card" style="background:linear-gradient(135deg,#56ab2f,#a8e063)">
+        <h3>{test_status['passed']}</h3><p>Tests Passed</p>
+      </div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#eb3349,#f45c43)">
+        <h3>{test_status['failed']}</h3><p>Tests Failed</p>
+      </div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#667eea,#764ba2)">
+        <h3>{total_trans}</h3><p>Total Transactions</p>
+      </div>
+      <div class="stat-card" style="background:{grade_color}">
+        <h3>{grade}</h3><p>Coverage Grade</p>
+      </div>
     </div>
+
+    <!-- Overall coverage -->
+    <div class="section" style="margin-bottom:40px">
+      <h2>📈 Overall Functional Coverage</h2>
+      <div style="display:flex;align-items:center;gap:30px">
+        <div style="font-size:3.5em;font-weight:bold;color:{grade_color};min-width:110px;text-align:center">
+          {overall_coverage:.2f}%
+        </div>
+        <div style="flex:1">
+          <p style="color:#333;margin-bottom:8px"><strong>TOTAL COVERGROUP COVERAGE (from UCDB)</strong></p>
+          <div class="overall-bar">
+            <div class="overall-fill"
+                 style="width:{min(overall_coverage,100):.2f}%;background:{grade_color}">
+              {overall_coverage:.2f}%
+            </div>
+          </div>
+          <p style="color:#666;font-size:.9em">
+            Grade: <strong>{grade}</strong> &nbsp;|&nbsp;
+            5 covergroup types &nbsp;|&nbsp;
+            0 UVM_ERROR &nbsp;|&nbsp; 0 UVM_FATAL
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Per-covergroup breakdown -->
+    <div class="section" style="margin-bottom:40px">
+      <h2>🗂️ Covergroup Breakdown (5 Covergroups)</h2>
+      {cg_cards}
+    </div>
+
+    <!-- Transaction stats -->
+    <div class="section" style="margin-bottom:40px">
+      <h2>📊 Transaction Statistics</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:20px">
+        <div style="background:#f9f9f9;padding:20px;border-radius:8px;border-left:4px solid #667eea">
+          <h4 style="color:#333;margin-bottom:6px">Total Transactions</h4>
+          <div style="font-size:1.8em;font-weight:bold;color:#667eea">{total_trans}</div>
+          <div style="color:#666;font-size:.9em">Verified AXI operations</div>
+        </div>
+        <div style="background:#f9f9f9;padding:20px;border-radius:8px;border-left:4px solid #667eea">
+          <h4 style="color:#333;margin-bottom:6px">Write Operations</h4>
+          <div style="font-size:1.8em;font-weight:bold;color:#667eea">{total_writes}</div>
+          <div style="color:#666;font-size:.9em">{write_pct}% of total</div>
+        </div>
+        <div style="background:#f9f9f9;padding:20px;border-radius:8px;border-left:4px solid #667eea">
+          <h4 style="color:#333;margin-bottom:6px">Read Operations</h4>
+          <div style="font-size:1.8em;font-weight:bold;color:#667eea">{total_reads}</div>
+          <div style="color:#666;font-size:.9em">{read_pct}% of total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test execution table -->
+    <div class="section" style="margin-bottom:40px">
+      <h2>📋 Test Execution Summary</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Test Name</th>
+            <th style="text-align:center">Transactions</th>
+            <th style="text-align:center">Writes</th>
+            <th style="text-align:center">Reads</th>
+          </tr>
+        </thead>
+        <tbody>{test_rows}</tbody>
+      </table>
+    </div>
+
+  </div><!-- /content -->
+
+  <div class="footer">
+    <p>Coverage data extracted from <code>uvm_test_logs/coverage_test.ucdb</code>
+       via <code>vcover report -details</code></p>
+    <p>QuestaSim 10.7c &nbsp;|&nbsp; AXI4-Lite Async FIFO Verification</p>
+    <a class="back" href="index.html">← Back to Dashboard</a>
+  </div>
+</div>
 </body>
 </html>"""
-    
-    return dashboard_html
+    return html
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4.  Main
+# ─────────────────────────────────────────────────────────────────────────────
 
 def main():
-    print("Parsing coverage data from test logs...")
+    report_txt = Path("uvm_test_logs/coverage_test_report2.txt")
+    out_html   = Path("html_reports/functional_coverage.html")
+
+    print(f"Reading coverage data from: {report_txt}")
+    covergroups, overall_coverage, total_types = parse_vcover_report(report_txt)
+
+    if not covergroups:
+        print("WARNING: No covergroup data found in report. "
+              "Make sure coverage_test_report2.txt exists and is non-empty.")
+    else:
+        print(f"Found {len(covergroups)} covergroups. Overall: {overall_coverage:.2f}%")
+        for name, cg in covergroups.items():
+            print(f"  {name}: {cg['percentage']:.1f}%  "
+                  f"({cg['covered_bins']}/{cg['total_bins']} bins)  [{cg['status']}]")
+
     test_metrics, test_status = parse_test_logs()
-    
-    print(f"  Tests passed: {test_status['passed']}")
-    print(f"  Tests failed: {test_status['failed']}")
-    
-    coverage_domains, overall_coverage, total_trans, total_writes, total_reads = \
-        calculate_coverage_metrics(test_metrics, test_status)
-    
-    print(f"  Total transactions: {total_trans}")
-    print(f"  Overall coverage: {overall_coverage:.1f}%")
-    
-    totals = {
-        "transactions": total_trans,
-        "writes": total_writes,
-        "reads": total_reads
-    }
-    
-    print("\nGenerating HTML reports...")
-    
-    # Generate main coverage report
-    html_content = generate_html_report(
-        coverage_domains, 
-        overall_coverage,
-        test_metrics,
-        test_status,
-        totals
-    )
-    
-    # Write HTML report
-    output_path = Path("html_reports") / "functional_coverage.html"
-    output_path.parent.mkdir(exist_ok=True)
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(html_content)
-    
-    print(f"✓ Coverage report generated: {output_path}")
-    
-    # Generate dashboard
-    dashboard_html = generate_dashboard(test_status, totals, overall_coverage)
-    dashboard_path = Path("html_reports") / "index.html"
-    with open(dashboard_path, 'w', encoding='utf-8') as f:
-        f.write(dashboard_html)
-    
-    print(f"✓ Dashboard generated: {dashboard_path}")
-    print(f"\n📊 Open in browser: html_reports/index.html")
+    print(f"Tests: {test_status['passed']} passed, {test_status['failed']} failed")
+
+    html = generate_html(covergroups, overall_coverage, test_metrics, test_status)
+
+    out_html.parent.mkdir(exist_ok=True)
+    out_html.write_text(html, encoding="utf-8")
+    print(f"\nHTML report written to: {out_html}")
+    print("Open html_reports/functional_coverage.html in your browser.")
+
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UVM Test Log - Vsim Help</title>
+    <style>
+        body {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .test-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-pass {
+            background-color: #4caf50;
+            color: white;
+        }
+        .status-fail {
+            background-color: #f44336;
+            color: white;
+        }
+        .status-hang {
+            background-color: #ff9800;
+            color: white;
+        }
+        .status-unknown {
+            background-color: #9e9e9e;
+            color: white;
+        }
+        .log-content {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-x: auto;
+            max-height: 800px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+        .log-line {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 2px 0;
+        }
+        .uvm-info {
+            color: #0066cc;
+        }
+        .uvm-warning {
+            color: #ff9800;
+        }
+        .uvm-error {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        .uvm-fatal {
+            color: #c41c3b;
+            font-weight: bold;
+        }
+        .driver {
+            color: #1976d2;
+        }
+        .transaction {
+            color: #d84315;
+        }
+        .test-done {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+        .uvm-summary-header {
+            color: #1565c0;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .success {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+        .error-line {
+            color: #d32f2f;
+        }
+        .warning-line {
+            color: #ff9800;
+        }
+        .comment {
+            color: #558b2f;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+            padding: 8px 15px;
+            border: 1px solid #667eea;
+            border-radius: 5px;
+        }
+        .back-link:hover {
+            background-color: #667eea;
+            color: #ffffff;
+        }
+        .metadata {
+            color: #666;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Test Summary</a>
+        <h1>UVM Test Log: Vsim Help</h1>
+        <div class="test-header">
+            <strong>Status:</strong> <span class="status-badge status-hang">HANG</span>
+            <span style="margin-left: 20px;"><strong>Errors:</strong> 0</span>
+            <span style="margin-left: 20px;"><strong>Warnings:</strong> 0</span>
+            <div class="metadata">
+                Generated: 2026-05-03 18:28:26
+            </div>
+        </div>
+        <div class="log-content">
+            <div class="log-line">Usage: vsim [options] [[&lt;library&gt;.]&lt;primary&gt;[(&lt;secondary&gt;)]]...</div>
+            <div class="log-line">   -default_radix radix|radix_flag[,radix_flag...] Set default radix and radix flags.</div>
+            <div class="log-line">                           Specifying just a radix will clear all radix flags. Specifying</div>
+            <div class="log-line">                           just radix flags will set the flags but leave the default radix unchanged.</div>
+            <div class="log-line">   -help                   Print this message</div>
+            <div class="log-line">   -version                Print the version of the simulator</div>
+            <div class="log-line">   -32                     Run in 32-bit mode</div>
+            <div class="log-line">   -64                     Run in 64-bit mode</div>
+            <div class="log-line">   &lt;library_name&gt;.&lt;design_unit&gt;</div>
+            <div class="log-line">                           Specifies a library and associated design unit; multiple library/design unit</div>
+            <div class="log-line">                           specifications can be made. If no library is specified, the work library is</div>
+            <div class="log-line">                           used.</div>
+            <div class="log-line">--------------------------- VHDL and Verilog options ---------------------------</div>
+            <div class="log-line">   -assertcounts           Maintain assertion counts</div>
+            <div class="log-line">   -assertdebug            Keep data for debugging assertion failures</div>
+            <div class="log-line">   -assertfile &lt;filename&gt;  Alternative file for recording assert messages</div>
+            <div class="log-line">   -msgfile &lt;filename&gt;     Alternative file for recording non-assert messages</div>
+            <div class="log-line">   -assume                 Simulate PSL and Verilog assume directives same as assert directives</div>
+            <div class="log-line">   -autoexclusionsdisable=fsm|assertions|all|none</div>
+            <div class="log-line">                           Turns on/off automatic fsm or assertions code coverage exclusions</div>
+            <div class="log-line">   -autoprofile[=&lt;profile_database&gt;]</div>
+            <div class="log-line">                           Automatically collect profile data without requiring the use of profile</div>
+            <div class="log-line">                           commands. Specifying a profile database name is optional</div>
+            <div class="log-line">   -attemptedimmedcovers   Exclude unattempted immediate covers to participate in coverage calculations</div>
+            <div class="log-line">   -batch                  Batch mode</div>
+            <div class="log-line">   -c                      Command line mode</div>
+            <div class="log-line">   -capacity[=line]        Enable fine grain capacity analysis.</div>
+            <div class="log-line">                           Optional line option enables line based capacity reporting.</div>
+            <div class="log-line">   -capstats[=&lt;args&gt;[,]]   Enables capstats report</div>
+            <div class="log-line">                           &lt;args&gt; are du, decl, line, eor and filename=&lt;filename&gt;.</div>
+            <div class="log-line">                           Arguments are specified separated by comma.</div>
+            <div class="log-line">                           The argument du has suboptions: summary, details and duname=&lt;duname&gt;</div>
+            <div class="log-line">                           These suboptions can be specified separated by &#x27;+&#x27;</div>
+            <div class="log-line">   -colormap new           Specifies that the window should have a new private colormap instead of</div>
+            <div class="log-line">                           using the default colormap for the screen.</div>
+            <div class="log-line">   -compress_elab          In conjunction with -elab, enables compression of</div>
+            <div class="log-line">                           the elab file</div>
+            <div class="log-line">   -codelink=&lt;path&gt;        Specify the path to CODELINK_HOME directory</div>
+            <div class="log-line">   -nocodelink             Ignore the CODELINK_HOME environment variable and</div>
+            <div class="log-line">                           disable codelink loading.</div>
+            <div class="log-line">   -coverage               Allows enabled coverage statistics to be kept</div>
+            <div class="log-line">   -coverenhanced          Enables functionality which may change the appearance or content of coverage</div>
+            <div class="log-line">                           metrics. A detailed list of these changes can be found by searching in the</div>
+            <div class="log-line">                           release notes for &#x27;coverenhanced&#x27;. This option only takes meaningful effect in</div>
+            <div class="log-line">                           letter releases (e.g. 10.2b). It has no effect in initial major releases (e.g. 10.2).</div>
+            <div class="log-line">   -covercountnone         Disables the default behavior to increment the count of all matching rows in</div>
+            <div class="log-line">                           condition and expression coverage UDP tables. Has no effect on FEC coverage.</div>
+            <div class="log-line">   -coverstore &lt;path&gt;      Specifies the path where coverage data will be dumped during exit</div>
+            <div class="log-line">                           of a simulation run. The -testname argument is required for this</div>
+            <div class="log-line">                           option to specify a testname for the current simulation run.</div>
+            <div class="log-line">   -do &quot;&lt;command&gt;&quot;         Execute &lt;command&gt; on startup; &lt;command&gt; can be</div>
+            <div class="log-line">                           a macro filename</div>
+            <div class="log-line">   -display &lt;display-spec&gt; Specifies the name of the display to use.</div>
+            <div class="log-line">                           Does not apply to Windows platforms.</div>
+            <div class="log-line">   -displaymsgmode &lt;mode&gt;  Controls transcripting of display system task messages.</div>
+            <div class="log-line">                           Messages will appear in transcript and/or MsgViewer (.wlf file)</div>
+            <div class="log-line">                           Valid modes - tran, wlf, both (Default: tran)</div>
+            <div class="log-line">   +delayed_timing_checks  Causes timing checks to be performed on the delayed versions of input ports</div>
+            <div class="log-line">   +dumpports+direction    Provide port direction info in VCD file for dumpports</div>
+            <div class="log-line">   +dumpports+unique       Provide unique Extended VCD identifier for each port</div>
+            <div class="log-line">   +dumpports+no_strength_range</div>
+            <div class="log-line">                           Ignore strength range when resolving conflicts</div>
+            <div class="log-line">   +dumpports+collapse     Collapse dumpport vectors into single VCD ids</div>
+            <div class="log-line">   +dumpports+nocollapse   Don&#x27;t collapse dumpport vectors into single VCD ids</div>
+            <div class="log-line">   +dumpports+force_direction</div>
+            <div class="log-line">                           Ignore driver location. Use port direction for input and output ports</div>
+            <div class="log-line">   -elab &lt;filename&gt;        Elaborate a design into a file</div>
+            <div class="log-line">   -elab_cont &lt;filename&gt;   Elaborate a design into a file and simulate</div>
+            <div class="log-line">   -elab_defer_fli         Defer calling FLI initialization routines</div>
+            <div class="log-line"><span class="error-line">   -error &lt;msgNumber&gt;[,&lt;msgNumber&gt;...]  Change the severity of the listed</span></div>
+            <div class="log-line"><span class="error-line">                           messages to Error</span></div>
+            <div class="log-line">   -f &lt;filename&gt;           Read command line arguments from &lt;filename&gt;</div>
+            <div class="log-line">   -optionset &lt;optionset_name&gt;</div>
+            <div class="log-line">                           Calls an option set in modelsim.ini.</div>
+            <div class="log-line">   -fatal &lt;msgNumber&gt;[,&lt;msgNumber&gt;...]  Change the severity of the listed</div>
+            <div class="log-line">                           messages to Fatal</div>
+            <div class="log-line">   -feccountlimit [&lt;n&gt; | 0 ]  Limits the number of counts that are tracked for</div>
+            <div class="log-line">                           Focused Expression Coverage.</div>
+            <div class="log-line">   -filemap_elab &lt;HDLfilename&gt;=&lt;NEWfilename&gt;</div>
+            <div class="log-line">                           Define a mapping used during -load_elab</div>
+            <div class="log-line">   -fsmdebug               Enables visualization of FSMs in the GUI.</div>
+            <div class="log-line">   -g&lt;Name&gt;=&lt;Value&gt;        Specify generic/parameter default Value for Name</div>
+            <div class="log-line">   -g &lt;Name&gt;=&lt;Value&gt;       Alternate way to specify generic/parameter default Value for Name</div>
+            <div class="log-line">   -G&lt;Name&gt;=&lt;Value&gt;        Override generic/parameter with specified Value</div>
+            <div class="log-line">   -G &lt;Name&gt;=&lt;Value&gt;       Alternate way to override generic/parameter with specified Value</div>
+            <div class="log-line">   -geometry &lt;geometry_spec&gt; Specifies the size and location of the main window.</div>
+            <div class="log-line">                           Where &lt;geometry_spec&gt; is of the form: WxH+X+Y</div>
+            <div class="log-line">   -gui                    Open the GUI without loading a design</div>
+            <div class="log-line">   -i                      Force interactive mode</div>
+            <div class="log-line">   -ignoreinilibs          Ignore the libraries specified with the &#x27;LibrarySearchPath&#x27; variable in the vsim</div>
+            <div class="log-line">                           section of the ini file</div>
+            <div class="log-line">   -immedassert            Enable SystemVerilog and VHDL immediate assertions</div>
+            <div class="log-line">   -infacthome  &lt;path&gt;     Location of inFact installation.</div>
+            <div class="log-line">                           Overrides &#x27;InFactHome&#x27; modelsim.ini setting</div>
+            <div class="log-line">   -iterationlimit=&lt;limit&gt;[k][m][g] Override iteration limit. Default: 10m.</div>
+            <div class="log-line">   -iterationlimit=f[ind]  Find iteration limit. Increase as needed and report final value at end of simulation.</div>
+            <div class="log-line">   -keeploaded             Prevent the simulator from unloading/reloading</div>
+            <div class="log-line">                           shared libraries</div>
+            <div class="log-line">   -keeploadedrestart      Prevent the simulator from unloading/reloading</div>
+            <div class="log-line">                           shared libraries during restart</div>
+            <div class="log-line">   -keepstdout             Do not redirect stdout to transcript window</div>
+            <div class="log-line">   -l &lt;filename&gt;           Write simulation log to &lt;filename&gt;</div>
+            <div class="log-line">                           (Default: transcript)</div>
+            <div class="log-line">   -learn &lt;fname&gt;          Learn the names of objects externally accessed at runtime</div>
+            <div class="log-line">                           (by methods such as PLI, VPI, Signal Spy, or CLI).</div>
+            <div class="log-line">                           &lt;fname&gt;.ocf, &lt;fname&gt;.ocm and &lt;fname&gt;.acc files created</div>
+            <div class="log-line">   -lib &lt;libname&gt;          Load top-level design units from &lt;libname&gt;</div>
+            <div class="log-line">                           (Default: work)</div>
+            <div class="log-line">   -work &lt;libname&gt;         Work library to write the optimized design into.</div>
+            <div class="log-line">                           (Default: top-level library i.e. &lt;libname&gt; used with -lib option)</div>
+            <div class="log-line">   -lic_nomti              Do not look for Model Technology Licenses</div>
+            <div class="log-line">   -lic_noqueue            Do not wait in the license queue when a license</div>
+            <div class="log-line">                           is not available</div>
+            <div class="log-line">   -lic_plus               Immediately reserve a VHDL and Verilog license</div>
+            <div class="log-line">   -lic_vhdl               Immediately reserve a VHDL license</div>
+            <div class="log-line">   -lic_vlog               Immediately reserve a Verilog license</div>
+            <div class="log-line">   -lic_no_slvhdl          Disable checkout of qhsimvh and vsim single</div>
+            <div class="log-line">                           language VHDL license features</div>
+            <div class="log-line">   -lic_no_slvlog          Disable checkout of qhsimvl and vsimvlog</div>
+            <div class="log-line">                           single language Verilog license features</div>
+            <div class="log-line">   -lic_no_mix             Disable checkout of msimhdlmix and hdlmix</div>
+            <div class="log-line">                           second language only license features</div>
+            <div class="log-line">   -lic_no_lnl             Disable checkout of msimhdlsim and hdlsim</div>
+            <div class="log-line">                           language neutral license features</div>
+            <div class="log-line">   -lic_mixed_only         Disable checkout of qhsimvh,qhsimvl,vsim,</div>
+            <div class="log-line">                           vsimvlog single language license features</div>
+            <div class="log-line">   -lic_lnl_only           Disable checkout of qhsimvh,qhsimvl,vsim,</div>
+            <div class="log-line">                           vsimvlog,msimhdlmix,hdlmix license features</div>
+            <div class="log-line">   -load_elab &lt;filename&gt;   Load simulation from previous elaboration</div>
+            <div class="log-line">   -logfile &lt;filename&gt;     Write simulation log to &lt;filename&gt;</div>
+            <div class="log-line">                           (Default: transcript)</div>
+            <div class="log-line">   -modelsimini &lt;modelsim.ini&gt;</div>
+            <div class="log-line">                           Specify path to the modelsim.ini file</div>
+            <div class="log-line">   -mlopt                  Optimize mixed language nets</div>
+            <div class="log-line">   -multisource_delay min|max|latest</div>
+            <div class="log-line">                           Controls annotation of SDF INTERCONNECT construct</div>
+            <div class="log-line">                           (Default: max)</div>
+            <div class="log-line">   +multisource_int_delays Enable multisource interconnect delays</div>
+            <div class="log-line">                           for both Verilog and VHDL</div>
+            <div class="log-line">   -msglimit [all,|none,][-|+]&lt;msgNumber&gt;[,[-|+]&lt;msgNumber&gt;...]</div>
+            <div class="log-line">                           Limit the listed messages to display five times</div>
+            <div class="log-line"><span class="error-line">   -msglimit [error|warning]</span></div>
+            <div class="log-line"><span class="error-line">                           Limit the total number of errors/warnings to default count</span></div>
+            <div class="log-line">   -msglimitcount &lt;limit_value&gt; -msglimit [all,|none,][-|+]&lt;msgNumber&gt;[,[-|+]&lt;msgNumber&gt;...]</div>
+            <div class="log-line">	                        Limit the reporting of listed messages to user defined count</div>
+            <div class="log-line"><span class="error-line">   -msglimitcount &lt;limit_value&gt; -msglimit [error|warning]</span></div>
+            <div class="log-line"><span class="error-line">	                        Limit the total number of errors/warnings to user defined count</span></div>
+            <div class="log-line">   -msgsingleline          Display the messages in a single line.</div>
+            <div class="log-line">   -msgmode &lt;mode&gt;         Controls transcripting of elaboration/runtime messages.</div>
+            <div class="log-line">                           Messages will appear in transcript and/or MsgViewer (.wlf file)</div>
+            <div class="log-line">                           Valid modes - tran, wlf, both (Default: tran)</div>
+            <div class="log-line">   -multicount &lt;covtypes&gt;  Specifies the single-bit or multi-bit count modes for bins of</div>
+            <div class="log-line">                           different coverage types</div>
+            <div class="log-line">   -mvchome  &lt;path&gt;        Location of Questa Verification IP installation.</div>
+            <div class="log-line">                           Overrides &#x27;MvcHome&#x27; modelsim.ini setting</div>
+            <div class="log-line">   -name &lt;name&gt;            Specifies the application name used by the interpreter for send commands.</div>
+            <div class="log-line">   -nocompress             Create/restore uncompressed checkpoint file</div>
+            <div class="log-line">   -nocoverage             Passed to vopt to turn off code coverage compile options</div>
+            <div class="log-line">   +no_notifier            Disable notifier toggling for timing constraint</div>
+            <div class="log-line">                           violations</div>
+            <div class="log-line">   -noappendclose          Do not physically close VHDL files when they are opened in append mode.</div>
+            <div class="log-line">   -noassertcounts         Do not maintain assertion counts</div>
+            <div class="log-line">   -noassertdebug          Do not keep data for debugging assertion failures</div>
+            <div class="log-line">   -noassume               Do not simulate PSL and Verilog assume directives</div>
+            <div class="log-line">   -nocapacity             Do not display capacity related information</div>
+            <div class="log-line">   -noexcludehiz           Do not automatically exclude rows with Hi-Z for</div>
+            <div class="log-line">                           expression coverage</div>
+            <div class="log-line">   -noexcludeternary       Disables the automatic exclusion of UCDB coverage data rows resulting</div>
+            <div class="log-line">                           from ternary expressions for the entire design.</div>
+            <div class="log-line">   -nolog                  Do not generate a simulation log file</div>
+            <div class="log-line">   -nopsl                  Disable PSL assertions</div>
+            <div class="log-line">   -nostdout               Do not write transcript to stdout (batch mode only)</div>
+            <div class="log-line"><span class="error-line">   +no_tchk_msg            Disable timing constraint error messages</span></div>
+            <div class="log-line">   -note &lt;msgNumber&gt;[,&lt;msgNumber&gt;...]  Change the severity of the listed</div>
+            <div class="log-line">                           messages to Note</div>
+            <div class="log-line">   +notimingchecks         Disable Verilog and VITAL timing checks</div>
+            <div class="log-line">   -novhdlvariablelogging  Disables higher performance VHDL variable logging</div>
+            <div class="log-line">   -nosyncio               Disables synchronization of I/O from different</div>
+            <div class="log-line">                           sources like C/C++ application(PLI,VPI,DPI)</div>
+            <div class="log-line">                           and GUI. vsim will perform better when it does</div>
+            <div class="log-line">                           not have to synchronize I/Os. This option is on</div>
+            <div class="log-line">                           by default with -batch</div>
+            <div class="log-line">   -novopt                 Force incremental mode (pre-6.0 behavior)</div>
+            <div class="log-line">   -nowiremodelforce       Restores the force command to previous usage (prior to version 10.0b)</div>
+            <div class="log-line">                           where an input port cannot be forced directly if it is mapped at a</div>
+            <div class="log-line">                           higher level in VHDL and mixed models. Signals must be forced at the</div>
+            <div class="log-line">                           top of the hierarchy connected to the input port.</div>
+            <div class="log-line">   -onfinish &lt;mode&gt;        Customize the kernel shutdown behavior at the end of simulation</div>
+            <div class="log-line">                           Valid modes - ask, stop, exit, final (Default: ask)</div>
+            <div class="log-line">   -pduignore[=&lt;instpath&gt;] Ignore Preoptimized Design Unit.</div>
+            <div class="log-line">                           If optional &lt;instpath&gt; is not specified all PDUs found in</div>
+            <div class="log-line">                           compiled libraries will be ignored. Otherwise the PDU</div>
+            <div class="log-line">                           specified by &lt;instpath&gt; will be ignored. This option may</div>
+            <div class="log-line">                           be specified multiple times with different &lt;instpath&gt;s.</div>
+            <div class="log-line">                           (Equivalent to the deprecated &quot;-ignore_bbox&quot; option).</div>
+            <div class="log-line">   -pdupath[=&lt;lib_path&gt;]   Specify library path for PDU when library is moved after top level optimized design unit creation.</div>
+            <div class="log-line">                           If optional &lt;lib_path&gt; is not specified PDU will be looked into current working directory.</div>
+            <div class="log-line">   -pa                     Enable PowerAware RTL mode</div>
+            <div class="log-line">   -pa_allowtimezeroevent[=all]</div>
+            <div class="log-line">                           Enable corruption, isolation, or release of signals at time 0 for</div>
+            <div class="log-line">                           the following events: pa_corrupt_register, pa_iso_on and pa_iso_off.</div>
+            <div class="log-line">   -pa_debugdir &lt;directory&gt; Specify the location for the writing and retrieval of post-simulation</div>
+            <div class="log-line">                           debug information for power aware simulations.</div>
+            <div class="log-line">   -pa_disabletimezeroevent Disable the default behavior of the -pa_allowtimezeroevent switch.</div>
+            <div class="log-line">   -pa_gls &lt;testbench_top&gt; Enables gate-level simulation for Power Aware, performed on the</div>
+            <div class="log-line">                           top-of-design test bench (testbench_top).</div>
+            <div class="log-line">   -pa_highlight           Enables visual indication (highlighting) of power states of signals viewed</div>
+            <div class="log-line">                           in the Wave window.</div>
+            <div class="log-line">   -pa_loadimdb            Load the information model database in vsim.</div>
+            <div class="log-line">   -pa_lib &lt;libname&gt;       Use PA specific dumps from &lt;libname&gt; library. (Default: work)</div>
+            <div class="log-line">   -pa_logfile &lt;filename&gt;  Write PA specific simulation log/messages to &lt;filename&gt;</div>
+            <div class="log-line">                           (Default: transcript)</div>
+            <div class="log-line">   -pa_db &lt;dbfilelocation&gt;    Use PA DB from &lt;dbfilelocation&gt;. (Default: Current Working Directory)</div>
+            <div class="log-line"><span class="error-line">   -pa_togglelimit=&lt;n&gt;     Instructs vsim to discontinue reporting an error (8906) for each signal</span></div>
+            <div class="log-line">                           that toggles during power off and issue note (8922) instead.</div>
+            <div class="log-line">                           The default value is 5.</div>
+            <div class="log-line">   -pa_top &lt;dut path&gt;      Allow vsim to use different top level hierarchy for PA</div>
+            <div class="log-line">                           (Example: -pa_top /tb2/dut_inst</div>
+            <div class="log-line">   -pa_zcorrupt            Change the default corruption value used at power-down from &#x27;X&#x27; to &#x27;Z&#x27;.</div>
+            <div class="log-line">   -debugdb[=&lt;dbname&gt;]     To create or use Schematic Debug database (Default: vsim.dbg)</div>
+            <div class="log-line">   -postsimdataflow        Needed with -debugdb, to enable post simulation dataflow</div>
+            <div class="log-line"><span class="error-line">   -pedanticerrors         Enforce strict language checks</span></div>
+            <div class="log-line"><span class="error-line">   -permissive             Relax some language error checks to warnings.</span></div>
+            <div class="log-line">   -printsimstats[=[val][v]] Print simstats results</div>
+            <div class="log-line">                           Possible values: 0 - disable simstats, 1 - end of simulation(default)</div>
+            <div class="log-line">                                            2 - end of each run command and simulation, v - verbose stats</div>
+            <div class="log-line">   -psl                    Enable PSL assertions</div>
+            <div class="log-line">   -psloneattempt          Force single PSL assertion coverage attempt</div>
+            <div class="log-line">   -pslinfinitythreshold   Redefine infinite clock tick for strong operators</div>
+            <div class="log-line">   -quiet                  Do not report &#x27;Loading...&#x27; messages</div>
+            <div class="log-line">   -qwavedb=&lt;options&gt;...   Use qwavedb to log event data in place of wlf</div>
+            <div class="log-line">   -restore &lt;pathname&gt;     Restore simulation from previous checkpoint file or directory, represented by &lt;pathname&gt;.</div>
+            <div class="log-line">   -runinit                Execute run -init before command prompt or running -do files.</div>
+            <div class="log-line">   -sdfallowvlogescapeport Allows matching of bit-blasted scalar port names in rtl with normal non-escaped port names in SDF.</div>
+            <div class="log-line">   -sdfmax[@&lt;delayScale&gt;] [&lt;instance&gt;=]&lt;sdffile&gt;</div>
+            <div class="log-line">                           Annotate VITAL or Verilog &lt;instance&gt; with maximum</div>
+            <div class="log-line">                           timing from &lt;sdffile&gt;, scaled by &lt;delayScale&gt;</div>
+            <div class="log-line"><span class="error-line">   -sdfmaxerrors &lt;n&gt;       Max number of missing instances reported (default is 5)</span></div>
+            <div class="log-line">   -sdfmin[@&lt;delayScale&gt;] [&lt;instance&gt;=]&lt;sdffile&gt;</div>
+            <div class="log-line">                           Annotate VITAL or Verilog &lt;instance&gt; with minimum</div>
+            <div class="log-line">                           timing from &lt;sdffile&gt;, scaled by &lt;delayScale&gt;</div>
+            <div class="log-line">   -sdfminr[@&lt;delayScale&gt;] [&lt;instance&gt;=]&lt;sdffile&gt;</div>
+            <div class="log-line">                           Specifies when an instance of a Preoptimized Design Unit</div>
+            <div class="log-line">                           (vopt -pdu) with an associated default SDF</div>
+            <div class="log-line">                           file is to be re-annotated with minimum, typical, or</div>
+            <div class="log-line">                           maximum timing from the specified SDF file.</div>
+            <div class="log-line"><span class="error-line">   -sdfnoerror             Treat SDF errors as warnings</span></div>
+            <div class="log-line"><span class="warning-line">   -sdfnowarn              Disable warnings from SDF annotator</span></div>
+            <div class="log-line">   -sdfreport=&lt;fileName&gt;   Report unannotated/partially-annotated specify objects into &lt;fileName&gt;</div>
+            <div class="log-line"><span class="error-line">   +sdf_report_unannotated_insts Enable error messages for any un-annotated Verilog instances with</span></div>
+            <div class="log-line">                           specify blocks or VHDL instances with VITAL timing generics that are under</div>
+            <div class="log-line">                           regions of SDF annotation.</div>
+            <div class="log-line">   -sdftyp[@&lt;delayScale&gt;] [&lt;instance&gt;=]&lt;sdffile&gt;</div>
+            <div class="log-line">                           Annotate VITAL or Verilog &lt;instance&gt; with typical</div>
+            <div class="log-line">                           timing from &lt;sdffile&gt;, scaled by &lt;delayScale&gt;</div>
+            <div class="log-line">   +sdf_verbose            Display SDF annotator status messages</div>
+            <div class="log-line">   -showautoexcludprows    Display auto-excluded UDP rows of table, in expression coverage</div>
+            <div class="log-line">   -showlibsearchpath      Show all the libraries which will be searched for precompiled modules</div>
+            <div class="log-line">   -suppress &lt;msgNumber/msgGroup&gt;[,&lt;msgNumber/msgGroup&gt;...]</div>
+            <div class="log-line"></div>
+            <div class="log-line">                           Suppress the listed messages using number or group.</div>
+            <div class="log-line"></div>
+            <div class="log-line"><span class="warning-line">                           Valid &lt;msgGroup&gt; are All, GroupNote, GroupWarning, GroupFLI, GroupPLI,</span></div>
+            <div class="log-line"></div>
+            <div class="log-line">                           GroupSDF, GroupVCD, GroupVital, GroupWLF, GroupTCHK, GroupPA, GroupLRM</div>
+            <div class="log-line"></div>
+            <div class="log-line">   -stats[=[+-]&lt;args&gt;]     Enables simulation statistics</div>
+            <div class="log-line">                           &lt;args&gt; are all,none,time,cmd,msg,perf,verbose,list,kb,eor</div>
+            <div class="log-line"><span class="error-line">   -sync                   Executes all X server commands synchronously, so that errors are reported</span></div>
+            <div class="log-line">                           immediately. Does not apply to Windows platforms.</div>
+            <div class="log-line">   -syncio                 Enable I/O synchronization with -batch option</div>
+            <div class="log-line">                           where I/O synchronization is disabled by default</div>
+            <div class="log-line">                           for optimal performance.</div>
+            <div class="log-line">   -undefsyms=[&lt;args&gt;]     Generate stubs for undefined symbols in the shared libraries being loaded</div>
+            <div class="log-line">                           &lt;args&gt; are on, off, verbose</div>
+            <div class="log-line">   -t [1|10|100]fs|ps|ns|us|ms|sec  Time resolution limit</div>
+            <div class="log-line">                           (VHDL default: resolution setting from .ini file)</div>
+            <div class="log-line">                           (Verilog default: minimum time_precision in the</div>
+            <div class="log-line">                           design)</div>
+            <div class="log-line">   -tag &lt;string&gt;           Set tag for FLI/PLI tracing to &lt;string&gt;</div>
+            <div class="log-line">   -notoggleints           Excludes VHDL integers from toggle coverage</div>
+            <div class="log-line">   -testname &lt;name&gt;        Specifies a testname for the current simulation run. Required</div>
+            <div class="log-line">                           only when coverage data is saved in a coverstore.</div>
+            <div class="log-line">   -togglemaxintvalues     Sets max number of values saved for VHDL integers</div>
+            <div class="log-line">   -togglemaxrealvalues    Sets max number of values saved for SystemVerilog reals</div>
+            <div class="log-line">   -togglemaxfixedsizearray &lt;size&gt;</div>
+            <div class="log-line">                           Sets the limit on the size of Verilog unpacked fixed-size arrays</div>
+            <div class="log-line">                           that are included for toggle coverage</div>
+            <div class="log-line">   -togglecountlimit       Sets max count saved for a toggle node</div>
+            <div class="log-line">   -togglewidthlimit       Sets max width for vectors counted for toggles</div>
+            <div class="log-line">   -togglevlogreal         Includes Verilog real type in toggle coverage</div>
+            <div class="log-line">   -togglefixedsizearray   Includes Verilog unpacked fixed-size arrays, VHDL multi-d arrays and VHDL arrays-of-arrays in toggle coverage</div>
+            <div class="log-line">   -togglevlogints         Includes Verilog integers for toggle coverage</div>
+            <div class="log-line">   -togglevhdlrecords      Includes VHDL records for toggle coverage</div>
+            <div class="log-line">   -notogglevlogints       Excludes Verilog integers from toggle coverage</div>
+            <div class="log-line">   -notogglevlogreal       Excludes Verilog real type in toggle coverage</div>
+            <div class="log-line">   -notogglefixedsizearray Excludes Verilog unpacked fixed-size arrays, VHDL multi-d arrays and VHDL arrays-of-arrays in toggle coverage</div>
+            <div class="log-line">   -notogglevhdlrecords    Excludes VHDL records from toggle coverage</div>
+            <div class="log-line">   -nowlfdeleteonquit      Preserve the current simulation WLF file (vsim.wlf) when the simulator exits.</div>
+            <div class="log-line">   -togglepackedasvec      Treat SystemVerilog packed structures and multi-d arrays as flattened vectors</div>
+            <div class="log-line">   -togglevlogenumbits     Treat SystemVerilog enums as reg-vectors for toggle coverage</div>
+            <div class="log-line">   -extendedtogglemode [1|2|3]</div>
+            <div class="log-line">                           Change the level of support for extended toggles.</div>
+            <div class="log-line">                           The levels of support are:</div>
+            <div class="log-line">                           1 - 0L-&gt;1H &amp; 1H-&gt;0L &amp; any one &#x27;Z&#x27; transition (to/from &#x27;Z&#x27;)</div>
+            <div class="log-line">                           2 - 0L-&gt;1H &amp; 1H-&gt;0L &amp; one transition to &#x27;Z&#x27; &amp; one transition from &#x27;Z&#x27;</div>
+            <div class="log-line">                           3 - 0L-&gt;1H &amp; 1H-&gt;0L &amp; all &#x27;Z&#x27; transitions</div>
+            <div class="log-line">   -toggleportsonly        Enable toggle statistics collection only for ports</div>
+            <div class="log-line">   -toggledeglitch &lt;period&gt; Enable toggle deglitching. Require signal stable longer than period value</div>
+            <div class="log-line">                           &lt;period&gt; must be a time value with units</div>
+            <div class="log-line">   -title &lt;string&gt;         Optional title for the Main window</div>
+            <div class="log-line">   -trace_dpi &lt;n&gt;          Set DPI tracing to level &lt;n&gt;. The default is 0 which turns off tracing.</div>
+            <div class="log-line">                           The levels of support are:</div>
+            <div class="log-line">                           1 - turning on all tracing</div>
+            <div class="log-line">                           0 - turning off all tracing (default)</div>
+            <div class="log-line">                           i - turning on the tracing of DPI import call only</div>
+            <div class="log-line">                           e - turning on the tracing of DPI export call only</div>
+            <div class="log-line">                           a - turning on the tracing of DPI import/export call arguments only</div>
+            <div class="log-line">   -trace_foreign &lt;n&gt;      Set FLI/PLI tracing to level &lt;n&gt;</div>
+            <div class="log-line">   -ucdbteststatusmsgfilter &lt;TCL style regular expression&gt;</div>
+            <div class="log-line">                           Matching messages do not propagate their status to UCDB TESTSTATUS</div>
+            <div class="log-line">   -unattemptedimmed       Include immediate assertions to participate in assertion coverage calculations</div>
+            <div class="log-line">   -vcdstim [&lt;instance&gt;=]&lt;filename&gt;  Stimulate the top-level design or instances</div>
+            <div class="log-line">                           from an Extended VCD file</div>
+            <div class="log-line">   -vhdlmergepdupackage    VHDL packages with the same name and same library are shared between PDUs</div>
+            <div class="log-line">   -vhdlseparatepdupackage VHDL packages with the same name and same library are not shared between PDUs</div>
+            <div class="log-line">   -vhdlvariablelogging    Enables higher performance VHDL variable logging</div>
+            <div class="log-line">   -visual &lt;visual&gt;        Specify the visual to use for the window. Does not apply to Windows platforms.</div>
+            <div class="log-line">   -visualizer[=&lt;designfile&gt;|&lt;visualizer-options&gt;...]  Visualizer interactive mode</div>
+            <div class="log-line">   -view [&lt;dataset&gt;=]&lt;filename&gt;  View the contents of a WLF file</div>
+            <div class="log-line">   -viewcov [&lt;dataset&gt;=]&lt;ucdbfilename&gt;  View the contents of the coverage ucdb file</div>
+            <div class="log-line">   -vopt                   Run vopt optimization before elaborating the simulator</div>
+            <div class="log-line">   -voptargs=&quot;&lt;arglist&gt;&quot;   Pass the specified arguments to vopt</div>
+            <div class="log-line">   -vopt_verbose           Display verbose informational messages</div>
+            <div class="log-line"><span class="warning-line">   -warning &lt;msgNumber&gt;[,&lt;msgNumber&gt;...]  Change the severity of the listed</span></div>
+            <div class="log-line"><span class="warning-line">                           messages to Warning</span></div>
+            <div class="log-line"><span class="error-line">   -warning error          Report all warnings as errors</span></div>
+            <div class="log-line">   -wlf &lt;filename&gt;         Specify the name of the WLF file (Default: vsim.wlf)</div>
+            <div class="log-line">   -wlfcompress            Create compressed WLF files.</div>
+            <div class="log-line">   -wlflock                Lock a WLF file.</div>
+            <div class="log-line">   -wlfopt                 Turn on WLF file optimizations (default)</div>
+            <div class="log-line">   -nowlfopt               Turn off WLF file optimizations</div>
+            <div class="log-line">   -nowlfcompress          Turn off WLF file compression</div>
+            <div class="log-line">   -nowlflock              Turn off WLF file locking</div>
+            <div class="log-line">   -wlfslim &lt;size&gt;         Specify maximum number of Megabytes to be saved in</div>
+            <div class="log-line">                           WLF file (Default: infinite)</div>
+            <div class="log-line">   -wlftlim &lt;duration&gt;     Specify maximum duration of time to be saved in</div>
+            <div class="log-line">                           WLF file (Default: all)</div>
+            <div class="log-line">   -wlfcachesize &lt;n&gt;       Specify WLF reader cache size (per WLF file.)</div>
+            <div class="log-line">                           (Default: no reader cache)</div>
+            <div class="log-line">   -wlfsimcachesize &lt;n&gt;    Specify WLF reader cache size for current simulation</div>
+            <div class="log-line">                           (Default: no reader cache)</div>
+            <div class="log-line">   -wlfdeleteonquit        Delete WLF file when simulation quits.</div>
+            <div class="log-line">   -nowlfcollapse          Log every item event and preserve event order.</div>
+            <div class="log-line">   -wlfcollapsedelta       Log item values only at end of iteration. (default)</div>
+            <div class="log-line">   -wlfcollapsetime        Log item values only at end of time step.</div>
+            <div class="log-line">--------------------------------- VHDL options ---------------------------------</div>
+            <div class="log-line">   -absentisempty          Treat non-existent VHDL files opened for read</div>
+            <div class="log-line">                           as empty</div>
+            <div class="log-line">   -accessobjdebug         Enable access value designated object debug features.</div>
+            <div class="log-line">   -defaultstdlogicinittoz Sets the default VHDL initialization of std_logic to &quot;Z&quot; (high impedance)</div>
+            <div class="log-line">                           for ports of type OUT and INOUT.</div>
+            <div class="log-line">   -foreign &quot;&lt;C_init_func&gt; &lt;shared_lib&gt;&quot;  Load a foreign module</div>
+            <div class="log-line">   -nocollapse             Disable optimization of internal port map connections</div>
+            <div class="log-line">   -nofileshare            Do not share file descriptors for VHDL files opened</div>
+            <div class="log-line">                           for write or append that have identical names</div>
+            <div class="log-line">   -noglitch               Disable VITAL glitch generation</div>
+            <div class="log-line"><span class="error-line">   +no_glitch_msg          Disable glitch error messages</span></div>
+            <div class="log-line">   -oldvhdlforgennames     Enable the use of a previous style of naming in VHDL for...generate</div>
+            <div class="log-line">                           statement iteration names in the design hierarchy.</div>
+            <div class="log-line">   -stackcheck             Enable runtime stack usage sanity checking.</div>
+            <div class="log-line">   -std_input &lt;filename&gt;   Use filename for VHDL textio STD_INPUT file</div>
+            <div class="log-line">   -std_output &lt;filename&gt;  Use filename for VHDL textio STD_OUTPUT file</div>
+            <div class="log-line">   -strictvital            Sacrifice performance for strict VITAL compliance</div>
+            <div class="log-line">   -vcdread &lt;filename&gt;     Stimulate the VHDL top-level design from a VCD file</div>
+            <div class="log-line">   -vcd=[+&lt;option&gt;[+&lt;option&gt;+...]]</div>
+            <div class="log-line">                           Specifies VCD logging-related option settings. Options are:</div>
+            <div class="log-line">                             [+multid]                 Enable logging for multi-d arrays.</div>
+            <div class="log-line">                             [+maxmultid=&lt;max-limit&gt;]  Override limit on size of multi-d arrays that are logged.</div>
+            <div class="log-line">   -vital2.2b              Select SDF mapping for VITAL 2.2b (Default: VITAL 95)</div>
+            <div class="log-line">   -vital_fix_negative_setup_hold_sum</div>
+            <div class="log-line">                           Set negative time to zero when setuphold sum is negative</div>
+            <div class="log-line">-------------------------------- Verilog options -------------------------------</div>
+            <div class="log-line">   +alt_path_delays        Use current output value instead of pending value</div>
+            <div class="log-line">                           when selecting inertial specify path output delay</div>
+            <div class="log-line">   +bitblast[=[iopath|tcheck]] Bit-blast Verilog specify paths and/or tchecks with wide ports.</div>
+            <div class="log-line">                           Without the optional qualifiers operates on specify paths and tchecks.</div>
+            <div class="log-line">                           +bitblast=iopath bit-blasts specify paths with wide ports.</div>
+            <div class="log-line">                           +bitblast=tcheck bit-blasts tchecks with wide ports.</div>
+            <div class="log-line">   -checkvifacedrivers 1|0 Include assignments through virtual interfaces in the multiple-driver analysis.</div>
+            <div class="log-line">   -classdebug             Enable class debug features.</div>
+            <div class="log-line">   -nocvgcollapseembeddedinstances</div>
+            <div class="log-line">                           Turning off the optimization of collapsing embedded covergroup</div>
+            <div class="log-line">                           instances when type_option.merge_instances is set to zero.</div>
+            <div class="log-line">   -cvgmaxrptrhscross      Set the maximum cross bin BINRHS terms in coverage report.</div>
+            <div class="log-line">   -cvgprecollect &lt;ucdb_filename&gt;</div>
+            <div class="log-line">                           Specify a UCDB file as optimization control for the current</div>
+            <div class="log-line">                           simulation. This switch can occur multiple times.</div>
+            <div class="log-line">   -cvgprecollectlog &lt;log_filename&gt;</div>
+            <div class="log-line">                           Specify the path of the log file where the precollect processing information</div>
+            <div class="log-line">                           will be written to.</div>
+            <div class="log-line">   -cvgperinstance         Force the option.per_instance control in all covergroup declarations to 1.</div>
+            <div class="log-line">   -cvgsingledefaultbin    Collapse a Covergroup default array bin into a scalar bin</div>
+            <div class="log-line">   -cvghaltillbin          Halt simulation when an illegal cover/cross bin gets hit</div>
+            <div class="log-line">   -cvgmergeinstances      Set the default value of covergroup type_option.merge_instances to 1</div>
+            <div class="log-line">   -cvgsparsecross         Force modelling of Covergroup cross bins in a sparse fashion.</div>
+            <div class="log-line">   -cvgsparsearraybin      Force modelling of Covergroup unsize array bins in a sparse fashion.</div>
+            <div class="log-line">   -cvgzwnocollect &lt;1|0&gt;   Turn on/off the coverage data collection of zero-weight coverage items.</div>
+            <div class="log-line">   -cvgbintstamp           Record simulation timestamp when a covergroup bin is covered during simulation run</div>
+            <div class="log-line">   -cvgopt[=[+|-]&lt;mode&gt;[,[+|-]&lt;mode&gt;]*]</div>
+            <div class="log-line">                           Enable Covergroup optimization modes.</div>
+            <div class="log-line">                           Valid modes are:</div>
+            <div class="log-line">                           minhitcnt - stop sampling coverpoint/cross when it is fully covered.</div>
+            <div class="log-line">   -nocrossautobins[=[uncond|cond]] Avoid generating auto bins in cross coverage computation.</div>
+            <div class="log-line">   -noimplicitcoverpoint   Avoid collecting coverage for implicit coverpoints.</div>
+            <div class="log-line">   -dpicpppath &lt;/path/to/gcc&gt; Specify desired GCC path for DPI compilation</div>
+            <div class="log-line">   -dpicppinstall &lt;[gcc|g++] version&gt;</div>
+            <div class="log-line">                           Specify the version of the desired GNU compiler supported and</div>
+            <div class="log-line">                           distributed by Mentor for the DPI compilation</div>
+            <div class="log-line">   -dpiexportcheckref      (Deprecated) Check the staleness of exportwrapper source file generated previously.</div>
+            <div class="log-line">   -dpiexportonly          (Deprecated) Quit simulation after exportwrapper compilation. This is to support locked work library flow.</div>
+            <div class="log-line">   -dpiexportobj &lt;filename&gt; (Deprecated) Generate specified DPI export object file then quit</div>
+            <div class="log-line">   -dpilib    &lt;libname&gt;    Specify the library that contains DPI exports and object files</div>
+            <div class="log-line">   -ldflags   &lt;linkopts&gt;   Specify in quotes the option for linking auto compiled DPI/PLI/VPI object files</div>
+            <div class="log-line">   -dpiforceheader         Force generation of dpi header file even when empty</div>
+            <div class="log-line">                           of function prototypes</div>
+            <div class="log-line">   -dpiheader &lt;filename&gt;   Generate specified DPI C header file</div>
+            <div class="log-line">   -dpioutoftheblue 1|0    Turn on/off DPI out-of-the-blue call from C function</div>
+            <div class="log-line">   -nodpiexports           (Deprecated) Turn off the exportwrapper generation.</div>
+            <div class="log-line">   -nodpimasking           Turn off masking of unused bits of bit vectors from user C data.</div>
+            <div class="log-line">   -enumfirstinit          Initializes enum variables in SystemVerilog using the leftmost value as</div>
+            <div class="log-line">                           the default. Argument must be used with the vlog command in order to</div>
+            <div class="log-line">                           implement this initialization behavior. Specify the EnumBaseInit variable</div>
+            <div class="log-line">                           as 0 in the modelsim.ini file to set this as a permanent default.</div>
+            <div class="log-line">   -extend_tcheck_data_limit &lt;percent relaxation&gt; Relax data limit for convergence</div>
+            <div class="log-line">   -extend_tcheck_ref_limit  &lt;percent relaxation&gt; Relax ref limit for convergence</div>
+            <div class="log-line">   -vv                     Print auto C/C++ compile/link and MC2 subprocess command line information</div>
+            <div class="log-line">   -noautofindloop         Disable the analysis/identification of an infinite zero-delay loop when Iteration Limit is exceeded.</div>
+            <div class="log-line">   -hazards                Enable hazard checking</div>
+            <div class="log-line">   +initmem+&lt;seed&gt;         Specify seed value to be used for randomizing</div>
+            <div class="log-line">                           fixed-size arrays marked for randomization by vlog/vopt.</div>
+            <div class="log-line">   +initreg+&lt;seed&gt;         Specify seed value to be used for randomizing</div>
+            <div class="log-line">                           variables marked for randomization by vlog/vopt.</div>
+            <div class="log-line">   -initreport &lt;filename&gt;  Report initial values generated due to</div>
+            <div class="log-line">                           applying +initreg/+initmem options to vlog/vopt</div>
+            <div class="log-line">   +initregNBA | +noinitregNBA</div>
+            <div class="log-line">                           Controls whether +initreg settings applied to registers</div>
+            <div class="log-line">                           of sequential UDPs should be non-blocking. This is useful when continuous</div>
+            <div class="log-line">                           assignments overwrite register initialization.</div>
+            <div class="log-line">                           +initregNBA -- (default) enables this functionality</div>
+            <div class="log-line">                           +noinitregNBA -- disables this functionality.</div>
+            <div class="log-line">   +int_delays             Optimize annotation of interconnect delays</div>
+            <div class="log-line">   -L &lt;libname&gt;            Search library for design units instantiated from</div>
+            <div class="log-line">                           Verilog and for VHDL default component binding</div>
+            <div class="log-line">   -Lf &lt;libname&gt;           Same as -L, but libraries are searched before `uselib</div>
+            <div class="log-line">   -Ldir &lt;dirname&gt;         Specify the container folder for libraries passed with -L and -Lf options.</div>
+            <div class="log-line">   -libverbose[=prlib]     Verbose messaging about library mappings, search and resolution.</div>
+            <div class="log-line">                           The =prlib modifier prints out the -L/-Lf/-Ltop option that was used</div>
+            <div class="log-line">                           to locate each design unit loaded by vsim.</div>
+            <div class="log-line">   -noltop                 Stops promotion of libraries containing top design units to searchable libraries.</div>
+            <div class="log-line">   +maxdelays              Use maximum timing from min:typ:max expressions</div>
+            <div class="log-line">   +mindelays              Use minimum timing from min:typ:max expressions</div>
+            <div class="log-line">   +no_autodtc             Turn off auto-detection of optimized cells with negative timing checks</div>
+            <div class="log-line">                           and autoapplication of +delayed_timing_checks to those cells.</div>
+            <div class="log-line"><span class="warning-line">   +no_cancelled_e_msg     Disable negative pulse warning messages</span></div>
+            <div class="log-line">   -noimmedca              Revert to pre-6.5 continuous assignment event ordering</div>
+            <div class="log-line">   +no_neg_tchk            Set negative timing check limits to zero</div>
+            <div class="log-line">   +no_path_edge           Ignore the input edge specification on path delays</div>
+            <div class="log-line"><span class="error-line">   +no_pulse_msg           Disable path pulse error warning messages</span></div>
+            <div class="log-line"><span class="error-line">   +nosdferror             Treat SDF errors as warnings</span></div>
+            <div class="log-line"><span class="warning-line">   +nosdfwarn              Disable warnings from SDF annotator</span></div>
+            <div class="log-line">   +no_show_cancelled_e    Cancel negative pulse (Default)</div>
+            <div class="log-line">   +nospecify              Disable specify path delays and timing checks</div>
+            <div class="log-line">   +notiftoggle01[+&lt;seed&gt;] Use the metastable UDP evaluation of enabled Verilog cells in simulation.</div>
+            <div class="log-line">                           Default seed value is 0</div>
+            <div class="log-line">   -no_autoacc             Prevents vsim from automatically passing the +acc switch to vopt.</div>
+            <div class="log-line">   -nosva                  Disable SystemVerilog concurrent assertions</div>
+            <div class="log-line">   -noimmedassert          Disable SystemVerilog and VHDL immediate assertions</div>
+            <div class="log-line">   -nocvg                  Disable Covergroup object construction and builtin calls</div>
+            <div class="log-line">   -nocvgmergeinstances    Set the default value of covergroup type_option.merge_instances to 0</div>
+            <div class="log-line">   -nocvgperinstance       Force the option.per_instance control in all covergroup declarations to 0.</div>
+            <div class="log-line">   -nocvgzwopt             Enable sampling for zero weight covergroup items</div>
+            <div class="log-line">   -no_risefall_delaynets  Disables the rise/fall delay net delay negative timing check algorithm.</div>
+            <div class="log-line"><span class="warning-line">   +nowarnBSOB             Disables run-time warning messages for bit-selects in initial blocks</span></div>
+            <div class="log-line">                           that are out of bounds</div>
+            <div class="log-line"><span class="warning-line">   +nowarn&lt;CODE | Number&gt;  Disable specified warning message</span></div>
+            <div class="log-line">                           (Example: +nowarnTFMPC)</div>
+            <div class="log-line"><span class="warning-line">   +ntc_warn               Enable warnings from negative timing constraint</span></div>
+            <div class="log-line">                           algorithm</div>
+            <div class="log-line">   +ntcnotchks             Disable timing checks while maintaining NTC delays</div>
+            <div class="log-line">   -pli &quot;&lt;object list&gt;&quot;    Load the list of PLI shared objects</div>
+            <div class="log-line">   -plicompatdefault [latest | 2009 | 2005 | 2001]</div>
+            <div class="log-line">                           Specify the VPI object model behavior within vsim. This switch applies</div>
+            <div class="log-line">                           globally, not to individual libraries.</div>
+            <div class="log-line">   +&lt;plusarg&gt;              Option accessible by PLI routine mc_scan_plusargs</div>
+            <div class="log-line"><span class="error-line">   +pulse_e/&lt;percent&gt;      Set path pulse error limit as percentage of</span></div>
+            <div class="log-line">                           path delay</div>
+            <div class="log-line"><span class="error-line">   +pulse_e_style_ondetect Drive pulse error state immediately on detection</span></div>
+            <div class="log-line"><span class="error-line">   +pulse_e_style_onevent  Drive pulse error state on time of pending event</span></div>
+            <div class="log-line">                           (Default)</div>
+            <div class="log-line"><span class="error-line">   +pulse_int_e/&lt;percent&gt;  Set interconnect pulse error limit as percentage</span></div>
+            <div class="log-line">                           of delay</div>
+            <div class="log-line">   +pulse_int_r/&lt;percent&gt;  Set interconnect pulse rejection limit as</div>
+            <div class="log-line">                           percentage of delay</div>
+            <div class="log-line">   +pulse_r/&lt;percent&gt;      Set path pulse rejection limit as percentage of</div>
+            <div class="log-line">                           path delay</div>
+            <div class="log-line"><span class="error-line">   +sdf_iopath_to_prim_ok  Prevent vsim from issuing an error when it cannot locate specify path</span></div>
+            <div class="log-line">                           delays to annotate</div>
+            <div class="log-line">   +sdf_nocheck_celltype   Disable check between SDF celltype name and</div>
+            <div class="log-line">                           module name</div>
+            <div class="log-line"><span class="error-line">   +show_cancelled_e       Drive pulse error state on negative pulse</span></div>
+            <div class="log-line">   -solvefailseverity=&lt;value1&gt;[&lt;value2&gt;]</div>
+            <div class="log-line"><span class="error-line">                           Specify error message severity when randomize() and randomize(null) failures are detected.</span></div>
+            <div class="log-line">                           When both &lt;value1&gt; and &lt;value2&gt; are present, &lt;value1&gt; specifies the severity of randomize(),</div>
+            <div class="log-line">                           and &lt;value2&gt; specifies the severity for randomize(null). When only &lt;value1&gt; is present, the</div>
+            <div class="log-line">                           severity setting applies to both randomize() and randomize(null).</div>
+            <div class="log-line">                           Valid values for both &lt;value1&gt; and &lt;value2&gt;:</div>
+            <div class="log-line"><span class="error-line">                             0 - no error</span></div>
+            <div class="log-line"><span class="warning-line">                             1 - warning</span></div>
+            <div class="log-line"><span class="error-line">                             2 - error</span></div>
+            <div class="log-line">                             3 - failure</div>
+            <div class="log-line">                             4 - fatal</div>
+            <div class="log-line"><span class="error-line">   -solvebeforeerrorseverity=&lt;value&gt;</span></div>
+            <div class="log-line"><span class="error-line">                           Specify error message severity for suppressible errors that</span></div>
+            <div class="log-line">                           are detected in a solve/before constraint</div>
+            <div class="log-line">                           Valid values:</div>
+            <div class="log-line"><span class="error-line">                             0 - no error</span></div>
+            <div class="log-line"><span class="warning-line">                             1 - warning</span></div>
+            <div class="log-line"><span class="error-line">                             2 - error</span></div>
+            <div class="log-line">                             3 - failure</div>
+            <div class="log-line">                             4 - fatal</div>
+            <div class="log-line"><span class="error-line">   -solveengineerrorseverity=&lt;value&gt;</span></div>
+            <div class="log-line"><span class="error-line">                           Specify error message severity for suppressible errors that</span></div>
+            <div class="log-line">                           are related to solve engine capacity limits</div>
+            <div class="log-line">                           Valid values:</div>
+            <div class="log-line"><span class="error-line">                             0 - no error</span></div>
+            <div class="log-line"><span class="warning-line">                             1 - warning</span></div>
+            <div class="log-line"><span class="error-line">                             2 - error</span></div>
+            <div class="log-line">                             3 - failure</div>
+            <div class="log-line">                             4 - fatal</div>
+            <div class="log-line">   -solveengine &lt;engine&gt;   Use specified solver engine to evaluate randomize() scenarios</div>
+            <div class="log-line">                           Valid engines - auto, bdd, act</div>
+            <div class="log-line">   -solvefaildebug[=value] Display constraint conflicts on randomize() failure</div>
+            <div class="log-line">                           Valid values:</div>
+            <div class="log-line">                             0 - disable solvefaildebug</div>
+            <div class="log-line">                             1 - basic debug (no performance penalty)</div>
+            <div class="log-line">                             2 - enhanced debug (runtime performance penalty)</div>
+            <div class="log-line">                           If no value is specified, basic debug will be enabled.</div>
+            <div class="log-line">   -solvefailtestcase[=filename]</div>
+            <div class="log-line">                           Upon encountering a randomize() failure, generate a</div>
+            <div class="log-line">                           simplified testcase that will reproduce the failure.</div>
+            <div class="log-line">                           Optionally output the testcase to the specified file.</div>
+            <div class="log-line">                           Testcases for &#x27;no-solution&#x27; failures will only be</div>
+            <div class="log-line">                           produced if -solvefaildebug is enabled.</div>
+            <div class="log-line">   -solveprofile           Enable randomize() profiling (profile data included in solver report)</div>
+            <div class="log-line">   -solverev &lt;version&gt;     Specify random sequence compatibility with &lt;version&gt;</div>
+            <div class="log-line">                           (Example: -solverev 6.2a)</div>
+            <div class="log-line">   -solvetimeout &lt;value&gt;   Specify solver timeout threshold (in seconds). randomize() will fail</div>
+            <div class="log-line">                           if the CPU time required to evaluate any randset exceeds the specified</div>
+            <div class="log-line">                           timeout. A value of 0 will disable timeout failures.</div>
+            <div class="log-line">   -solveverbose           Print information about randomize() call processing</div>
+            <div class="log-line">   -sv_lib &lt;shared_obj&gt;    DPI shared object, without extension</div>
+            <div class="log-line">   -sv_root &lt;dirname&gt;      Directory name to use as prefix for DPI</div>
+            <div class="log-line">                           shared object lookups</div>
+            <div class="log-line">   -sv_liblist &lt;filename&gt;  The name of a bootstrap file containing names</div>
+            <div class="log-line">                           of DPI shared objects to load</div>
+            <div class="log-line">   -sv_seed &lt;seed|random&gt;  Specify seed value (or &#x27;random&#x27;) for the random number</div>
+            <div class="log-line">                           generator (RNG) of the SystemVerilog root thread</div>
+            <div class="log-line">   -sv_reseed &lt;seed|random&gt; Reseed existing SystemVerilog RNGs with specified seed</div>
+            <div class="log-line">                           value (or &#x27;random&#x27;) when restoring from checkpoint</div>
+            <div class="log-line">   -sva                    Enable SystemVerilog concurrent assertions</div>
+            <div class="log-line">   -svext=[+|-]&lt;extension&gt;[,[+|-]&lt;extension&gt;]*</div>
+            <div class="log-line">                           Enable/disable non-LRM compliant SystemVerilog language extensions</div>
+            <div class="log-line">                           Valid extensions are:</div>
+            <div class="log-line">                             altdpiheader - Alternative style function signature generated in DPI header</div>
+            <div class="log-line"><span class="error-line">                             cfce         - generate an error if $cast fails as a function</span></div>
+            <div class="log-line">                             cfmt         - C like formatting for specifiers with &#x27;#&#x27; prefix (&#x27;%#x&#x27;, &#x27;%#h&#x27;)</div>
+            <div class="log-line">                             dfsp         - sets default format specifier as %p, if no format specifier is given for unpacked array in $display and related systasks</div>
+            <div class="log-line">                             expdfmt      - enable format string extensions for $display/$sformatf</div>
+            <div class="log-line">                             extscan      - support values greater than 32 bit for string builtin methods (atohex, atobin, atooct, atoi)</div>
+            <div class="log-line">                             fmtcap       - prints capital hex digits with %X/%H in display calls</div>
+            <div class="log-line">                             iddp         - ignore DPI disable protocol check</div>
+            <div class="log-line">                             lfmt         - zero-pad data if &#x27;0&#x27; prefixes width in format specifier (e.g. &quot;%04h&quot;)</div>
+            <div class="log-line">                             noexptc      - ignore DPI export SV type name overloading check</div>
+            <div class="log-line">                             realrand     - support randomize() with real variables and constraints (Default)</div>
+            <div class="log-line">                             thrdrngshfl - use the thread RNG for array.shuffle</div>
+            <div class="log-line">   -svrandext=[+|-]&lt;extension&gt;[,[+|-]&lt;extension&gt;]*</div>
+            <div class="log-line">                           Enable/disable non-LRM compliant SystemVerilog constrained-random language extensions</div>
+            <div class="log-line">                           Valid extensions are:</div>
+            <div class="log-line">                             arraymode    - consider rand_mode of unpacked array field independently from its elements</div>
+            <div class="log-line">                             deepcheck    - allow randomize(null) to recursively consider constraints from member rand class handles</div>
+            <div class="log-line">                             funcback     - enable function backtracking (ACT only)</div>
+            <div class="log-line">                             nodist       - interpret &#x27;dist&#x27; constraint as &#x27;inside&#x27; (ACT only)</div>
+            <div class="log-line">                             noorder      - ignore solve/before ordering constraints (ACT only)</div>
+            <div class="log-line">                             promotedist  - promote priority of &#x27;dist&#x27; constraint if LHS has no solve/before</div>
+            <div class="log-line">                             randindex    - allow random index in constraint (Default)</div>
+            <div class="log-line">                             randstruct   - consider all fields of unpacked structs as &#x27;rand&#x27;</div>
+            <div class="log-line">                             skew         - skew randomize results (ACT only)</div>
+            <div class="log-line">                             strictstab   - strict random stability</div>
+            <div class="log-line">   -tab &lt;filename&gt;         Specify PLI TAB file</div>
+            <div class="log-line">   -tbxhvllint             Enables TBX to identify delays encountered at runtime, with file name</div>
+            <div class="log-line">                           line number and the delay maturity time. (This feature depends on</div>
+            <div class="log-line">                           libraries that have been compiled with -tbxhvllint specified to vlog)</div>
+            <div class="log-line">   +transport_int_delays   Use transport mode for interconnect delays</div>
+            <div class="log-line">   +transport_path_delays  Use transport mode for path delays</div>
+            <div class="log-line">                           (Default: inertial)</div>
+            <div class="log-line">   +typdelays              Use typical timing from min:typ:max expressions</div>
+            <div class="log-line">                           (Default)</div>
+            <div class="log-line">   -udpcountlimit [&lt;n&gt; | 0 ] Limit the number of counts that are tracked for UDP Coverage.</div>
+            <div class="log-line">   -usenonstdcoveragesavesysf Replaces implementation of the built-in, IEEE 1800 compliant</div>
+            <div class="log-line">                           system function with the non-standard variant, and thus affects all</div>
+            <div class="log-line">                           calls to $coverage_save().</div>
+            <div class="log-line">   -uvmcontrol=[all,disable,struct,reseed,msglog,trlog,certe]</div>
+            <div class="log-line">                           Control specific UVM-aware debug options</div>
+            <div class="log-line">   -vamsext=[+|-]&lt;extension&gt;[,[+|-]&lt;extension&gt;]*</div>
+            <div class="log-line">                           Enable Verilog-AMS language extensions</div>
+            <div class="log-line">                           Valid extensions are:</div>
+            <div class="log-line">                             nnummacro        - Verilog-AMS: Enclose macros defined as negative numbers inside parens upon expansion</div>
+            <div class="log-line">   +vlog_retain_on | +vlog_retain_off</div>
+            <div class="log-line">                           Enable or disable SDF RETAIN delay processing.</div>
+            <div class="log-line">                           +vlog_retain_on is the default behavior.</div>
+            <div class="log-line">   +vlog_retain_same2same_on | +vlog_retain_same2same_off</div>
+            <div class="log-line">                           Enable or disable SDF RETAIN delay processing of X insertion on outputs</div>
+            <div class="log-line">                           that do not change, but the causal inputs change.</div>
+            <div class="log-line">                           +vlog_retain_same2same_on is the default behavior.</div>
+            <div class="log-line">   -v2k_int_delays         Use Verilog 2000 style interconnect delays</div>
+            <div class="log-line">   -vpicompatcb            Enable legacy VPI callback ordering prior to 10.5.</div>
+            <div class="log-line">   -wreal_resolution &lt;resolver&gt;[,check|,nocheck ]</div>
+            <div class="log-line">                           Specify resolve behavior for AMS wreal net</div>
+            <div class="log-line">                           with multiple drivers, where &lt;resolver&gt; is</div>
+            <div class="log-line">                           default, 4state, sum, avg, min, or max.</div>
+            <div class="log-line">                           check/nocheck determine if compatibility with</div>
+            <div class="log-line">                           nettype real resolution functions is to be checked.</div>
+            <div class="log-line">   -wrealdefaultzero       Sets the default value for an undriven wreal net to zero (0).</div>
+            <div class="log-line">   -gconrun/-nogconrun     Enable/disable garbage collection after each simulation run command.</div>
+            <div class="log-line">   -gconstep/-nogconstep   Enable/disable garbage collection after each step command.</div>
+            <div class="log-line">   -gcthreshold &lt;n&gt;        Specify the threshold for Garbage Collection.</div>
+            <div class="log-line">                           The default size is 100.  (i.e. Garbage Collection will be</div>
+            <div class="log-line">                           triggered after every 100M byte of class object allocation.)</div>
+            <div class="log-line">-------------------------------- SystemC options -------------------------------</div>
+            <div class="log-line">   -cpppath &lt;/path/to/[gcc|g++]&gt;</div>
+            <div class="log-line">                           Specify path to the desired GNU compiler.</div>
+            <div class="log-line">                           Use same compiler path as specified on the sccom</div>
+            <div class="log-line">                           command line.</div>
+            <div class="log-line">   -cppinstall &lt;[gcc|g++] version&gt;</div>
+            <div class="log-line">                           Specify the version of the desired GNU compiler</div>
+            <div class="log-line">                           supported and distributed by Mentor.</div>
+            <div class="log-line">                           Use same compiler path as specified on the sccom command line.</div>
+            <div class="log-line">   -enabledpisoscb         Enable calling DPI export task/function from the SystemC start_of_simulation callback</div>
+            <div class="log-line">   -noautoldlibpath        Disable setting of LD_LIBRARY_PATH set internally.</div>
+            <div class="log-line">   -sc22                   Use the IEEE 1666-2005 standard (default: IEEE 1666-2011).</div>
+            <div class="log-line">   -sc_arg &lt;arg&gt;           Specify a SystemC command line argument</div>
+            <div class="log-line">                           accessible using sc_main(), sc_argc() and</div>
+            <div class="log-line">                           sc_argv()</div>
+            <div class="log-line">   -scdpidebug             Turn on debugging for SystemC DPI export function call</div>
+            <div class="log-line">   -sclib &lt;libname&gt;        Load the SystemC shared library from &lt;libname&gt;</div>
+            <div class="log-line">                           By default the systemc.so shared library is loaded</div>
+            <div class="log-line">                           from the library in which the top level SystemC design</div>
+            <div class="log-line">                           unit is compiled. This option should be used when systemc.so</div>
+            <div class="log-line">                           is not in the same library as the top level SystemC design unit.</div>
+            <div class="log-line">   -scstacksize &lt;value&gt;    Set SystemC thread stack size. The stack size is set as an integer</div>
+            <div class="log-line">                           number followed by the unit which can be Kb(Kilo-byte), Mb(Mega-byte) or</div>
+            <div class="log-line">                           Gb(Giga-byte). Examples: &#x27;1000 Kb&#x27;, &#x27;1 Mb&#x27;, &#x27;1 Gb&#x27;</div>
+            <div class="log-line">   -scchkpntrestore        Enable limited checkpoint/restore support with SystemC hierarchy</div>
+            <div class="log-line">                           in the designs.</div>
+            <div class="log-line">   -noscmainscopename      Strip sc_main() scope from the hierarchical path.</div>
+            <div class="log-line"></div>
+        </div>
+    </div>
+</body>
+</html>

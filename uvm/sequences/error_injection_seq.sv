@@ -26,7 +26,7 @@ class error_injection_seq extends uvm_sequence #(transaction);
     endfunction
     
     task body();
-        bit [31:0] data_pattern = 32'hFAIL_0001;
+        bit [31:0] data_pattern = 32'hDEAD_0001;
         
         `uvm_info("Error Injection Seq", "Starting error injection and edge case sequence", UVM_MEDIUM)
         
@@ -34,8 +34,8 @@ class error_injection_seq extends uvm_sequence #(transaction);
         `uvm_info("Error Injection Seq", "Phase 1: Testing FIFO empty condition (underflow)", UVM_LOW)
         
         // FIFO starts empty, so attempt read on empty FIFO
-        start_item(tr);
         tr = transaction::type_id::create("tr");
+        start_item(tr);
         tr.kind = PERIPH_READ;
         tr.addr = 4'h0;
         finish_item(tr);
@@ -46,8 +46,8 @@ class error_injection_seq extends uvm_sequence #(transaction);
         // Phase 2: Fill to partial level for transition testing
         `uvm_info("Error Injection Seq", "Phase 2: Writing 4 entries (quarter fill)", UVM_LOW)
         for (int i = 0; i < 4; i++) begin
-            start_item(tr);
             tr = transaction::type_id::create("tr");
+            start_item(tr);
             tr.kind = WRITE;
             tr.addr = 4'h0;
             tr.data = data_pattern + i;
@@ -58,8 +58,8 @@ class error_injection_seq extends uvm_sequence #(transaction);
         // Phase 3: Fill to full and test overflow
         `uvm_info("Error Injection Seq", "Phase 3: Filling remaining 4 entries to full", UVM_LOW)
         for (int i = 4; i < 8; i++) begin
-            start_item(tr);
             tr = transaction::type_id::create("tr");
+            start_item(tr);
             tr.kind = WRITE;
             tr.addr = 4'h0;
             tr.data = data_pattern + i;
@@ -72,8 +72,8 @@ class error_injection_seq extends uvm_sequence #(transaction);
         
         // Attempt overflow write
         `uvm_info("Error Injection Seq", "Attempting 9th write (overflow scenario)", UVM_LOW)
-        start_item(tr);
         tr = transaction::type_id::create("tr");
+        start_item(tr);
         tr.kind = WRITE;
         tr.addr = 4'h0;
         tr.data = data_pattern + 32'h8888_8888;  // Marker for overflow attempt
@@ -87,8 +87,8 @@ class error_injection_seq extends uvm_sequence #(transaction);
         #50ns;  // CDC settling
         
         for (int i = 0; i < 4; i++) begin
-            start_item(tr);
             tr = transaction::type_id::create("tr");
+            start_item(tr);
             tr.kind = PERIPH_READ;
             tr.addr = 4'h0;
             finish_item(tr);
@@ -100,11 +100,11 @@ class error_injection_seq extends uvm_sequence #(transaction);
         
         // Write to recover from overflow condition
         `uvm_info("Error Injection Seq", "Writing to FIFO after recovery", UVM_LOW)
-        start_item(tr);
         tr = transaction::type_id::create("tr");
+        start_item(tr);
         tr.kind = WRITE;
         tr.addr = 4'h0;
-        tr.data = 32'hRECOV_1234;
+        tr.data = 32'hDEAD_1234;
         finish_item(tr);
         
         #100ns;
@@ -112,9 +112,9 @@ class error_injection_seq extends uvm_sequence #(transaction);
         // Phase 5: Status read test (address 0x4)
         `uvm_info("Error Injection Seq", "Phase 5: Testing status/peek reads (address 0x4)", UVM_LOW)
         
-        start_item(tr);
         tr = transaction::type_id::create("tr");
-        tr.kind = 1'b0;  // READ command (interpreted by driver)
+        start_item(tr);
+        tr.kind = AXI_READ;  // Status/peek operation over AXI read channel
         tr.addr = 4'h4;  // Peek/status address
         finish_item(tr);
         

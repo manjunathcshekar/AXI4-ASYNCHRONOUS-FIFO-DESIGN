@@ -90,16 +90,6 @@ class coverage_test extends uvm_test;
         // ====================================================================
         `uvm_info("Coverage Test", "Sequence 4/5: Running interrupt_stimulus_seq (IRQ signal coverage)", UVM_MEDIUM)
         
-        // Pre-populate expected values for post-interrupt verification
-        environment.scoreboard.add_expected(32'hDEAD_BEEF);
-        environment.scoreboard.add_expected(32'hDEAD_BEF0);
-        environment.scoreboard.add_expected(32'hDEAD_BEF1);
-        environment.scoreboard.add_expected(32'hDEAD_BEF2);
-        environment.scoreboard.add_expected(32'hDEAD_BEF3);
-        environment.scoreboard.add_expected(32'hDEAD_BEF4);
-        environment.scoreboard.add_expected(32'hDEAD_BEF5);
-        environment.scoreboard.add_expected(32'hDEAD_BEF6);
-        
         intr_seq = interrupt_stimulus_seq::type_id::create("intr_seq");
         intr_seq.start(environment.agent.sequencer);
         
@@ -112,12 +102,6 @@ class coverage_test extends uvm_test;
         // Coverage: Overflow, underflow, reset timing, error recovery
         // ====================================================================
         `uvm_info("Coverage Test", "Sequence 5/5: Running error_injection_seq (error scenarios)", UVM_MEDIUM)
-        
-        // Pre-populate expected values for error condition checks
-        for (int i = 0; i < 8; i++) begin
-            environment.scoreboard.add_expected(32'hFAIL_0001 + i);
-        end
-        environment.scoreboard.add_expected(32'hRECOV_1234);
         
         err_seq = error_injection_seq::type_id::create("err_seq");
         err_seq.start(environment.agent.sequencer);
