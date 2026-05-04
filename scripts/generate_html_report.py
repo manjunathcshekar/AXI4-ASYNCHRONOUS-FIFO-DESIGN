@@ -431,9 +431,17 @@ def generate_master_report(log_dir='uvm_test_logs', output_dir='html_reports'):
       The UCDB was generated from the <strong>coverage_test</strong> run and verified
       with <code>vcover report</code>.
     </p>
-    <a href="functional_coverage.html" class="cov-link">
-      📊 View Functional Coverage Report (100%) →
-    </a>
+    <div style="display:flex;gap:14px;flex-wrap:wrap">
+      <a href="functional_coverage.html" class="cov-link">
+        📊 View Functional Coverage Report (100%) →
+      </a>
+      <a href="pipeline.html"
+         style="display:inline-block;background:linear-gradient(135deg,#0f0c29,#302b63);
+                color:white;padding:12px 28px;border-radius:8px;text-decoration:none;
+                font-weight:600;font-size:.95em;margin-top:8px">
+        ⚡ View Live Pipeline →
+      </a>
+    </div>
   </div>
 
   {timing_section}

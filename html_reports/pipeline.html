@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AXI4 FIFO – Verification Pipeline</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      padding: 30px 20px;
+      color: #e0e0e0;
+    }
+
+    .wrap { max-width: 1100px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .header h1 {
+      font-size: 2em;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+    .header p { color: #aaa; font-size: .95em; margin-top: 6px; }
+
+    /* ── Status bar ── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px;
+      padding: 14px 22px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1em;
+      font-weight: 600;
+      padding: 6px 18px;
+      border-radius: 20px;
+    }
+    .badge-idle    { background: rgba(150,150,150,.25); color: #ccc; }
+    .badge-running { background: rgba(33,150,243,.25);  color: #64b5f6; }
+    .badge-done    { background: rgba(76,175,80,.25);   color: #81c784; }
+    .badge-failed  { background: rgba(244,67,54,.25);   color: #ef9a9a; }
+
+    .pulse { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+    .pulse-running { background: #2196f3; animation: pulse 1.2s infinite; }
+    .pulse-done    { background: #4caf50; }
+    .pulse-failed  { background: #f44336; }
+    .pulse-idle    { background: #888; }
+
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(33,150,243,.6); }
+      50%      { box-shadow: 0 0 0 7px rgba(33,150,243,0); }
+    }
+
+    .status-meta { color: #aaa; font-size: .85em; }
+
+    /* ── Pipeline track ── */
+    .pipeline {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      margin-bottom: 36px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .stage-wrap {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    /* connector line between stages */
+    .connector {
+      width: 40px;
+      height: 3px;
+      background: rgba(255,255,255,.15);
+      flex-shrink: 0;
+      position: relative;
+      top: -18px; /* align with circle center */
+    }
+    .connector.done  { background: #4caf50; }
+    .connector.running { background: linear-gradient(90deg, #4caf50, #2196f3); }
+
+    .stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 130px;
+      cursor: default;
+    }
+
+    .circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6em;
+      border: 3px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.05);
+      transition: all .4s ease;
+      position: relative;
+    }
+
+    .circle.idle    { border-color: rgba(255,255,255,.2); color: #888; }
+    .circle.running {
+      border-color: #2196f3;
+      color: #2196f3;
+      box-shadow: 0 0 0 0 rgba(33,150,243,.5);
+      animation: ring 1.4s infinite;
+    }
+    .circle.done    { border-color: #4caf50; color: #4caf50; background: rgba(76,175,80,.12); }
+    .circle.failed  { border-color: #f44336; color: #f44336; background: rgba(244,67,54,.12); }
+
+    @keyframes ring {
+      0%   { box-shadow: 0 0 0 0   rgba(33,150,243,.5); }
+      70%  { box-shadow: 0 0 0 14px rgba(33,150,243,0); }
+      100% { box-shadow: 0 0 0 0   rgba(33,150,243,0); }
+    }
+
+    .stage-label {
+      margin-top: 10px;
+      font-size: .78em;
+      text-align: center;
+      color: #ccc;
+      line-height: 1.3;
+      max-width: 110px;
+    }
+    .stage-label.running { color: #64b5f6; font-weight: 600; }
+    .stage-label.done    { color: #81c784; }
+    .stage-label.failed  { color: #ef9a9a; }
+
+    .stage-time {
+      margin-top: 4px;
+      font-size: .72em;
+      color: #777;
+      text-align: center;
+    }
+
+    /* ── Progress bar (step 2 sub-progress) ── */
+    .progress-section {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px;
+      padding: 18px 22px;
+      margin-bottom: 28px;
+    }
+    .progress-section h3 { font-size: .95em; color: #aaa; margin-bottom: 12px; }
+    .progress-bar-wrap {
+      background: rgba(255,255,255,.08);
+      border-radius: 6px;
+      height: 22px;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #1565c0, #42a5f5);
+      transition: width .5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 8px;
+      font-size: .78em;
+      font-weight: 600;
+      color: white;
+      min-width: 36px;
+    }
+    .progress-label {
+      margin-top: 8px;
+      font-size: .82em;
+      color: #aaa;
+    }
+    .current-test {
+      display: inline-block;
+      background: rgba(33,150,243,.2);
+      color: #64b5f6;
+      padding: 2px 10px;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: .85em;
+      margin-left: 6px;
+    }
+
+    /* ── Step detail cards ── */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .step-card {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px;
+      padding: 16px 18px;
+      transition: border-color .3s;
+    }
+    .step-card.running { border-color: #2196f3; background: rgba(33,150,243,.07); }
+    .step-card.done    { border-color: rgba(76,175,80,.4); }
+    .step-card.failed  { border-color: rgba(244,67,54,.4); }
+
+    .step-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .step-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8em; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-num.idle    { background: rgba(255,255,255,.1); color: #888; }
+    .step-num.running { background: #1565c0; color: white; }
+    .step-num.done    { background: #2e7d32; color: white; }
+    .step-num.failed  { background: #c62828; color: white; }
+
+    .step-name { font-size: .92em; font-weight: 600; color: #ddd; }
+    .step-status-text { margin-left: auto; font-size: .78em; font-weight: 600; }
+    .step-status-text.idle    { color: #777; }
+    .step-status-text.running { color: #64b5f6; }
+    .step-status-text.done    { color: #81c784; }
+    .step-status-text.failed  { color: #ef9a9a; }
+
+    .step-times { font-size: .78em; color: #777; line-height: 1.6; }
+    .step-times span { color: #aaa; }
+
+    /* ── Links section ── */
+    .links-section {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px;
+      padding: 18px 22px;
+      margin-bottom: 28px;
+    }
+    .links-section h3 { font-size: .95em; color: #aaa; margin-bottom: 14px; }
+    .link-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .report-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: .88em;
+      font-weight: 600;
+      transition: opacity .2s;
+    }
+    .report-link:hover { opacity: .85; }
+    .report-link.disabled {
+      opacity: .3;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+    .link-dashboard { background: linear-gradient(135deg,#667eea,#764ba2); color: white; }
+    .link-coverage  { background: linear-gradient(135deg,#56ab2f,#a8e063); color: white; }
+
+    /* ── Refresh indicator ── */
+    .refresh-row {
+      text-align: center;
+      color: #555;
+      font-size: .8em;
+      margin-top: 10px;
+    }
+    .refresh-dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #555;
+      margin-right: 5px;
+      vertical-align: middle;
+      animation: blink 2s infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; } 50% { opacity: .2; }
+    }
+
+    /* ── No data state ── */
+    .no-data {
+      text-align: center;
+      padding: 60px 20px;
+      color: #555;
+    }
+    .no-data .big { font-size: 3em; margin-bottom: 16px; }
+    .no-data p { font-size: .95em; line-height: 1.7; }
+    .no-data code {
+      background: rgba(255,255,255,.08);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>⚡ AXI4-Lite Async FIFO — Verification Pipeline</h1>
+    <p>Live view of the UVM verification flow &nbsp;|&nbsp; Auto-refreshes every 2 seconds</p>
+  </div>
+
+  <!-- Status bar -->
+  <div class="status-bar" id="statusBar">
+    <div>
+      <span class="status-badge badge-idle" id="globalBadge">
+        <span class="pulse pulse-idle" id="globalPulse"></span>
+        <span id="globalStatus">Waiting for run...</span>
+      </span>
+    </div>
+    <div class="status-meta" id="statusMeta">Open a terminal and run <code style="background:rgba(255,255,255,.1);padding:2px 6px;border-radius:4px;font-family:monospace">run_all_uvm_tests.bat</code></div>
+  </div>
+
+  <!-- Pipeline track -->
+  <div class="pipeline" id="pipeline">
+    <!-- rendered by JS -->
+  </div>
+
+  <!-- Test progress (shown only during step 2) -->
+  <div class="progress-section" id="progressSection" style="display:none">
+    <h3>🧪 Running UVM Tests</h3>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%">0%</div>
+    </div>
+    <div class="progress-label" id="progressLabel">Starting...</div>
+  </div>
+
+  <!-- Step detail cards -->
+  <div class="steps-grid" id="stepsGrid">
+    <!-- rendered by JS -->
+  </div>
+
+  <!-- Report links (enabled when done) -->
+  <div class="links-section" id="linksSection">
+    <h3>📂 Output Reports</h3>
+    <div class="link-row">
+      <a href="index.html" class="report-link link-dashboard disabled" id="linkDashboard">
+        🔬 Test Dashboard
+      </a>
+      <a href="functional_coverage.html" class="report-link link-coverage disabled" id="linkCoverage">
+        📊 Functional Coverage
+      </a>
+    </div>
+  </div>
+
+  <!-- Refresh indicator -->
+  <div class="refresh-row">
+    <span class="refresh-dot"></span>
+    Auto-refreshing every 2 seconds &nbsp;|&nbsp;
+    Last checked: <span id="lastChecked">—</span>
+  </div>
+
+</div>
+
+<script>
+// ── Step definitions ─────────────────────────────────────────────────────────
+const STEP_DEFS = [
+  { id: 1, name: 'Compile RTL + UVM',   icon: '🔨', desc: 'vlog -sv -cover bcefst' },
+  { id: 2, name: 'Run 15 UVM Tests',    icon: '🧪', desc: '15 tests → .log + .ucdb each' },
+  { id: 3, name: 'Merge UCDBs',         icon: '🔗', desc: 'vcover merge → coverage_test.ucdb' },
+  { id: 4, name: 'vcover Report',       icon: '📄', desc: 'vcover report -details → .txt' },
+  { id: 5, name: 'HTML Test Reports',   icon: '📋', desc: 'generate_html_report.py' },
+  { id: 6, name: 'Coverage HTML',       icon: '📊', desc: 'generate_coverage_report.py' },
+];
+
+// ── Duration helper ──────────────────────────────────────────────────────────
+function duration(start, end) {
+  if (!start || !end) return '';
+  try {
+    const s = new Date(start.replace(' ', 'T'));
+    const e = new Date(end.replace(' ', 'T'));
+    const secs = Math.round((e - s) / 1000);
+    if (secs < 60) return `${secs}s`;
+    return `${Math.floor(secs/60)}m ${secs%60}s`;
+  } catch { return ''; }
+}
+
+// ── Helper: set text only if it changed (avoids repaint) ────────────────────
+function setText(el, val) {
+  if (el && el.textContent !== val) el.textContent = val;
+}
+function setHTML(el, val) {
+  if (el && el.innerHTML !== val) el.innerHTML = val;
+}
+function setClass(el, val) {
+  if (el && el.className !== val) el.className = val;
+}
+
+// ── BUILD DOM ONCE ───────────────────────────────────────────────────────────
+// Called once on page load. Creates all elements; poll() only patches them.
+function buildDOM() {
+  // Pipeline track
+  const pipeline = document.getElementById('pipeline');
+  STEP_DEFS.forEach((def, idx) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'stage-wrap';
+    wrap.innerHTML = `
+      <div class="stage">
+        <div class="circle idle" id="circle-${def.id}">${def.icon}</div>
+        <div class="stage-label idle" id="label-${def.id}">${def.name}</div>
+        <div class="stage-time" id="time-${def.id}"></div>
+      </div>`;
+    pipeline.appendChild(wrap);
+
+    if (idx < STEP_DEFS.length - 1) {
+      const conn = document.createElement('div');
+      conn.className = 'connector';
+      conn.id = `conn-${def.id}`;
+      // nudge connector up to align with circle centre
+      conn.style.position = 'relative';
+      conn.style.top = '-18px';
+      wrap.appendChild(conn);
+    }
+  });
+
+  // Step detail cards
+  const grid = document.getElementById('stepsGrid');
+  STEP_DEFS.forEach(def => {
+    const card = document.createElement('div');
+    card.className = 'step-card idle';
+    card.id = `card-${def.id}`;
+    card.innerHTML = `
+      <div class="step-card-header">
+        <div class="step-num idle" id="num-${def.id}">${def.id}</div>
+        <div class="step-name">${def.icon} ${def.name}</div>
+        <div class="step-status-text idle" id="cardstatus-${def.id}">Pending</div>
+      </div>
+      <div class="step-times">
+        <div style="color:#666;font-size:.8em;margin-bottom:4px">${def.desc}</div>
+        <div id="cardtimes-${def.id}"></div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── PATCH pipeline track (no innerHTML replacement) ──────────────────────────
+function patchPipeline(data) {
+  const stepMap = {};
+  if (data && data.steps) data.steps.forEach(s => { stepMap[s.id] = s; });
+
+  STEP_DEFS.forEach((def, idx) => {
+    const s      = stepMap[def.id] || {};
+    const status = s.status || 'idle';
+    const dur    = duration(s.start, s.end);
+    const timeText = dur ? dur : (status === 'running' ? '⏳ running…' : '');
+
+    setClass(document.getElementById(`circle-${def.id}`), `circle ${status}`);
+    setClass(document.getElementById(`label-${def.id}`),  `stage-label ${status}`);
+    setText (document.getElementById(`time-${def.id}`),   timeText);
+
+    if (idx < STEP_DEFS.length - 1) {
+      const connClass = status === 'done' ? 'connector done'
+                      : status === 'running' ? 'connector running'
+                      : 'connector';
+      setClass(document.getElementById(`conn-${def.id}`), connClass);
+    }
+  });
+}
+
+// ── PATCH step cards ─────────────────────────────────────────────────────────
+function patchCards(data) {
+  const stepMap = {};
+  if (data && data.steps) data.steps.forEach(s => { stepMap[s.id] = s; });
+
+  STEP_DEFS.forEach(def => {
+    const s      = stepMap[def.id] || {};
+    const status = s.status || 'idle';
+    const dur    = duration(s.start, s.end);
+    const label  = { idle:'Pending', running:'Running', done:'Done', failed:'Failed' }[status] || 'Pending';
+
+    setClass(document.getElementById(`card-${def.id}`),       `step-card ${status}`);
+    setClass(document.getElementById(`num-${def.id}`),        `step-num ${status}`);
+    setClass(document.getElementById(`cardstatus-${def.id}`), `step-status-text ${status}`);
+    setText (document.getElementById(`cardstatus-${def.id}`), label);
+
+    const timesEl = document.getElementById(`cardtimes-${def.id}`);
+    const timesHTML =
+      (s.start ? `<div>Started: <span>${s.start}</span></div>` : '') +
+      (s.end   ? `<div>Finished: <span>${s.end}</span></div>`  : '') +
+      (dur     ? `<div>Duration: <span>${dur}</span></div>`    : '');
+    setHTML(timesEl, timesHTML);
+  });
+}
+
+// ── PATCH status bar ─────────────────────────────────────────────────────────
+function patchStatusBar(data) {
+  const badge  = document.getElementById('globalBadge');
+  const pulse  = document.getElementById('globalPulse');
+  const status = document.getElementById('globalStatus');
+  const meta   = document.getElementById('statusMeta');
+
+  if (!data) {
+    setClass(badge,  'status-badge badge-idle');
+    setClass(pulse,  'pulse pulse-idle');
+    setText (status, 'Waiting for run...');
+    return;
+  }
+
+  const allDone    = data.steps && data.steps.length === 6 && data.steps.every(s => s.status === 'done');
+  const anyFailed  = data.steps && data.steps.some(s => s.status === 'failed');
+  const anyRunning = data.steps && data.steps.some(s => s.status === 'running');
+
+  if (anyFailed) {
+    setClass(badge,  'status-badge badge-failed');
+    setClass(pulse,  'pulse pulse-failed');
+    setText (status, '❌ Pipeline Failed');
+    setText (meta,   'Check the terminal for error details.');
+  } else if (allDone) {
+    setClass(badge,  'status-badge badge-done');
+    setClass(pulse,  'pulse pulse-done');
+    setText (status, '✅ Pipeline Complete');
+    const dur = duration(data.flowStart, data.flowEnd);
+    setText (meta,   `All 6 steps finished successfully${dur ? ' in ' + dur : ''}.`);
+    document.getElementById('linkDashboard').classList.remove('disabled');
+    document.getElementById('linkCoverage').classList.remove('disabled');
+  } else if (anyRunning) {
+    const running = data.steps.find(s => s.status === 'running');
+    setClass(badge,  'status-badge badge-running');
+    setClass(pulse,  'pulse pulse-running');
+    setText (status, `⚡ Running — Step ${running ? running.id : '?'}/6`);
+    setText (meta,   running ? `Currently: ${running.name}` : '');
+  } else {
+    setClass(badge,  'status-badge badge-idle');
+    setClass(pulse,  'pulse pulse-idle');
+    setText (status, 'Initialising...');
+    setText (meta,   `Flow started: ${data.flowStart || ''}`);
+  }
+}
+
+// ── PATCH progress bar ───────────────────────────────────────────────────────
+function patchProgress(data) {
+  const section = document.getElementById('progressSection');
+  const fill    = document.getElementById('progressFill');
+  const label   = document.getElementById('progressLabel');
+
+  if (!data || !data.steps) { section.style.display = 'none'; return; }
+  const step2 = data.steps.find(s => s.id === 2);
+  if (!step2)               { section.style.display = 'none'; return; }
+
+  if (step2.status === 'running') {
+    section.style.display = 'block';
+    const prog  = step2.progress || 0;
+    const total = step2.total    || 15;
+    const pct   = Math.round((prog / total) * 100);
+    const pctStr = pct + '%';
+    if (fill.style.width !== pctStr) fill.style.width = pctStr;
+    setText(fill, pctStr);
+    const testSpan = step2.currentTest
+      ? `<span class="current-test">${step2.currentTest}</span>` : '';
+    setHTML(label, `Test ${prog} / ${total} ${testSpan}`);
+  } else if (step2.status === 'done') {
+    section.style.display = 'block';
+    if (fill.style.width !== '100%') fill.style.width = '100%';
+    setText(fill,  '100%');
+    setText(label, 'All 15 tests completed ✅');
+  } else {
+    section.style.display = 'none';
+  }
+}
+
+// ── Fetch ────────────────────────────────────────────────────────────────────
+async function fetchStatus() {
+  try {
+    const res = await fetch('../uvm_test_logs/pipeline_status.json?t=' + Date.now());
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
+// ── Poll — only patches existing DOM, never rebuilds it ──────────────────────
+async function poll() {
+  const data = await fetchStatus();
+  patchStatusBar(data);
+  patchPipeline(data);
+  patchCards(data);
+  patchProgress(data);
+  setText(document.getElementById('lastChecked'), new Date().toLocaleTimeString());
+}
+
+// Build DOM once, then start polling
+buildDOM();
+poll();
+setInterval(poll, 2000);
+</script>
+</body>
+</html>
