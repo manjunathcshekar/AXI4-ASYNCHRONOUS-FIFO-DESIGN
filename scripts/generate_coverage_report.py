@@ -5,7 +5,35 @@ Reads uvm_test_logs/coverage_test_report2.txt and extracts actual covergroup dat
 """
 import os
 import re
+from html import escape as html_escape
 from pathlib import Path
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 0.  Read run timestamps written by run_all_uvm_tests.bat
+# ─────────────────────────────────────────────────────────────────────────────
+
+def load_run_timestamps(ts_path: Path) -> dict:
+    """
+    Parse uvm_test_logs/run_timestamps.txt (KEY=VALUE lines).
+    Returns a dict of all keys found, empty strings for missing keys.
+    """
+    keys = [
+        "FLOW_START", "COMPILE_START", "COMPILE_END",
+        "TESTS_START", "TESTS_END",
+        "UCDB_MERGE_START", "UCDB_MERGE_END",
+        "VCOVER_REPORT_START", "VCOVER_REPORT_END",
+        "HTML_REPORT_START", "HTML_REPORT_END",
+        "COV_HTML_START", "COV_HTML_END",
+        "FLOW_END",
+    ]
+    result = {k: "" for k in keys}
+    if ts_path.exists():
+        for line in ts_path.read_text(errors="ignore").splitlines():
+            if "=" in line:
+                k, _, v = line.partition("=")
+                result[k.strip()] = v.strip()
+    return result
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -33,11 +61,16 @@ def parse_vcover_report(report_path: Path):
     total_types = int(overall_match.group(2)) if overall_match else 0
 
     # ── Per-covergroup TYPE blocks ────────────────────────────────────────────
-    # We look for "TYPE /axi4_uvm_pkg/axi4_fifo_coverage/<name>" blocks
+    # We look for "TYPE /axi4_uvm_pkg/axi4_fifo_coverage/<name>" blocks.
+    # QuestaSim sometimes puts the percentage on the same line as the TYPE name,
+    # and sometimes wraps it to the next line (when the name is long).
+    # Pattern handles both:
+    #   " TYPE /axi4_uvm_pkg/axi4_fifo_coverage/cg_name    100.00%  100  Covered"
+    #   " TYPE /axi4_uvm_pkg/axi4_fifo_coverage/cg_name \n  100.00%  100  Covered"
     cg_pattern = re.compile(
-        r"TYPE /axi4_uvm_pkg/axi4_fifo_coverage/(\w+)\s+"
-        r"([\d.]+)%\s+\d+\s+(\w+)\s+"          # metric  goal  status
-        r"covered/total bins:\s+(\d+)\s+(\d+)",  # covered  total
+        r" TYPE /axi4_uvm_pkg/axi4_fifo_coverage/(\w+)\s*\n?"   # name (possibly followed by newline)
+        r"[\s]*([\d.]+)%\s+\d+\s+(\w+)\s*\n"                    # percentage  goal  status
+        r"\s+covered/total bins:\s+(\d+)\s+(\d+)",               # covered  total
         re.MULTILINE
     )
 
@@ -49,27 +82,41 @@ def parse_vcover_report(report_path: Path):
         covered    = int(m.group(4))
         total      = int(m.group(5))
 
-        # Extract individual bins for this covergroup
-        # Find the block starting at this match and grab bin lines
+        # Extract individual bins for this covergroup.
+        # The TYPE block is followed by a "Covergroup instance" block that
+        # repeats the same bins — we must stop before that to avoid duplicates.
         block_start = m.start()
         # Find next TYPE block or end
         next_type = text.find("\n TYPE ", block_start + 1)
-        block = text[block_start: next_type if next_type != -1 else len(text)]
+        block_end = next_type if next_type != -1 else len(text)
+        block = text[block_start:block_end]
+
+        # Trim off the "Covergroup instance" section within this block
+        instance_pos = block.find(" Covergroup instance ")
+        if instance_pos != -1:
+            block = block[:instance_pos]
 
         bins = []
+        # Match both regular bins and ignore_bins.
+        # Format variants:
+        #   "        bin  name                    38          1    Covered"
+        #   "        bin  <cross,name>             4          1    Covered"
+        #   "        ignore_bin  name              0               ZERO"
+        # The hit count is always present; the "goal" column (1) is optional for ignore_bins.
         bin_pattern = re.compile(
-            r"^\s+bin\s+(\S.*?)\s{2,}(\d+)\s+\d+\s+(Covered|ZERO)\s*$",
+            r"^\s+(ignore_bin|bin)\s+(\S+(?:\s+\S+)*?)\s{2,}(\d+)\s+(?:\d+\s+)?(Covered|ZERO)\s*$",
             re.MULTILINE
         )
         for bm in bin_pattern.finditer(block):
-            bin_name = bm.group(1).strip()
-            # Skip ignore_bins (they appear as "ignore_bin name" not "bin name")
+            is_ignore = (bm.group(1) == "ignore_bin")
+            bin_name  = bm.group(2).strip()
             if not bin_name:
                 continue
             bins.append({
-                "name":   bin_name,
-                "hits":   int(bm.group(2)),
-                "status": bm.group(3),
+                "name":      bin_name,
+                "hits":      int(bm.group(3)),
+                "status":    bm.group(4),
+                "is_ignore": is_ignore,
             })
 
         covergroups[name] = {
@@ -107,15 +154,27 @@ def parse_test_logs():
             continue
         content = log.read_text(errors="ignore")
 
-        # Transaction counts — [TRANSACTION] tag = one per transaction
-        transactions = len(re.findall(r'\[TRANSACTION\]', content))
-        tr_count_matches = re.findall(r'Tr count\s*=\s*(\d+)', content)
-        if tr_count_matches:
-            transactions = int(tr_count_matches[-1])
-
-        # Count from [TRANSACTION] lines only to avoid double-counting Driver prints
-        writes = len(re.findall(r'\[TRANSACTION\].*?kind=WRITE\b', content))
-        reads  = len(re.findall(r'\[TRANSACTION\].*?kind=(?:PERIPH_READ|AXI_READ)\b', content))
+        # Authoritative source: [COVERAGE] Transactions line emitted by the
+        # coverage component at end-of-test (driver-only counts, no duplicates).
+        cov_match = re.search(
+            r'\[COVERAGE\] Transactions:\s*(\d+) writes,\s*(\d+) reads,\s*(\d+) total',
+            content
+        )
+        if cov_match:
+            writes       = int(cov_match.group(1))
+            reads        = int(cov_match.group(2))
+            transactions = int(cov_match.group(3))
+        else:
+            # Fallback: count only driver-side [TRANSACTION] lines.
+            # Driver transactions come from "sequencer@@seq.tr [TRANSACTION]".
+            # Monitor transactions come from "reporter@@mon_*_tr [TRANSACTION]".
+            # We count only the driver ones to avoid double-counting.
+            driver_txns = re.findall(
+                r'sequencer@@seq.*?\[TRANSACTION\].*?kind=(\w+)', content
+            )
+            transactions = len(driver_txns)
+            writes = sum(1 for k in driver_txns if k == 'WRITE')
+            reads  = sum(1 for k in driver_txns if k in ('PERIPH_READ', 'AXI_READ'))
 
         err_m   = re.search(r'UVM Report Summary.*?UVM_ERROR\s*:\s*(\d+)', content, re.DOTALL)
         fatal_m = re.search(r'UVM Report Summary.*?UVM_FATAL\s*:\s*(\d+)', content, re.DOTALL)
@@ -171,7 +230,7 @@ def color_for(pct):
     return "#f44336"
 
 
-def generate_html(covergroups, overall_coverage, test_metrics, test_status):
+def generate_html(covergroups, overall_coverage, test_metrics, test_status, ts: dict):
     grade = "A" if overall_coverage >= 95 else "B" if overall_coverage >= 85 else "C" if overall_coverage >= 75 else "D"
     grade_color = color_for(overall_coverage)
 
@@ -193,13 +252,16 @@ def generate_html(covergroups, overall_coverage, test_metrics, test_status):
             '<span style="background:#f44336;color:white;padding:3px 10px;border-radius:12px;font-size:0.8em">Uncovered</span>'
         )
 
-        # bin rows
+        # bin rows — skip ignore_bins entirely (they are excluded from coverage count)
         bin_rows = ""
         for b in cg["bins"]:
+            if b.get("is_ignore"):
+                continue  # do not display ignore_bins in the report
             b_color = "#4caf50" if b["status"] == "Covered" else "#f44336"
+            label   = html_escape(b["name"])
             bin_rows += f"""
             <tr>
-              <td style="padding:6px 10px;font-family:monospace">{b['name']}</td>
+              <td style="padding:6px 10px;font-family:monospace">{label}</td>
               <td style="padding:6px 10px;text-align:center">{b['hits']}</td>
               <td style="padding:6px 10px;text-align:center">
                 <span style="color:{b_color};font-weight:bold">{b['status']}</span>
@@ -246,6 +308,15 @@ def generate_html(covergroups, overall_coverage, test_metrics, test_status):
               <td style="padding:10px 12px;text-align:center">{m['transactions']}</td>
               <td style="padding:10px 12px;text-align:center">{m['writes']}</td>
               <td style="padding:10px 12px;text-align:center">{m['reads']}</td>
+            </tr>"""
+
+    # Totals row
+    test_rows += f"""
+            <tr style="background:#f0f4ff;font-weight:bold;border-top:2px solid #667eea">
+              <td style="padding:10px 12px;color:#333">TOTAL ({len([m for m in test_metrics.values() if m['transactions']>0])} tests)</td>
+              <td style="padding:10px 12px;text-align:center;color:#667eea">{total_trans}</td>
+              <td style="padding:10px 12px;text-align:center;color:#667eea">{total_writes}</td>
+              <td style="padding:10px 12px;text-align:center;color:#667eea">{total_reads}</td>
             </tr>"""
 
     write_pct = f"{(total_writes/total_trans*100):.1f}" if total_trans else "0.0"
@@ -427,7 +498,7 @@ def main():
     test_metrics, test_status = parse_test_logs()
     print(f"Tests: {test_status['passed']} passed, {test_status['failed']} failed")
 
-    html = generate_html(covergroups, overall_coverage, test_metrics, test_status)
+    html = generate_html(covergroups, overall_coverage, test_metrics, test_status, {})
 
     out_html.parent.mkdir(exist_ok=True)
     out_html.write_text(html, encoding="utf-8")

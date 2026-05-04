@@ -8,6 +8,27 @@ import os
 import re
 from datetime import datetime
 from html import escape
+from pathlib import Path
+
+
+def load_run_timestamps(ts_path: Path) -> dict:
+    """Read uvm_test_logs/run_timestamps.txt written by run_all_uvm_tests.bat."""
+    keys = [
+        "FLOW_START", "COMPILE_START", "COMPILE_END",
+        "TESTS_START", "TESTS_END",
+        "UCDB_MERGE_START", "UCDB_MERGE_END",
+        "VCOVER_REPORT_START", "VCOVER_REPORT_END",
+        "HTML_REPORT_START", "HTML_REPORT_END",
+        "COV_HTML_START", "COV_HTML_END",
+        "FLOW_END",
+    ]
+    result = {k: "" for k in keys}
+    if ts_path.exists():
+        for line in ts_path.read_text(errors="ignore").splitlines():
+            if "=" in line:
+                k, _, v = line.partition("=")
+                result[k.strip()] = v.strip()
+    return result
 
 # ── Exact 15 known UVM tests ──────────────────────────────────────────────────
 KNOWN_TESTS = {
@@ -184,7 +205,7 @@ def convert_log_to_html(log_file_path, output_html_path, test_name):
     <span class="stat"><strong>UVM Errors:</strong> {errors}</span>
     <span class="stat"><strong>Warnings:</strong> {warnings}</span>
     <span class="stat" style="margin-left:auto;color:#999;font-size:.85em">
-      Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+      Created: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
     </span>
   </div>
   <div class="log-box">
@@ -269,6 +290,64 @@ def generate_master_report(log_dir='uvm_test_logs', output_dir='html_reports'):
         </a>
       </div>"""
 
+    # ── Load run timestamps ───────────────────────────────────────────────────
+    ts = load_run_timestamps(Path(log_dir) / "run_timestamps.txt")
+    html_gen_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    def ts_row(label, start_key, end_key=""):
+        start = ts.get(start_key, "")
+        end   = ts.get(end_key, "") if end_key else ""
+        if not start:
+            return ""
+        duration = ""
+        if start and end:
+            try:
+                fmt = "%Y-%m-%d %H:%M:%S"
+                delta = datetime.strptime(end, fmt) - datetime.strptime(start, fmt)
+                secs = int(delta.total_seconds())
+                duration = f" &nbsp;<span style='color:#888;font-size:.85em'>({secs}s)</span>"
+            except Exception:
+                pass
+        end_str = f" → {end}" if end else ""
+        return (f"<tr><td style='padding:5px 10px;color:#555;white-space:nowrap'>{label}</td>"
+                f"<td style='padding:5px 10px;font-family:monospace;color:#333'>"
+                f"{start}{end_str}{duration}</td></tr>")
+
+    timing_rows = (
+        ts_row("Flow started",            "FLOW_START") +
+        ts_row("Compilation",             "COMPILE_START",      "COMPILE_END") +
+        ts_row("All 15 tests ran",        "TESTS_START",        "TESTS_END") +
+        ts_row("UCDB merge",              "UCDB_MERGE_START",   "UCDB_MERGE_END") +
+        ts_row("vcover report generated", "VCOVER_REPORT_START","VCOVER_REPORT_END") +
+        ts_row("HTML test reports",       "HTML_REPORT_START",  "HTML_REPORT_END") +
+        ts_row("Coverage HTML generated", "COV_HTML_START",     "COV_HTML_END") +
+        ts_row("Flow finished",           "FLOW_END")
+    )
+
+    if timing_rows:
+        timing_section = f"""
+  <!-- Run timing -->
+  <div class="section">
+    <h2>🕐 Run Timing</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:.92em">
+      <tbody>{timing_rows}</tbody>
+    </table>
+    <p style="color:#aaa;font-size:.8em;margin-top:8px">
+      HTML report created: {html_gen_time} &nbsp;|&nbsp;
+      Source: uvm_test_logs/run_timestamps.txt
+    </p>
+  </div>"""
+    else:
+        timing_section = f"""
+  <!-- Run timing -->
+  <div class="section">
+    <h2>🕐 Run Timing</h2>
+    <p style="color:#aaa;font-size:.85em">
+      No timing data found (run_timestamps.txt not present).<br>
+      HTML report created: {html_gen_time}
+    </p>
+  </div>"""
+
     index_html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -314,7 +393,7 @@ def generate_master_report(log_dir='uvm_test_logs', output_dir='html_reports'):
   <div class="header">
     <h1>🔬 AXI4-Lite Async FIFO — UVM Verification Dashboard</h1>
     <p>QuestaSim 10.7c &nbsp;|&nbsp; UVM 1.1d &nbsp;|&nbsp;
-       Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+       Created: {html_gen_time}</p>
   </div>
 
   <!-- Summary stats -->
@@ -356,6 +435,8 @@ def generate_master_report(log_dir='uvm_test_logs', output_dir='html_reports'):
       📊 View Functional Coverage Report (100%) →
     </a>
   </div>
+
+  {timing_section}
 
 </div>
 <div class="footer">
