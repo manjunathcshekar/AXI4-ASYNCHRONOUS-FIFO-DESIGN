@@ -1,247 +1,520 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AXI Async FIFO - UVM Verification Report</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-        .header {
-            background-color: white;
-            border-radius: 10px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            margin: 0 0 10px 0;
-            font-size: 2.5em;
-        }
-        .subtitle {
-            color: #666;
-            font-size: 1.1em;
-            margin: 0;
-        }
-        .section {
-            background-color: white;
-            border-radius: 10px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        h2 {
-            color: #333;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-        .test-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .test-table th {
-            background-color: #667eea;
-            color: white;
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-        }
-        .test-table td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-        }
-        .test-table tr:hover {
-            background-color: #f5f5f5;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-        .status-pass {
-            background-color: #4caf50;
-            color: white;
-        }
-        .status-fail {
-            background-color: #f44336;
-            color: white;
-        }
-        .status-hang {
-            background-color: #ff9800;
-            color: white;
-        }
-        .status-unknown {
-            background-color: #9e9e9e;
-            color: white;
-        }
-        .test-link {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .test-link:hover {
-            text-decoration: underline;
-        }
-        .summary-stats {
-            display: flex;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .stat-card {
-            flex: 1;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .stat-card h3 {
-            margin: 0;
-            font-size: 2.5em;
-        }
-        .stat-card p {
-            margin: 5px 0 0 0;
-            font-size: 1em;
-            opacity: 0.9;
-        }
-        .footer {
-            text-align: center;
-            color: white;
-            margin-top: 40px;
-            opacity: 0.8;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        ul li {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-        ul li:before {
-            content: "✓ ";
-            color: #4caf50;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AXI4 Async FIFO – UVM Verification Dashboard</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            min-height:100vh; padding:30px 20px; }
+    .wrap { max-width:1300px; margin:0 auto; }
+    .header { background:white; border-radius:12px; padding:32px 36px;
+               margin-bottom:28px; box-shadow:0 4px 16px rgba(0,0,0,.12); }
+    .header h1 { font-size:2.2em; color:#222; margin-bottom:6px; }
+    .header p  { color:#666; font-size:1em; }
+    .section { background:white; border-radius:12px; padding:28px 32px;
+                margin-bottom:28px; box-shadow:0 4px 16px rgba(0,0,0,.12); }
+    .section h2 { font-size:1.3em; color:#333;
+                   border-bottom:3px solid #667eea;
+                   padding-bottom:10px; margin-bottom:22px; }
+    .stat-row { display:grid;
+                 grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+                 gap:16px; margin-bottom:0; }
+    .stat-card { border-radius:10px; padding:20px; text-align:center; color:white; }
+    .stat-card .num { font-size:2.4em; font-weight:700; line-height:1; }
+    .stat-card .lbl { font-size:.9em; opacity:.9; margin-top:4px; }
+    .card-grid { display:grid;
+                  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+                  gap:20px; }
+    .cov-link { display:inline-block; background:linear-gradient(135deg,#667eea,#764ba2);
+                 color:white; padding:12px 28px; border-radius:8px;
+                 text-decoration:none; font-weight:600; font-size:.95em;
+                 margin-top:8px; }
+    .cov-link:hover { opacity:.9; }
+    .footer { text-align:center; color:rgba(255,255,255,.75);
+               font-size:.9em; margin-top:10px; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🔬 AXI Async FIFO – UVM Verification Report</h1>
-            <p class="subtitle">Comprehensive Test Results and Coverage Analysis</p>
-        </div>
-        
-        <div class="section">
-            <h2>📊 Test Summary</h2>
-            <div class="summary-stats">
+<div class="wrap">
 
-                <div class="stat-card">
-                    <h3>5</h3>
-                    <p>Total Tests</p>
-                </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);">
-                    <h3>5</h3>
-                    <p>Passed</p>
-                </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #f44336 0%, #da190b 100%);">
-                    <h3>0</h3>
-                    <p>Failed</p>
-                </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);">
-                    <h3>0</h3>
-                    <p>Hanging</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="section">
-            <h2>📋 Test Results</h2>
-            <table class="test-table">
-                <thead>
-                    <tr>
-                        <th>Test Name</th>
-                        <th>Status</th>
-                        <th>Errors</th>
-                        <th>Warnings</th>
-                        <th>Log File</th>
-                    </tr>
-                </thead>
-                <tbody>
+  <div class="header">
+    <h1>🔬 AXI4-Lite Async FIFO — UVM Verification Dashboard</h1>
+    <p>QuestaSim 10.7c &nbsp;|&nbsp; UVM 1.1d &nbsp;|&nbsp;
+       Created: 2026-05-08 00:25:40</p>
+  </div>
 
-                    <tr>
-                        <td><strong>Basic Read-Write Test</strong></td>
-                        <td><span class="status-badge status-pass">PASS</span></td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td><a href="basic_rw_test.html" class="test-link">View Log →</a></td>
-                    </tr>
-
-                    <tr>
-                        <td><strong>FIFO Empty Test</strong></td>
-                        <td><span class="status-badge status-pass">PASS</span></td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td><a href="fifo_empty_test.html" class="test-link">View Log →</a></td>
-                    </tr>
-
-                    <tr>
-                        <td><strong>FIFO Full Test</strong></td>
-                        <td><span class="status-badge status-pass">PASS</span></td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td><a href="fifo_full_test.html" class="test-link">View Log →</a></td>
-                    </tr>
-
-                    <tr>
-                        <td><strong>Original Random Test</strong></td>
-                        <td><span class="status-badge status-pass">PASS</span></td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td><a href="rand_test.html" class="test-link">View Log →</a></td>
-                    </tr>
-
-                    <tr>
-                        <td><strong>Reset Test</strong></td>
-                        <td><span class="status-badge status-pass">PASS</span></td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td><a href="reset_test.html" class="test-link">View Log →</a></td>
-                    </tr>
-
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="section">
-            <h2>📁 Additional Resources</h2>
-            <ul>
-                <li>Coverage Report: <a href="cov_html/index.html" style="color: #667eea;">View Coverage Analysis</a></li>
-                <li>Waveform Images: Available in uvm_test_logs/ directory</li>
-                <li>Source Logs: Original .log / .txt files in uvm_test_logs/ directory</li>
-            </ul>
-        </div>
-        
-        <div class="footer">
-            <p>Generated: 2026-02-10 23:04:25</p>
-            <p>UVM Version: 1.1d | QuestaSim 10.7c</p>
-        </div>
+  <!-- Summary stats -->
+  <div class="section">
+    <h2>📊 Test Summary</h2>
+    <div class="stat-row">
+      <div class="stat-card" style="background:linear-gradient(135deg,#667eea,#764ba2)">
+        <div class="num">15</div><div class="lbl">Total Tests</div>
+      </div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#56ab2f,#a8e063)">
+        <div class="num">15</div><div class="lbl">Passed ✅</div>
+      </div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#eb3349,#f45c43)">
+        <div class="num">0</div><div class="lbl">Failed ❌</div>
+      </div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#4caf50,#81c784)">
+        <div class="num">A</div><div class="lbl">Coverage Grade</div>
+      </div>
     </div>
+  </div>
+
+  <!-- Test cards -->
+  <div class="section">
+    <h2>📋 Test Results</h2>
+    <div class="card-grid">
+      
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ Basic Read-Write Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">Basic AXI write followed by peripheral read</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>3</strong> txns</span>
+          <span>✍️ <strong>2</strong> writes</span>
+          <span>📖 <strong>1</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="basic_rw_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ FIFO Full Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">Fill FIFO to capacity, verify overflow handling</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>17</strong> txns</span>
+          <span>✍️ <strong>17</strong> writes</span>
+          <span>📖 <strong>0</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="fifo_full_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ FIFO Empty Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">Read from empty FIFO, verify underflow handling</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>4</strong> txns</span>
+          <span>✍️ <strong>2</strong> writes</span>
+          <span>📖 <strong>2</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="fifo_empty_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ Reset Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">Assert reset mid-transaction, verify clean recovery</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>4</strong> txns</span>
+          <span>✍️ <strong>2</strong> writes</span>
+          <span>📖 <strong>2</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="reset_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ Random Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">Random write/read pairs via dummy sequence</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>6</strong> txns</span>
+          <span>✍️ <strong>4</strong> writes</span>
+          <span>📖 <strong>2</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="rand_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ Full Write / Full Read Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">Fill FIFO completely then drain completely</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>24</strong> txns</span>
+          <span>✍️ <strong>16</strong> writes</span>
+          <span>📖 <strong>8</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="full_write_full_read_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ Continuous Read-Write Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">50 balanced write/read pairs, FIFO state transitions</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>150</strong> txns</span>
+          <span>✍️ <strong>100</strong> writes</span>
+          <span>📖 <strong>50</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="continuous_rw_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ CDC Stress Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">Rapid writes/reads to stress CDC synchronizers</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>183</strong> txns</span>
+          <span>✍️ <strong>108</strong> writes</span>
+          <span>📖 <strong>75</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="cdc_stress_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ Burst Pattern Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">Alternating address burst patterns (0x0 / 0x4)</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>80</strong> txns</span>
+          <span>✍️ <strong>64</strong> writes</span>
+          <span>📖 <strong>16</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="burst_pattern_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ Alternating Pattern Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">Variable-timing write-read pairs, CDC stress</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>320</strong> txns</span>
+          <span>✍️ <strong>192</strong> writes</span>
+          <span>📖 <strong>128</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="alternating_pattern_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ Boundary Condition Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">Edge cases: single write/many reads, back-to-back ops</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>123</strong> txns</span>
+          <span>✍️ <strong>87</strong> writes</span>
+          <span>📖 <strong>36</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="boundary_condition_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ Interrupt Signals Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">IRQ_FULL and IRQ_EMPTY signal generation</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>175</strong> txns</span>
+          <span>✍️ <strong>119</strong> writes</span>
+          <span>📖 <strong>56</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="interrupt_signals_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ Stress Load Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">500 high-speed transactions, extreme CDC stress</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>883</strong> txns</span>
+          <span>✍️ <strong>508</strong> writes</span>
+          <span>📖 <strong>375</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="stress_load_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ Protocol Edge Case Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">AXI protocol boundary values and timing variations</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>147</strong> txns</span>
+          <span>✍️ <strong>97</strong> writes</span>
+          <span>📖 <strong>50</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="protocol_edge_case_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+      <div style="background:white;border-radius:10px;padding:22px;
+                  box-shadow:0 2px 8px rgba(0,0,0,.08);
+                  border-top:4px solid #4caf50;
+                  display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:700;font-size:1em;color:#222">✅ Comprehensive Coverage Test</div>
+            <div style="font-size:.82em;color:#777;margin-top:3px">5 sequences targeting 100% functional coverage</div>
+          </div>
+          <span style="background:#4caf50;color:white;padding:3px 12px;
+                       border-radius:12px;font-size:.8em;font-weight:bold;
+                       white-space:nowrap;margin-left:10px">PASS</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.85em;color:#555">
+          <span>🔄 <strong>337</strong> txns</span>
+          <span>✍️ <strong>218</strong> writes</span>
+          <span>📖 <strong>119</strong> reads</span>
+          <span>⚠️ Errors: <strong style="color:#4caf50">0</strong></span>
+        </div>
+        <a href="coverage_test.html"
+           style="display:inline-block;background:#667eea;color:white;
+                  padding:7px 16px;border-radius:6px;text-decoration:none;
+                  font-size:.85em;font-weight:500;align-self:flex-start;
+                  margin-top:4px">
+          View Log →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coverage link -->
+  <div class="section">
+    <h2>📈 Functional Coverage</h2>
+    <p style="color:#555;margin-bottom:14px">
+      Functional coverage was measured using QuestaSim covergroups across 5 domains.
+      The UCDB was generated from the <strong>coverage_test</strong> run and verified
+      with <code>vcover report</code>.
+    </p>
+    <div style="display:flex;gap:14px;flex-wrap:wrap">
+      <a href="functional_coverage.html" class="cov-link">
+        📊 View Functional Coverage Report (100%) →
+      </a>
+      <a href="pipeline.html"
+         style="display:inline-block;background:linear-gradient(135deg,#0f0c29,#302b63);
+                color:white;padding:12px 28px;border-radius:8px;text-decoration:none;
+                font-weight:600;font-size:.95em;margin-top:8px">
+        ⚡ View Live Pipeline →
+      </a>
+    </div>
+  </div>
+
+  
+  <!-- Run timing -->
+  <div class="section">
+    <h2>🕐 Run Timing</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:.92em">
+      <tbody><tr><td style='padding:5px 10px;color:#555;white-space:nowrap'>Flow started</td><td style='padding:5px 10px;font-family:monospace;color:#333'>2026-05-08 00:23:53</td></tr><tr><td style='padding:5px 10px;color:#555;white-space:nowrap'>Compilation</td><td style='padding:5px 10px;font-family:monospace;color:#333'>2026-05-08 00:23:54 → 2026-05-08 00:23:57 &nbsp;<span style='color:#888;font-size:.85em'>(3s)</span></td></tr><tr><td style='padding:5px 10px;color:#555;white-space:nowrap'>All 15 tests ran</td><td style='padding:5px 10px;font-family:monospace;color:#333'>2026-05-08 00:23:58 → 2026-05-08 00:25:32 &nbsp;<span style='color:#888;font-size:.85em'>(94s)</span></td></tr><tr><td style='padding:5px 10px;color:#555;white-space:nowrap'>UCDB merge</td><td style='padding:5px 10px;font-family:monospace;color:#333'>2026-05-08 00:25:33 → 2026-05-08 00:25:34 &nbsp;<span style='color:#888;font-size:.85em'>(1s)</span></td></tr><tr><td style='padding:5px 10px;color:#555;white-space:nowrap'>vcover report generated</td><td style='padding:5px 10px;font-family:monospace;color:#333'>2026-05-08 00:25:34 → 2026-05-08 00:25:35 &nbsp;<span style='color:#888;font-size:.85em'>(1s)</span></td></tr><tr><td style='padding:5px 10px;color:#555;white-space:nowrap'>HTML test reports</td><td style='padding:5px 10px;font-family:monospace;color:#333'>2026-05-08 00:25:36</td></tr></tbody>
+    </table>
+    <p style="color:#aaa;font-size:.8em;margin-top:8px">
+      HTML report created: 2026-05-08 00:25:40 &nbsp;|&nbsp;
+      Source: uvm_test_logs/run_timestamps.txt
+    </p>
+  </div>
+
+</div>
+<div class="footer">
+  <p>AXI4-Lite Asynchronous FIFO &nbsp;|&nbsp; UVM Verification &nbsp;|&nbsp; QuestaSim 10.7c</p>
+</div>
 </body>
 </html>

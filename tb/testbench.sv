@@ -6,7 +6,6 @@ module tb ();
 
     logic clk_axi;
     logic clk_periph;
-    logic axi_resetn;
 
     initial begin
         clk_axi = 0;
@@ -19,9 +18,10 @@ module tb ();
     end
 
     initial begin
-        axi_resetn = 0;
-        #50;
-        axi_resetn = 1;
+        // Drive reset through the interface so UVM can toggle it later
+        vif.axi_resetn = 1'b0;
+        repeat (8) @(posedge clk_axi);
+        vif.axi_resetn = 1'b1;
     end
 
     intf vif ();
@@ -29,9 +29,6 @@ module tb ();
     // connect clocks/reset into the interface
     assign vif.clk_axi    = clk_axi;
     assign vif.clk_periph = clk_periph;
-    assign vif.axi_resetn = axi_resetn;
-    assign vif.irq_clear_full  = 1'b0;
-    assign vif.irq_clear_empty = 1'b0;
 
     // DUT
     axi_lite_async_fifo #(
@@ -41,7 +38,7 @@ module tb ();
     ) dut (
         .clk_axi        (clk_axi),
         .clk_periph     (clk_periph),
-        .axi_resetn_i   (axi_resetn),
+        .axi_resetn_i   (vif.axi_resetn),
         .axi_awaddr_i   (vif.awaddr),
         .axi_awvalid_i  (vif.awvalid),
         .axi_awready_o  (vif.awready),
@@ -73,6 +70,7 @@ module tb ();
     initial begin
         uvm_config_db#(virtual intf.drv_mp)::set(null, "*", "vif", vif);
         uvm_config_db#(virtual intf.mon_mp)::set(null, "*", "vif", vif);
+        uvm_config_db#(virtual intf.rst_mp)::set(null, "*", "rst_vif", vif);
         run_test();
     end
 

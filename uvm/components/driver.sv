@@ -3,6 +3,7 @@ class drv extends uvm_driver #(transaction);
 
     virtual intf.drv_mp vif;
     transaction  tr;
+    uvm_analysis_port #(transaction) coverage_port;
 
     function new(string name = "driver", uvm_component parent);
         super.new(name, parent);
@@ -16,6 +17,7 @@ class drv extends uvm_driver #(transaction);
         if (!(uvm_config_db#(virtual intf.drv_mp)::get(this, "", "vif", vif))) begin
             `uvm_fatal("Driver", "Driver couldn't get vif")
         end
+        coverage_port = new("coverage_port", this);
     endfunction
 
     task run_phase(uvm_phase phase);
@@ -28,12 +30,23 @@ class drv extends uvm_driver #(transaction);
         reset_signals();
 
         // wait for reset deassert
-        wait (!vif.axi_resetn);
-        @(posedge vif.axi_resetn);
+        wait (vif.axi_resetn === 1'b1);
 
         forever begin
+            // If reset asserts at any time, immediately quiesce and wait for release
+            if (vif.axi_resetn === 1'b0) begin
+                reset_signals();
+                wait (vif.axi_resetn === 1'b1);
+                @(posedge vif.clk_axi);
+            end
             seq_item_port.get_next_item(tr);
+            // Snapshot FIFO state before driving (for coverage of flow-control skips)
+            tr.fifo_empty = vif.rd_empty;
+            tr.fifo_full  = vif.rd_full;
             drive(tr);
+            // Send all transaction types to coverage (monitor handles writes too,
+            // but driver sends pre-drive state for flow-control skips)
+            coverage_port.write(tr);
             `uvm_info("Driver", "Drove a transaction", UVM_NONE)
             tr.print();
             seq_item_port.item_done();
@@ -43,10 +56,13 @@ class drv extends uvm_driver #(transaction);
     task drive(transaction tr);
         case (tr.kind)
             WRITE: begin
-                drive_write(tr.addr, tr.data);
+                drive_write(tr.addr, tr.data, tr.strobe);
             end
             PERIPH_READ: begin
                 drive_periph_read();
+            end
+            AXI_READ: begin
+                drive_axi_read(tr.addr);
             end
             default: begin
                 `uvm_warning("Driver", "Unknown transaction kind")
@@ -69,7 +85,11 @@ class drv extends uvm_driver #(transaction);
         vif.irq_clear_empty <= 1'b0;
     endtask
 
-    task drive_write(bit [3:0] addr, bit [31:0] data);
+    task drive_write(bit [3:0] addr, bit [31:0] data, bit [3:0] strobe = 4'hF);
+        if (vif.axi_resetn === 1'b0) begin
+            reset_signals();
+            return;
+        end
         // Flow control: do not issue writes when FIFO is full.
         // Important: never wait forever here; just skip and allow the test to progress/terminate.
         if (vif.rd_full) begin
@@ -79,26 +99,77 @@ class drv extends uvm_driver #(transaction);
 
         // present AW/W
         @(posedge vif.clk_axi);
+        if (vif.axi_resetn === 1'b0) begin
+            reset_signals();
+            return;
+        end
         vif.awaddr  <= addr;
         vif.awvalid <= 1'b1;
         vif.wdata   <= data;
-        vif.wstrb   <= 4'hF;
+        vif.wstrb   <= strobe;
         vif.wvalid  <= 1'b1;
 
         // wait for handshake
-        wait (vif.awready && vif.wready);
+        wait ((vif.awready && vif.wready) || (vif.axi_resetn === 1'b0));
+        if (vif.axi_resetn === 1'b0) begin
+            reset_signals();
+            return;
+        end
         @(posedge vif.clk_axi);
         vif.awvalid <= 1'b0;
         vif.wvalid  <= 1'b0;
 
         // wait for B response
         vif.bready <= 1'b1;
-        wait (vif.bvalid);
+        wait (vif.bvalid || (vif.axi_resetn === 1'b0));
+        if (vif.axi_resetn === 1'b0) begin
+            reset_signals();
+            return;
+        end
         @(posedge vif.clk_axi);
         vif.bready <= 1'b0;
     endtask
 
+    task drive_axi_read(bit [3:0] addr);
+        if (vif.axi_resetn === 1'b0) begin
+            reset_signals();
+            return;
+        end
+
+        // present AR
+        @(posedge vif.clk_axi);
+        if (vif.axi_resetn === 1'b0) begin
+            reset_signals();
+            return;
+        end
+        vif.araddr  <= addr;
+        vif.arvalid <= 1'b1;
+
+        // wait for read address handshake
+        wait ((vif.arready && vif.arvalid) || (vif.axi_resetn === 1'b0));
+        if (vif.axi_resetn === 1'b0) begin
+            reset_signals();
+            return;
+        end
+        @(posedge vif.clk_axi);
+        vif.arvalid <= 1'b0;
+
+        // ready to accept read data
+        vif.rready <= 1'b1;
+        wait ((vif.rvalid && vif.rready) || (vif.axi_resetn === 1'b0));
+        if (vif.axi_resetn === 1'b0) begin
+            reset_signals();
+            return;
+        end
+        @(posedge vif.clk_axi);
+        vif.rready <= 1'b0;
+    endtask
+
     task drive_periph_read();
+        if (vif.axi_resetn === 1'b0) begin
+            reset_signals();
+            return;
+        end
         // Flow control: do not issue reads when FIFO is empty.
         // Important: never wait forever here; just skip and allow the test to progress/terminate.
         if (vif.rd_empty) begin
@@ -106,6 +177,10 @@ class drv extends uvm_driver #(transaction);
             return;
         end
         @(posedge vif.clk_periph);
+        if (vif.axi_resetn === 1'b0) begin
+            reset_signals();
+            return;
+        end
         vif.rd_en <= 1'b1;
         @(posedge vif.clk_periph);
         vif.rd_en <= 1'b0;
