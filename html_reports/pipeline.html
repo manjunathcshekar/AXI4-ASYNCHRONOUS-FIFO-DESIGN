@@ -582,12 +582,24 @@ function patchProgress(data) {
 }
 
 // ── Fetch ────────────────────────────────────────────────────────────────────
+// Reads pipeline_status.js (a JS file written by the bat) via a dynamic
+// <script> tag. This works on file:// without any server or browser flags.
+// The JS file sets window.__PIPELINE_STATUS = {...} which we read here.
 async function fetchStatus() {
-  try {
-    const res = await fetch('../uvm_test_logs/pipeline_status.json?t=' + Date.now());
-    if (!res.ok) return null;
-    return await res.json();
-  } catch { return null; }
+  return new Promise((resolve) => {
+    // Remove any previous injected script
+    const old = document.getElementById('_ps_script');
+    if (old) old.remove();
+    // Also clear the previous data so stale data isn't reused if load fails
+    window.__PIPELINE_STATUS = undefined;
+
+    const s = document.createElement('script');
+    s.id  = '_ps_script';
+    s.src = '../uvm_test_logs/pipeline_status.js?t=' + Date.now();
+    s.onload = () => resolve(window.__PIPELINE_STATUS || null);
+    s.onerror = () => resolve(null);
+    document.head.appendChild(s);
+  });
 }
 
 // ── Poll — only patches existing DOM, never rebuilds it ──────────────────────

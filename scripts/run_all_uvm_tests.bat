@@ -17,14 +17,15 @@ echo.
 :: Initialise the metadata file (overwrite any previous run)
 echo FLOW_START=%TS_START%> uvm_test_logs\run_timestamps.txt
 
-:: ── Pipeline JSON helper (writes current state so pipeline.html can read it) ─
-:: Usage: call :write_pipeline_json
-:: Reads step vars set before calling.
+:: ── Pipeline JS writer ────────────────────────────────────────────────────────
+:: Writes pipeline_status.js as a JS file (window.__PIPELINE_STATUS = {...})
+:: so pipeline.html can load it via <script> tag — works on file:// without
+:: needing a local server.
 goto :skip_fn
 
-:write_pipeline_json
+:write_pipeline_js
 powershell -NoProfile -Command ^
-  "$s=@{flowStart='%FLOW_START%';currentStep=%CURRENT_STEP%;steps=@(%STEP_JSON%)}; $s|ConvertTo-Json -Depth 5|Set-Content 'uvm_test_logs\pipeline_status.json' -Encoding UTF8"
+  "$s=@{flowStart='%FLOW_START%';currentStep=%CURRENT_STEP%;steps=@(%STEP_JSON%)}; $j=$s|ConvertTo-Json -Depth 5; 'window.__PIPELINE_STATUS = ' + $j + ';'|Set-Content 'uvm_test_logs\pipeline_status.js' -Encoding UTF8"
 goto :eof
 
 :skip_fn
@@ -39,20 +40,20 @@ echo [%TS%] STEP 1/6 -- Compiling RTL + UVM testbench (with -cover bcefst)...
 echo COMPILE_START=%TS%>> uvm_test_logs\run_timestamps.txt
 set CURRENT_STEP=1
 set STEP_JSON=@{id=1;name='Compile RTL + UVM';status='running';start='%TS%';end=''}
-call :write_pipeline_json
+call :write_pipeline_js
 
 vsim -c -do scripts/compile.do
 if %ERRORLEVEL% NEQ 0 (
     for /f "delims=" %%T in ('powershell -NoProfile -Command "Get-Date -Format \"yyyy-MM-dd HH:mm:ss\""') do set TS=%%T
     set STEP_JSON=@{id=1;name='Compile RTL + UVM';status='failed';start='%TS%';end='%TS%'}
-    call :write_pipeline_json
+    call :write_pipeline_js
     echo [ERROR] Compilation failed. Aborting.
     exit /b 1
 )
 for /f "delims=" %%T in ('powershell -NoProfile -Command "Get-Date -Format \"yyyy-MM-dd HH:mm:ss\""') do set TS_1_END=%%T
 echo COMPILE_END=%TS_1_END%>> uvm_test_logs\run_timestamps.txt
 set STEP_JSON=@{id=1;name='Compile RTL + UVM';status='done';start='%TS%';end='%TS_1_END%'}
-call :write_pipeline_json
+call :write_pipeline_js
 echo [%TS_1_END%] Compilation done.
 echo.
 
@@ -64,7 +65,7 @@ echo.
 echo TESTS_START=%TS%>> uvm_test_logs\run_timestamps.txt
 set CURRENT_STEP=2
 set STEP_JSON=@{id=1;name='Compile RTL + UVM';status='done';start='';end='%TS_1_END%'},@{id=2;name='Run 15 UVM Tests';status='running';start='%TS%';end=''}
-call :write_pipeline_json
+call :write_pipeline_js
 
 set TEST_COUNT=0
 for %%X in (
@@ -87,9 +88,8 @@ for %%X in (
     set /a TEST_COUNT+=1
     for /f "delims=" %%T in ('powershell -NoProfile -Command "Get-Date -Format \"yyyy-MM-dd HH:mm:ss\""') do set TS=%%T
     echo   [!TS!] Running test !TEST_COUNT!/15: %%X
-    :: Update JSON with test progress
     powershell -NoProfile -Command ^
-      "$s=@{flowStart='%FLOW_START%';currentStep=2;testProgress=!TEST_COUNT!;testName='%%X';steps=@(@{id=1;name='Compile RTL + UVM';status='done';start='';end='%TS_1_END%'},@{id=2;name='Run 15 UVM Tests';status='running';start='';end='';progress=!TEST_COUNT!;total=15;currentTest='%%X'})}; $s|ConvertTo-Json -Depth 5|Set-Content 'uvm_test_logs\pipeline_status.json' -Encoding UTF8"
+      "$s=@{flowStart='%FLOW_START%';currentStep=2;steps=@(@{id=1;name='Compile RTL + UVM';status='done';end='%TS_1_END%'},@{id=2;name='Run 15 UVM Tests';status='running';start='';end='';progress=!TEST_COUNT!;total=15;currentTest='%%X'})}; $j=$s|ConvertTo-Json -Depth 5; 'window.__PIPELINE_STATUS = ' + $j + ';'|Set-Content 'uvm_test_logs\pipeline_status.js' -Encoding UTF8"
     (
         echo run -all
         echo coverage save uvm_test_logs/%%X.ucdb
@@ -115,7 +115,7 @@ for /f "delims=" %%T in ('powershell -NoProfile -Command "Get-Date -Format \"yyy
 echo [%TS%] STEP 3/6 -- Merging all 15 UCDBs into uvm_test_logs\coverage_test.ucdb...
 echo UCDB_MERGE_START=%TS%>> uvm_test_logs\run_timestamps.txt
 powershell -NoProfile -Command ^
-  "$s=@{flowStart='%FLOW_START%';currentStep=3;steps=@(@{id=1;name='Compile RTL + UVM';status='done';start='';end='%TS_1_END%'},@{id=2;name='Run 15 UVM Tests';status='done';start='';end='%TS_2_END%';progress=15;total=15},@{id=3;name='Merge UCDBs';status='running';start='%TS%';end=''})}; $s|ConvertTo-Json -Depth 5|Set-Content 'uvm_test_logs\pipeline_status.json' -Encoding UTF8"
+  "$s=@{flowStart='%FLOW_START%';currentStep=3;steps=@(@{id=1;name='Compile RTL + UVM';status='done';end='%TS_1_END%'},@{id=2;name='Run 15 UVM Tests';status='done';end='%TS_2_END%';progress=15;total=15},@{id=3;name='Merge UCDBs';status='running';start='%TS%';end=''})}; $j=$s|ConvertTo-Json -Depth 5; 'window.__PIPELINE_STATUS = ' + $j + ';'|Set-Content 'uvm_test_logs\pipeline_status.js' -Encoding UTF8"
 
 vcover merge uvm_test_logs\coverage_test.ucdb ^
     uvm_test_logs\basic_rw_test.ucdb ^
@@ -148,7 +148,7 @@ for /f "delims=" %%T in ('powershell -NoProfile -Command "Get-Date -Format \"yyy
 echo [%TS%] STEP 4/6 -- Generating vcover text report...
 echo VCOVER_REPORT_START=%TS%>> uvm_test_logs\run_timestamps.txt
 powershell -NoProfile -Command ^
-  "$s=@{flowStart='%FLOW_START%';currentStep=4;steps=@(@{id=1;name='Compile RTL + UVM';status='done';end='%TS_1_END%'},@{id=2;name='Run 15 UVM Tests';status='done';end='%TS_2_END%';progress=15;total=15},@{id=3;name='Merge UCDBs';status='done';end='%TS_3_END%'},@{id=4;name='vcover Report';status='running';start='%TS%';end=''})}; $s|ConvertTo-Json -Depth 5|Set-Content 'uvm_test_logs\pipeline_status.json' -Encoding UTF8"
+  "$s=@{flowStart='%FLOW_START%';currentStep=4;steps=@(@{id=1;name='Compile RTL + UVM';status='done';end='%TS_1_END%'},@{id=2;name='Run 15 UVM Tests';status='done';end='%TS_2_END%';progress=15;total=15},@{id=3;name='Merge UCDBs';status='done';end='%TS_3_END%'},@{id=4;name='vcover Report';status='running';start='%TS%';end=''})}; $j=$s|ConvertTo-Json -Depth 5; 'window.__PIPELINE_STATUS = ' + $j + ';'|Set-Content 'uvm_test_logs\pipeline_status.js' -Encoding UTF8"
 
 vcover report -details -output uvm_test_logs\coverage_test_report2.txt uvm_test_logs\coverage_test.ucdb
 if %ERRORLEVEL% NEQ 0 (
@@ -165,7 +165,7 @@ for /f "delims=" %%T in ('powershell -NoProfile -Command "Get-Date -Format \"yyy
 echo [%TS%] STEP 5/6 -- Generating HTML test reports...
 echo HTML_REPORT_START=%TS%>> uvm_test_logs\run_timestamps.txt
 powershell -NoProfile -Command ^
-  "$s=@{flowStart='%FLOW_START%';currentStep=5;steps=@(@{id=1;name='Compile RTL + UVM';status='done';end='%TS_1_END%'},@{id=2;name='Run 15 UVM Tests';status='done';end='%TS_2_END%';progress=15;total=15},@{id=3;name='Merge UCDBs';status='done';end='%TS_3_END%'},@{id=4;name='vcover Report';status='done';end='%TS_4_END%'},@{id=5;name='HTML Test Reports';status='running';start='%TS%';end=''})}; $s|ConvertTo-Json -Depth 5|Set-Content 'uvm_test_logs\pipeline_status.json' -Encoding UTF8"
+  "$s=@{flowStart='%FLOW_START%';currentStep=5;steps=@(@{id=1;name='Compile RTL + UVM';status='done';end='%TS_1_END%'},@{id=2;name='Run 15 UVM Tests';status='done';end='%TS_2_END%';progress=15;total=15},@{id=3;name='Merge UCDBs';status='done';end='%TS_3_END%'},@{id=4;name='vcover Report';status='done';end='%TS_4_END%'},@{id=5;name='HTML Test Reports';status='running';start='%TS%';end=''})}; $j=$s|ConvertTo-Json -Depth 5; 'window.__PIPELINE_STATUS = ' + $j + ';'|Set-Content 'uvm_test_logs\pipeline_status.js' -Encoding UTF8"
 
 python scripts/generate_html_report.py
 if %ERRORLEVEL% NEQ 0 (echo [ERROR] generate_html_report.py failed. & exit /b 1)
@@ -179,7 +179,7 @@ for /f "delims=" %%T in ('powershell -NoProfile -Command "Get-Date -Format \"yyy
 echo [%TS%] STEP 6/6 -- Generating functional coverage HTML report...
 echo COV_HTML_START=%TS%>> uvm_test_logs\run_timestamps.txt
 powershell -NoProfile -Command ^
-  "$s=@{flowStart='%FLOW_START%';currentStep=6;steps=@(@{id=1;name='Compile RTL + UVM';status='done';end='%TS_1_END%'},@{id=2;name='Run 15 UVM Tests';status='done';end='%TS_2_END%';progress=15;total=15},@{id=3;name='Merge UCDBs';status='done';end='%TS_3_END%'},@{id=4;name='vcover Report';status='done';end='%TS_4_END%'},@{id=5;name='HTML Test Reports';status='done';end='%TS_5_END%'},@{id=6;name='Coverage HTML';status='running';start='%TS%';end=''})}; $s|ConvertTo-Json -Depth 5|Set-Content 'uvm_test_logs\pipeline_status.json' -Encoding UTF8"
+  "$s=@{flowStart='%FLOW_START%';currentStep=6;steps=@(@{id=1;name='Compile RTL + UVM';status='done';end='%TS_1_END%'},@{id=2;name='Run 15 UVM Tests';status='done';end='%TS_2_END%';progress=15;total=15},@{id=3;name='Merge UCDBs';status='done';end='%TS_3_END%'},@{id=4;name='vcover Report';status='done';end='%TS_4_END%'},@{id=5;name='HTML Test Reports';status='done';end='%TS_5_END%'},@{id=6;name='Coverage HTML';status='running';start='%TS%';end=''})}; $j=$s|ConvertTo-Json -Depth 5; 'window.__PIPELINE_STATUS = ' + $j + ';'|Set-Content 'uvm_test_logs\pipeline_status.js' -Encoding UTF8"
 
 python scripts/generate_coverage_report.py
 if %ERRORLEVEL% NEQ 0 (echo [ERROR] generate_coverage_report.py failed. & exit /b 1)
@@ -188,11 +188,11 @@ echo COV_HTML_END=%TS_6_END%>> uvm_test_logs\run_timestamps.txt
 echo [%TS_6_END%] Functional coverage HTML done.
 echo.
 
-:: ── Final JSON: all done ──────────────────────────────────────────────────────
+:: ── Final JS: all done ────────────────────────────────────────────────────────
 for /f "delims=" %%T in ('powershell -NoProfile -Command "Get-Date -Format \"yyyy-MM-dd HH:mm:ss\""') do set TS_END=%%T
 echo FLOW_END=%TS_END%>> uvm_test_logs\run_timestamps.txt
 powershell -NoProfile -Command ^
-  "$s=@{flowStart='%FLOW_START%';flowEnd='%TS_END%';currentStep=7;steps=@(@{id=1;name='Compile RTL + UVM';status='done';end='%TS_1_END%'},@{id=2;name='Run 15 UVM Tests';status='done';end='%TS_2_END%';progress=15;total=15},@{id=3;name='Merge UCDBs';status='done';end='%TS_3_END%'},@{id=4;name='vcover Report';status='done';end='%TS_4_END%'},@{id=5;name='HTML Test Reports';status='done';end='%TS_5_END%'},@{id=6;name='Coverage HTML';status='done';end='%TS_6_END%'})}; $s|ConvertTo-Json -Depth 5|Set-Content 'uvm_test_logs\pipeline_status.json' -Encoding UTF8"
+  "$s=@{flowStart='%FLOW_START%';flowEnd='%TS_END%';currentStep=7;steps=@(@{id=1;name='Compile RTL + UVM';status='done';end='%TS_1_END%'},@{id=2;name='Run 15 UVM Tests';status='done';end='%TS_2_END%';progress=15;total=15},@{id=3;name='Merge UCDBs';status='done';end='%TS_3_END%'},@{id=4;name='vcover Report';status='done';end='%TS_4_END%'},@{id=5;name='HTML Test Reports';status='done';end='%TS_5_END%'},@{id=6;name='Coverage HTML';status='done';end='%TS_6_END%'})}; $j=$s|ConvertTo-Json -Depth 5; 'window.__PIPELINE_STATUS = ' + $j + ';'|Set-Content 'uvm_test_logs\pipeline_status.js' -Encoding UTF8"
 
 echo ============================================================
 echo  COMPLETE -- All steps finished successfully
@@ -206,5 +206,5 @@ echo    html_reports\functional_coverage.html -- Functional coverage (from UCDB)
 echo    uvm_test_logs\coverage_test.ucdb      -- Merged UCDB (all 15 tests)
 echo    uvm_test_logs\coverage_test_report2.txt -- vcover text report
 echo    uvm_test_logs\run_timestamps.txt      -- Timing log for this run
-echo    uvm_test_logs\pipeline_status.json    -- Pipeline state (read by pipeline.html)
+echo    uvm_test_logs\pipeline_status.js      -- Pipeline state (read by pipeline.html)
 echo.
